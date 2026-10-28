@@ -356,11 +356,15 @@ async function confirmCancel(parentOrderId, card) {
   const reason = form ? String(form.querySelector('.order-cancel-reason').value || '').trim() : '';
   const s = findShipment(parentOrderId);
   const amount = s ? money(Math.max(0, (Number(s.orderTotalCents) || 0) - (Number(s.refundedCents) || 0)), s.currency || 'usd') : 'the full amount';
-  if (!window.confirm(`Cancel ${s && s.orderNumber ? s.orderNumber : 'this order'} and refund ${amount} to the customer's card? This cannot be undone.`)) return;
+  // A Mapmakers pick ($0, keyed by its Checkout session): cancelling withdraws the pick.
+  const pick = /^cs_/.test(String(parentOrderId));
+  if (!window.confirm(pick
+    ? `Cancel ${s && s.orderNumber ? s.orderNumber : 'this order'}? It is a free Mapmakers piece: the pick is withdrawn, the month's slot comes back and the finder is emailed (with the reason, if you gave one). This cannot be undone.`
+    : `Cancel ${s && s.orderNumber ? s.orderNumber : 'this order'} and refund ${amount} to the customer's card? This cannot be undone.`)) return;
   setCardBusy(card, true);
   try {
     const r = await postOrderAction('/admin/orders/cancel', { parentOrderId, reason });
-    showSuccess(r.refundId ? `Cancelled. ${money(r.refundedCents, s && s.currency)} is on its way back; the customer is emailed when Stripe confirms.` : 'Cancelled.');
+    showSuccess(r.mapmakerPick ? 'Cancelled: the Mapmakers pick is withdrawn.' : r.refundId ? `Cancelled. ${money(r.refundedCents, s && s.currency)} is on its way back; the customer is emailed when Stripe confirms.` : 'Cancelled.');
     await load();
   } catch (err) {
     showError(err && err.message ? err.message : 'Could not cancel this order.');
@@ -748,10 +752,11 @@ function cancelForm(shipment, id) {
   return `
     <div class="order-ship-form order-cancel-form" hidden>
       <label class="order-field">
-        <span class="order-field-label">Reason (optional, kept on the order)</span>
+        <span class="order-field-label">${/^cs_/.test(String(id)) ? 'Reason (optional; sent to the finder and kept on the pick)' : 'Reason (optional, kept on the order)'}</span>
         <textarea class="order-cancel-reason" rows="2" maxlength="300" placeholder="e.g. customer asked before it shipped"></textarea>
       </label>
-      <p class="order-delay-hint">${left > 0
+      <p class="order-delay-hint">${/^cs_/.test(String(id)) ? 'A free Mapmakers piece: nothing was paid. Cancelling withdraws the pick, cancels its lines, gives the month\'s slot back and emails the finder the reason below.'
+        : left > 0
         ? `${escapeHtml(money(left, shipment.currency || 'usd'))} goes back to the card through Stripe. Every line is marked cancelled now; the customer gets a refund email when Stripe confirms.`
         : 'Nothing left to refund; the lines are marked cancelled.'}</p>
       <div class="order-actions">
@@ -797,8 +802,9 @@ function actionsFor(shipment, status, id) {
     buttons.push(canShip
       ? btn('btn-success', 'Mark shipped', { action: 'ship-open', id })
       : btn('btn-secondary', 'Mark shipped', { action: 'ship-open', id }, true));
-    buttons.push(btn('btn-secondary', 'Running late', { action: 'delay-open', id }));
-    buttons.push(btn('btn-danger', 'Cancel & refund', { action: 'cancel-open', id }));
+    // A Mapmakers pick ($0, keyed cs_…): the delay notice speaks of refunds, so not for it.
+    if (!/^cs_/.test(String(id))) buttons.push(btn('btn-secondary', 'Running late', { action: 'delay-open', id }));
+    buttons.push(btn('btn-danger', /^cs_/.test(String(id)) ? 'Cancel (withdraw pick)' : 'Cancel & refund', { action: 'cancel-open', id }));
   }
   const refundable = Math.max(0, (Number(shipment.orderTotalCents) || 0) - (Number(shipment.refundedCents) || 0)) > 0;
   if (status === 'shipped') {

@@ -42,7 +42,7 @@
     </ul>
 
     <h1>Store Privacy &amp; Data</h1>
-    <p class="legal-meta">Effective 4 September 2026; independent makers, teachers, lesson reminders and ratings added 28 October 2026. This page covers the Kaayko store at
+    <p class="legal-meta">Effective 4 September 2026; independent makers, teachers, lesson reminders, ratings and free Mapmakers pieces added 28 October 2026. This page covers the Kaayko store at
       <strong>kaayko.com/store</strong> and <strong>kaay.store</strong> only. The Kaayko paddling app has its
       <a href="https://kaayko.com/privacy">own privacy policy</a>.</p>
 
@@ -60,7 +60,7 @@
       UK/EU data protection law we are the <em>controller</em> of the information described here.</p>
 
     <h2>What we collect, and only when</h2>
-    <p>Browsing the store collects nothing about you. Information is collected at exactly two moments:</p>
+    <p>Browsing the store collects nothing about you. Information is collected at exactly three moments:</p>
     <ul>
       <li><strong>When you add something to your bag.</strong> Your basket is written to your own browser and
         never sent to us until you check out.</li>
@@ -68,6 +68,14 @@
         confirmation and any problem with the order), your <strong>phone number</strong> (the courier), and
         your <strong>delivery address</strong>. We record which items, sizes and fits you bought, the amount
         charged, and any sales tax.</li>
+      <li><strong>When you claim a free Mapmakers piece.</strong> A <a href="https://kaayko.com/paddlingout/mapmakers">Mapmakers</a>
+        pick is claimed from your Mapmakers page at kaay.link/m, through Stripe's checkout at $0. It asks for your
+        <strong>name and delivery address</strong> and shows your email; it never asks for a card or a phone number.
+        The claim becomes an ordinary order, kept and erased the way this page describes. The claim keeps your name,
+        address and email on the Mapmakers pick as well, erased with the order after two years. A one-way code made
+        from the address checks that one address receives at most one piece a month (a person at Kaayko may allow a second); the record used for that
+        check is deleted after about 13 months. The rest of Mapmakers is covered by the
+        <a href="https://kaayko.com/privacy#mapmaker-code">Kaayko privacy policy</a>.</li>
     </ul>
     <p>We do not ask for, and have no way to store, a date of birth, a government ID or an account password —
       the store has no accounts.</p>
@@ -114,7 +122,8 @@
       contractual clauses.</p>
 
     <h2>How long we keep it</h2>
-    <p>An automated job runs monthly and enforces this without anyone having to remember:</p>
+    <p>An automated job runs on the 1st of each month and enforces this without anyone having to remember, so a
+      record goes at the first run after its period ends (up to about a month later):</p>
     <ul>
       <li><strong>Your name, email, phone and address: erased after 2 years.</strong> The order itself survives
         with the money, tax, item and status fields intact, so our books stay complete — it simply stops saying
@@ -136,7 +145,16 @@
         keyed one-way hash of it (and of your network address) per heart, never the ID or the address; un-hearting
         deletes the record.</li>
       <li><code>kaayko.promo</code> — a discount code you applied or followed a link with, for up to 24 hours.</li>
+      <li><code>kaayko_checkout_session</code> — a random ID for this bag's checkout, so a retry does not charge twice.</li>
+      <li><code>kaayko:currency</code> and <code>kaayko:fx:usdinr:v1</code> — the currency you chose and the last
+        exchange rate we showed.</li>
+      <li><code>kaayko.patron</code> — only if you followed a patron's own link: a signed code that gives that link's
+        price at checkout. It is made from the patron's email but is not the email.</li>
     </ul>
+    <p>If your browser blocks local storage, every item above except the hearts (<code>kaayko.loved</code> and
+      <code>kaayko.visitor</code>, which are then not kept at all), and store access if you were given it, is kept in
+      first-party cookies on this site instead, for up to a year. They hold only those things and are never used to
+      track you.</p>
     <p>Clearing your browser's site data removes all of them. Stripe sets its own cookies on its payment fields
       for fraud prevention; those are strictly necessary to take a payment. The email field at checkout is Stripe's
       Link field: if you already use Link, Stripe may offer to fill your saved address and card after sending you a

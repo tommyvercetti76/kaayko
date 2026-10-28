@@ -99,7 +99,10 @@ POST /api/paddlingOut/spots/{id}/suggest      → suggested edit to a live spot 
 --- platform admin only (requireAuth + requireAdmin + requirePlatformAdmin; the X-Admin-Key way in was removed 3 Oct 2026) ---
 GET  /api/paddlingOut/admin/submissions       → review queue, new lakes and edits (+ possibleDuplicateOf, place/water sources; edits carry proposed + live)
 POST /api/paddlingOut/admin/submissions/{id}/validate → new: publish; refuses an incomplete spot (spotSchema.publicSpotProblems); water type from pick/USGS/hint/name; warms score inline; body `creditName` (the review card's box) → spot `addedBy`, submission `contributorId` (HMAC of the normalised email) + links that person's earlier lakes. edit: body {fields:[…]} applies only those changes, copies ticked photos in under the spot's naming rule, audits
-POST /api/paddlingOut/mapmakers/claim/peek|checkout|confirm → the claim page (kaayko.com/paddlingout/claim#t=…): the lake + the store pieces a pick can be; a $0 Stripe Checkout for the chosen piece; confirm on return (mapmakerRoutes.js → services/mapmakerPicks.js)
+kaay.link/m, /m/<token>, /m/home, /m/pick/{id}[/piece/{productId}|/claim], /m/claimed, /m/lake/{id}/{action} → the finder's own page: sign in with email + Mapmaker code or an emailed link; follow, opt in/out of picks, take name off, withdraw (in review) or ask to take down (live); choose a store piece and claim it at $0 via Stripe Checkout (api/kortex/mapmakerRouter.js + mapmakerPages.js → services/mapmakers.js, services/mapmakerPicks.js)
+POST /api/paddlingOut/admin/mapmakers/send-link {submissionId} → Kortex "Send their link" (platform admin)
+POST /api/paddlingOut/admin/mapmakers/takedown {submissionId, decision: remove|keep, note} → Kortex "Take it down" / "Keep it" on a finder's take-down request; the finder is emailed either way (platform admin)
+POST /api/admin/orders/cancel on a pick's $0 order (parentOrderId cs_…) → withdraws the pick (no refund to make; finder emailed)
 GET|POST /api/paddlingOut/admin/mapmakers/picks[/{id}/resend|release|revoke] → Kortex → Submissions: Pick, and the Picks tab (platform admin)
 POST /api/paddlingOut/admin/submissions/{id}/reject   → new: hide + delete every prefixed photo; edit: live spot untouched, pending photos deleted; body {rejectionReason}
 GET  /api/paddlingOut/admin/spots[/{id}]      → whole catalogue incl. hidden, with isPublic/photos/hasCachedScore
@@ -129,7 +132,7 @@ GET  /api/docs                                 → API spec (spec.yaml / spec.js
 - `kaayko-api/functions/api/weather/nearbyWater.js` — nearby water search
 - `kaayko-api/functions/api/core/` — health check, docs endpoints
 
-**Firestore collections:** `paddlingSpots`, `paddling_lake_submissions` (review record per community spot AND per suggested edit — `kind: 'new'|'edit'`; edits are `edit-<hex>` with `spotId` = the spot they would change), `paddling_lake_submission_keys` (7-day dedupe), `lake_submission_rate_limits`, `paddle_score_cache`, `paddling_spot_audit` (append-only admin edit log), `forecast_cache`, `current_conditions_cache`, `public_paddle_ratings`, `rate_limits`
+**Firestore collections:** `paddlingSpots`, `paddling_lake_submissions` (review record per community spot AND per suggested edit — `kind: 'new'|'edit'`; edits are `edit-<hex>` with `spotId` = the spot they would change), `paddling_lake_submission_keys` (7-day dedupe), `lake_submission_rate_limits`, `paddle_score_cache`, `paddling_spot_audit` (append-only admin edit log), Mapmakers: `contributors` (one per finder: email + Mapmaker code hash), `mapmaker_links` (sign-in link hashes, 14 days), `mapmaker_picks`, `mapmaker_pick_counts`, `mapmaker_address_claims`, `mapmaker_audit` (kaayko-api CLAUDE.md has the fields), `forecast_cache`, `current_conditions_cache`, `public_paddle_ratings`, `rate_limits`
 **Admin UI:** Kortex SPA → Submissions (`src/admin/views/submissions/`) and Spots (`src/admin/views/spots/`, shared editor `spot-editor.js`)
 **External services:** Open-Meteo API (free, no auth), Marine API
 **Auth required:** No

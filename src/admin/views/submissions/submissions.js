@@ -32,9 +32,12 @@ import { renderEditor, bindEditor, fetchSpot, saveEditorIfDirty } from '../spots
 // ---------------------------------------------------------------------------
 
 const FILTERS = [
-  { key: 'pending',   label: 'Pending',  match: (s) => s === 'pending' },
+  // 'applying': an Approve of a suggested edit in progress (or one that never finished).
+  { key: 'pending',   label: 'Pending',  match: (s) => s === 'pending' || s === 'applying' },
   { key: 'validated', label: 'Approved', match: (s) => s === 'validated' },
   { key: 'rejected',  label: 'Rejected', match: (s) => s === 'rejected' },
+  // Mapmakers: the finder withdrew it in review, or asked and it was taken down.
+  { key: 'withdrawn', label: 'Withdrawn', match: (s) => s === 'withdrawn' || s === 'removed' },
   { key: 'all',       label: 'All',      match: () => true },
   // Mapmakers monthly picks (28 Oct 2026): not a status, its own list.
   { key: 'picks',     label: 'Picks',    match: () => false, picks: true },
@@ -115,6 +118,8 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
     else if (action === 'reject') reject(id, btn);
     else if (action === 'edit') toggleEditor(id);
     else if (action === 'pick') pickLake(id, btn);
+    else if (action === 'send-link') sendFinderLink(id, btn);
+    else if (action === 'takedown-remove' || action === 'takedown-keep') decideTakedown(id, action === 'takedown-remove' ? 'remove' : 'keep', btn);
     else if (action === 'pick-resend' || action === 'pick-release' || action === 'pick-revoke') pickAction(id, action.slice(5), btn);
     else if (action === 'picks-month') loadPicks(id);
   });
@@ -208,6 +213,9 @@ async function approve(id, btn) {
     // The name rides with Approve exactly as the box reads; empty = no name.
     const creditBox = card && card.querySelector(`[data-credit-for="${CSS.escape(id)}"]`);
     if (creditBox) body.creditName = creditBox.value.trim();
+    // What the name was when this card loaded: if the finder took it off since, the
+    // API refuses rather than publish it again.
+    if (sub) body.creditNameLoaded = sub.creditName || null;
     const result = await postAction(id, 'validate', body);
     if (sub && result) sub.creditName = result.credit || null;
     editedCredit.delete(id);
@@ -257,7 +265,7 @@ async function approveEdit(id, card) {
 }
 
 async function reject(id, btn) {
-  const reason = window.prompt('Reason for rejecting this submission? (optional — leave blank to reject without a note)');
+  const reason = window.prompt('Reason (optional). It is emailed to the person who sent it and shown on their Mapmakers page; leave blank to reject without one.');
   if (reason === null) return; // user cancelled
 
   const card = btn.closest('.submission-card');
@@ -507,9 +515,25 @@ function submissionCard(sub) {
  * Nobody is named who did not ask to be, so there is no box without a name.
  */
 function mapmakerLines(sub, id, status) {
-  const picks = (sub.mapmakerOptIn
-    ? '<div class="sub-amenities"><span class="sub-pill sub-pill--picks">Up for the monthly picks</span></div>'
-    : '') + samePersonFlag(sub);
+  const finder = [
+    sub.mapmakerOptIn ? '<span class="sub-pill sub-pill--picks">Up for the monthly picks</span>' : '',
+    sub.withdrawnByFinder ? '<span class="sub-pill sub-pill--no">Withdrawn by the finder</span>' : '',
+    sub.takedownRequested && !sub.takedownDecision ? '<span class="sub-pill sub-pill--held">Take-down requested by the finder</span>' : '',
+    sub.takedownDecision === 'kept' ? '<span class="sub-pill">Take-down declined: kept on the map</span>' : '',
+    sub.takedownDecision === 'removed' ? '<span class="sub-pill sub-pill--no">Taken down at the finder&rsquo;s request</span>' : ''
+  ].filter(Boolean).join('');
+  // The finder was told a person decides and writes either way: both buttons email them.
+  const takedown = sub.takedownRequested && !sub.takedownDecision && status === 'validated'
+    ? `<div class="sub-pick">
+        <button type="button" class="btn btn-danger" data-action="takedown-remove" data-id="${jsAttr(id)}">Take it down</button>
+        <button type="button" class="btn btn-secondary" data-action="takedown-keep" data-id="${jsAttr(id)}">Keep it</button>
+        <span class="picks-sub">Either way the finder is emailed.</span>
+      </div>`
+    : '';
+  const sendLink = sub.contactEmail
+    ? `<button type="button" class="btn btn-secondary sub-send-link" data-action="send-link" data-id="${jsAttr(id)}" title="Emails the finder a link to their Mapmakers page on kaay.link">Send their link</button>`
+    : '';
+  const picks = (finder || sendLink ? `<div class="sub-amenities">${finder}${sendLink}</div>` : '') + takedown + samePersonFlag(sub);
   if (status === 'pending' && sub.creditName) {
     const value = editedCredit.has(id) ? editedCredit.get(id) : sub.creditName;
     return `<label class="sub-field sub-credit">
@@ -538,9 +562,53 @@ function pickControl(sub, id) {
     </div>`;
 }
 
+/** A finder asked for their live lake to come down: take it down, or keep it with a reason. */
+async function decideTakedown(id, decision, btn) {
+  const name = mapmakerName(id);
+  let note = '';
+  if (decision === 'remove') {
+    const sub = allSubmissions.find((s) => cardId(s) === id);
+    const picked = (sub && (sub.pick || sub.mapmakerPickId)) || ((picksData && picksData.takedowns) || []).some((t) => t.id === id && t.picked);
+    if (!window.confirm(`Take ${name} off the map? Its photos and the finder's details on the entry and in the edit log are deleted, and the finder is emailed. This cannot be undone.${picked ? '\n\nThis lake has a Mapmakers pick. It is not withdrawn by this; withdraw it in Picks if it should be.' : ''}`)) return;
+  } else {
+    const answer = window.prompt(`Keep ${name} on the map? The finder is emailed; say why (sent to them):`, '');
+    if (answer === null) return;
+    note = answer.trim();
+  }
+  btn.disabled = true;
+  try {
+    const res = await apiFetch('/paddlingOut/admin/mapmakers/takedown', { method: 'POST', body: JSON.stringify({ submissionId: id, decision, note }) });
+    if (!res) throw new Error('Session expired. Please sign in again.');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Failed (${res.status})`);
+    showSuccess(`${decision === 'remove' ? 'Taken down.' : 'Kept.'} ${data.emailed ? 'The finder has been emailed.' : 'There is no email on the entry, so nobody was told.'}`);
+    await load();
+    if (currentFilter === 'picks') await loadPicks(picksMonth);
+  } catch (err) {
+    showError(err.message || 'Could not record the decision.');
+    btn.disabled = false;
+  }
+}
+
+/** Kortex → "Send their link": a fresh kaay.link/m link to the finder (their code if they had none). */
+async function sendFinderLink(id, btn) {
+  btn.disabled = true;
+  try {
+    const res = await apiFetch('/paddlingOut/admin/mapmakers/send-link', { method: 'POST', body: JSON.stringify({ submissionId: id }) });
+    if (!res) throw new Error('Session expired. Please sign in again.');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Failed (${res.status})`);
+    if (data.sent === false) showError(`Not sent to ${data.to}: ${data.reason || 'try again tomorrow.'}`);
+    else showSuccess(`Sent a link to their Mapmakers page to ${data.to}.`);
+  } catch (err) {
+    showError(err.message || 'Could not send the link.');
+  }
+  btn.disabled = false;
+}
+
 async function pickLake(id, btn) {
   const sub = allSubmissions.find((s) => cardId(s) === id);
-  const name = (sub && sub.lakeName) || 'this lake';
+  const name = mapmakerName(id);
   if (!window.confirm(`Pick ${name} for this month's Mapmakers? This emails the finder a link to choose one store piece, free.`)) return;
   btn.disabled = true;
   try {
@@ -550,6 +618,7 @@ async function pickLake(id, btn) {
     if (!res.ok) throw new Error(data.error || `Pick failed (${res.status})`);
     if (sub) { sub.mapmakerPickId = data.pickId; sub.pick = { id: data.pickId, number: data.number, status: 'issued', piece: null }; }
     picksData = null;
+    if (currentFilter === 'picks') await loadPicks(picksMonth);
     showSuccess(`Picked: No. ${data.number} of ${data.cap} this month. ${data.emailStatus === 'queued' ? 'The finder has been emailed.' : 'The email did not go: use Resend in Picks.'}`);
     renderList();
     renderTabs();
@@ -563,10 +632,16 @@ async function loadPicks(month) {
   if (listEl && currentFilter === 'picks') listEl.innerHTML = '<div class="loading">Loading picks…</div>';
   try {
     const q = month ? `?month=${encodeURIComponent(month)}` : '';
-    const res = await apiFetch(`/paddlingOut/admin/mapmakers/picks${q}`);
+    const [res, more] = await Promise.all([
+      apiFetch(`/paddlingOut/admin/mapmakers/picks${q}`),
+      apiFetch('/paddlingOut/admin/mapmakers/candidates')
+    ]);
     if (!res) return;
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `Failed to load picks (${res.status})`);
+    const extra = more && more.ok ? await more.json().catch(() => ({})) : {};
+    data.candidates = Array.isArray(extra.candidates) ? extra.candidates : [];
+    data.takedowns = Array.isArray(extra.takedowns) ? extra.takedowns : [];
     picksData = data;
     picksMonth = data.month;
     renderTabs();
@@ -591,15 +666,17 @@ function renderPicks() {
       <strong>${escapeHtml(picksData.monthLabel)}</strong>
       <button type="button" class="btn btn-secondary" data-action="picks-month" data-id="${jsAttr(shiftMonth(picksData.month, 1))}">Later &rarr;</button>
     </div>
-    <p class="picks-help">Pick from an approved lake&rsquo;s card (Approved tab). The finder gets a link to choose one of Kaayko&rsquo;s own pieces under $25 and claim it at $0; a claimed pick appears in Orders like any order, with the piece, the size and where to ship it. A held claim went to an address that already received a piece this month, or completed a checkout it had replaced.</p>`;
+    <p class="picks-help">Pick from an approved lake&rsquo;s card (Approved tab). The finder gets a link to choose one of Kaayko&rsquo;s own pieces under $25 and claim it at $0; a claimed pick appears in Orders like any order, with the piece, the size and where to ship it. A claim is held when its address already received a piece this month, when it completed a checkout the finder had replaced, when Stripe gave no US address, or when it completed after the pick expired. Withdraw and Release both email the finder.</p>`;
   if (!picksData.picks.length) { listEl.innerHTML = `<div class="picks-panel">${nav}<div class="submissions-empty">No picks in ${escapeHtml(picksData.monthLabel)} yet.</div></div>`; return; }
   const rows = picksData.picks.map((p) => {
     const acts = [];
     if (p.status === 'issued' || p.status === 'claiming') acts.push(['pick-resend', 'Resend link']);
     if (p.status === 'held') acts.push(['pick-release', 'Release']);
     if (!['shipped', 'revoked', 'expired'].includes(p.status)) acts.push(['pick-revoke', 'Withdraw']);
-    const when = p.tokenExpiresAt && (p.status === 'issued' || p.status === 'claiming') ? `link good until ${new Date(p.tokenExpiresAt).toLocaleDateString()}` : '';
-    const held = p.status === 'held' ? `<div class="picks-held">Held: ${escapeHtml(String(p.heldReason || '').replace(/_/g, ' '))}${p.shipTo ? ` &middot; ship to ${escapeHtml(p.shipTo.name)}, ${escapeHtml(p.shipTo.city)} ${escapeHtml(p.shipTo.state)}` : ''}</div>` : '';
+    const when = p.claimBy && (p.status === 'issued' || p.status === 'claiming') ? `claim by ${new Date(p.claimBy).toLocaleDateString()}` : '';
+    const held = p.status === 'held'
+      ? `<div class="picks-held">Held: ${escapeHtml(String(p.heldReason || '').replace(/_/g, ' '))}${p.heldPiece ? ` &middot; that checkout was for ${escapeHtml(p.heldPiece)}, which Release ships` : ''}${p.shipTo ? ` &middot; ship to ${escapeHtml(p.shipTo.name)}, ${escapeHtml(p.shipTo.city)} ${escapeHtml(p.shipTo.state)}` : ''}</div>`
+      : (p.lateCompletion ? '<div class="picks-held">Its checkout completed after it was withdrawn; nothing was ordered. Write to the finder if they should still have a piece.</div>' : '');
     return `<div class="picks-row picks-row--${escapeHtml(p.status)}">
         <span class="picks-n">No. ${escapeHtml(String(p.number))}</span>
         <div class="picks-main">
@@ -610,7 +687,39 @@ function renderPicks() {
         <div class="picks-acts">${acts.map(([a, l]) => `<button type="button" class="btn btn-secondary" data-action="${a}" data-id="${jsAttr(p.id)}">${l}</button>`).join('')}</div>
       </div>`;
   }).join('');
-  listEl.innerHTML = `<div class="picks-panel">${nav}${rows}</div>`;
+  listEl.innerHTML = `<div class="picks-panel">${nav}${rows}${mapmakerQueues()}</div>`;
+}
+
+/**
+ * The work the Approved list may not show (it loads the newest entries only): every
+ * open take-down request, and every approved lake up for the picks not yet picked.
+ */
+function mapmakerQueues() {
+  const d = picksData || {};
+  const take = (d.takedowns || []).map((t) => `<div class="picks-row picks-row--held">
+      <span class="picks-n">&mdash;</span>
+      <div class="picks-main"><strong>${escapeHtml(t.lakeName)}</strong> <span class="picks-sub">${escapeHtml(t.place || '')}</span>
+        <div class="picks-sub">Take-down asked${t.requestedAt ? ` ${escapeHtml(new Date(t.requestedAt).toLocaleDateString())}` : ''}${t.finderName ? ` &middot; by ${escapeHtml(t.finderName)}` : ''}${t.picked ? ' &middot; this lake has a pick: withdraw it too if you take the lake down' : ''}</div></div>
+      <div class="picks-acts">
+        <button type="button" class="btn btn-danger" data-action="takedown-remove" data-id="${jsAttr(t.id)}">Take it down</button>
+        <button type="button" class="btn btn-secondary" data-action="takedown-keep" data-id="${jsAttr(t.id)}">Keep it</button>
+      </div></div>`).join('');
+  const cand = (d.candidates || []).map((c) => `<div class="picks-row">
+      <span class="picks-n">&mdash;</span>
+      <div class="picks-main"><strong>${escapeHtml(c.lakeName)}</strong> <span class="picks-sub">${escapeHtml(c.place || '')}</span>
+        <div class="picks-sub">Up for the picks${c.finderName ? ` &middot; ${escapeHtml(c.finderName)}` : ''}${c.validatedAt ? ` &middot; approved ${escapeHtml(new Date(c.validatedAt).toLocaleDateString())}` : ''}</div></div>
+      <div class="picks-acts"><button type="button" class="btn btn-primary" data-action="pick" data-id="${jsAttr(c.id)}">Pick</button></div></div>`).join('');
+  return (take ? `<h3 class="picks-h">Take-down requests (${(d.takedowns || []).length})</h3>${take}` : '')
+    + `<h3 class="picks-h">Up for the picks, not picked yet (${(d.candidates || []).length})</h3>${cand || '<div class="submissions-empty">None right now.</div>'}`;
+}
+
+/** A lake's name from the loaded list, or from the Picks tab's own lists. */
+function mapmakerName(id) {
+  const sub = allSubmissions.find((s) => cardId(s) === id);
+  if (sub && sub.lakeName) return sub.lakeName;
+  const d = picksData || {};
+  const x = (d.candidates || []).concat(d.takedowns || []).find((c) => c.id === id);
+  return (x && x.lakeName) || 'this lake';
 }
 
 async function pickAction(pickId, what, btn) {
@@ -618,7 +727,7 @@ async function pickAction(pickId, what, btn) {
   const name = p ? `${p.lakeName} (No. ${p.number})` : 'this pick';
   let body = {};
   if (what === 'revoke') {
-    const reason = window.prompt(`Withdraw ${name}? The link stops working and an unshipped order is cancelled. Reason (kept in the log):`, '');
+    const reason = window.prompt(`Withdraw ${name}? The pick can no longer be claimed, an open checkout is closed, an unshipped order is cancelled and the month's slot comes back. The finder is emailed. Reason (sent to them, and kept in the log):`, '');
     if (reason === null) return;
     body = { reason };
   } else if (what === 'release' && !window.confirm(`Release ${name}? An order is written and it ships like any other.`)) {
@@ -630,7 +739,16 @@ async function pickAction(pickId, what, btn) {
     if (!res) throw new Error('Session expired. Please sign in again.');
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `Failed (${res.status})`);
-    showSuccess(what === 'resend' ? 'A new link was sent; the old one no longer works.' : what === 'release' ? `Released: ${data.orderNumber || 'order written'}.` : 'Withdrawn.');
+    // Say what actually happened to the email, not what should have.
+    if (what === 'resend') {
+      if (data.emailStatus === 'queued') showSuccess('The pick email was sent again with a fresh link. Earlier links keep working until they expire; to end them all, the finder asks for a new code on their page.');
+      else showError('The pick email did not go. Try Resend again in a minute.');
+    } else if (what === 'release') {
+      showSuccess(`Released: ${data.orderNumber || 'order written'}. The finder is emailed.`);
+    } else {
+      showSuccess(data.emailed === false ? 'Withdrawn. There is no email for this finder, so they were not told.' : 'Withdrawn. The finder is emailed.');
+    }
+    await load();
     await loadPicks(picksMonth);
   } catch (err) {
     showError(err.message || 'That did not work.');

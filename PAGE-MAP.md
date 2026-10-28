@@ -93,7 +93,6 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 | `/archive/home-2026` | `src/archive/home-2026.html` → `js/pages/home-entrance.js` + `js/pages/index.js` — the split landing that was `/` until 22 Oct 2026, kept unlinked and `noindex` (not served on kaay.store) |
 | `/paddlingout` | `src/paddlingout.html` |
 | `/paddlingout/forecast?id=` | `src/paddlingout/forecast.html` → `js/pages/forecast.js` (all page logic; lake-local time from `js/services/spotTime.js`; API shapes in `js/contracts/paddling.js`). The Spot card's first row is "Added by" on a community lake (`creditRow`) |
-| `/paddlingout/claim#t=…` | `src/paddlingout/claim.html` → `js/pages/claim.js` + `css/claim.css` — claim a Mapmakers pick: choose one store piece under $25, $0 Stripe Checkout, return confirms. noindex, no-referrer, strict CSP (firebase.json) |
 | `/paddlingout/mapmakers` | `src/paddlingout/mapmakers.html` — Mapmakers: how paddlers add lakes, names on lakes, the monthly picks, `#rules` (static, no API; 28 Oct 2026) |
 | `/about` | `src/about.html` |
 | `/store` (kaay.store `/`) | `src/store.html` → `js/pages/store.js` |

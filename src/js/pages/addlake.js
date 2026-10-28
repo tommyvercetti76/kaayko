@@ -519,8 +519,8 @@
     });
     btn.disabled = false; btn.textContent = 'Save';
     if (!r.ok || !r.data || !r.data.success) { say('al-extras-msg', errorText(r, 'Could not save. Please try again.'), 'error'); return; }
-    say('al-extras-msg', picks ? 'Saved. Your lake is up for the monthly picks, and we will email you when it is live.'
-      : email ? 'Saved. We will email you when it is live.' : 'Saved. Thank you.', 'ok');
+    say('al-extras-msg', picks ? 'Saved. Your lake is up for the monthly picks. Check your email for a link to follow it.'
+      : email ? 'Saved. Check your email for a link to follow it; we will write again when it is reviewed.' : 'Saved. Thank you.', 'ok');
   });
   $('al-another').addEventListener('click', startOver);
   $('al-tomap').addEventListener('click', function () {

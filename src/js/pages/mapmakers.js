@@ -28,9 +28,9 @@
   function paintCountdown(days) {
     var el = $('mm-countdown');
     if (!el) return;
-    if (days > 1) el.textContent = days + ' days to the first picks, at the end of November 2026. Every lake added from today counts.';
-    else if (days === 1) el.textContent = 'The first picks are made tomorrow. Every lake added this month counts.';
-    else el.textContent = 'Picks are made at the end of every month. Every new lake you add counts toward the next ones.';
+    if (days > 1) el.textContent = days + ' days to the first picks, at the end of November 2026. Every lake you put up for the picks counts.';
+    else if (days === 1) el.textContent = 'The first picks are made tomorrow. Every lake you put up for the picks counts.';
+    else el.textContent = 'Picks are made at the end of every month. Every lake you put up for the picks counts toward the next ones.';
   }
 
   // ── The rail ────────────────────────────────────────────────────────────

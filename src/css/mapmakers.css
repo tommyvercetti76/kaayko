@@ -178,6 +178,9 @@ a.mm-step:focus-visible { outline: 2px solid var(--mm-gold-bright); outline-offs
   font: 400 1.06rem/1.55 var(--mm-serif); color: rgba(237, 232, 223, 0.92);
 }
 .mm-need strong { color: var(--mm-gold-bright); font-weight: 600; }
+.mm-picks-in > p.mm-page-note { font-size: 1.02rem; color: rgba(237, 232, 223, 0.82); }
+.mm-page-note strong { color: var(--mm-fg); font-weight: 600; }
+.mm-picks-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.2rem; }
 @media (min-width: 900px) {
   .mm-picks { min-height: 640px; display: flex; align-items: center; }
   .mm-picks-media { position: absolute; inset: 0; z-index: -1; }
