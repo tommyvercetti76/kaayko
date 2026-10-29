@@ -487,6 +487,9 @@
     var where = r.data.place ? [r.data.place.town, r.data.place.region].filter(Boolean).join(', ') : '';
     $('al-sent-sub').textContent = 'We have ' + name + (where ? ', near ' + where : '') + '. A person checks every entry before it goes on the map.';
     $('al-extras').hidden = !S.result.token;
+    // Seen anything? A report on the spot just sent, proved theirs by the details token.
+    if (window.KaaykoReports && S.result.token) window.KaaykoReports.mountForm($('al-reports'), S.result.id, { token: S.result.token });
+    else if ($('al-reports')) $('al-reports').innerHTML = '';
     goto('sent', { replace: true });
   }
 

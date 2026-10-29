@@ -566,7 +566,9 @@ function renderPrepBlock(tips) {
       return `<div class="kbg-row${t.priority === 1 ? ' prep-p1' : ''}"><span class="kbg-icon">${icon}</span>` +
              `<span><strong>${esc(t.title)}</strong><br>${esc(detail)}</span></div>`;
     }).join('');
-  host.appendChild(block);
+  // Before the reports block (it mounts once, below the facts), so a units change keeps the order.
+  const reports = document.getElementById('spr-block');
+  if (reports && reports.parentNode === host) host.insertBefore(block, reports); else host.appendChild(block);
 }
 window.addEventListener('kaayko:unitschange', () => renderPrepBlock());
 
@@ -574,11 +576,12 @@ window.addEventListener('kaayko:unitschange', () => renderPrepBlock());
 // plus any hand-written localTips.
 function renderLocalTips(spot) {
   const host = document.getElementById('prepStack');
-  document.querySelectorAll('.kbg-block:not(.prep-block)').forEach(el => el.remove()); // idempotent re-render
+  document.querySelectorAll('.kbg-block:not(.prep-block):not(.spr-block)').forEach(el => el.remove()); // idempotent re-render (reports mount once)
   const K = window.KaaykoKBYG;
   if (!host || !K) return;
   const html = K.facts(spot);
-  if (html) host.insertAdjacentHTML('beforeend', html);
+  const reports = document.getElementById('spr-block');
+  if (html) (reports && reports.parentNode === host ? reports.insertAdjacentHTML('beforebegin', html) : host.insertAdjacentHTML('beforeend', html));
 }
 
 // A spot closed to recreation shows no Paddle Score anywhere (cards, search,
@@ -820,6 +823,8 @@ async function loadForecast() {
     if (forecastData?.location) renderLocationInfo(forecastData.location, spot);
     else renderLocalTips(spot);   // the facts do not depend on the forecast
     applyClosure(spot);
+    // What paddlers saw here (components/SpotReports.js): its own call, after the facts.
+    if (window.KaaykoReports) window.KaaykoReports.mount(spot);
     if (forecastData) renderApiStatus(forecastData);
 
     // 4. Show content

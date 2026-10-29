@@ -41,6 +41,8 @@ const FILTERS = [
   { key: 'all',       label: 'All',      match: () => true },
   // Mapmakers monthly picks (28 Oct 2026): not a status, its own list.
   { key: 'picks',     label: 'Picks',    match: () => false, picks: true },
+  // Reports from paddlers (29 Oct 2026): wildlife, hazards, access, with the day seen.
+  { key: 'reports',   label: 'Reports',  match: () => false, reports: true },
 ];
 
 let allSubmissions = [];
@@ -57,6 +59,9 @@ const editedCredit = new Map();
 // The Picks tab: one month at a time from GET /paddlingOut/admin/mapmakers/picks.
 let picksData = null;
 let picksMonth = null;
+// The Reports tab: GET /paddlingOut/admin/reports (pending, or the status chosen).
+let reportsData = null;
+let reportsStatus = 'pending';
 
 // Live DOM references, re-bound on every init() (the view module is cached but
 // init runs on each navigation, replacing the container's contents).
@@ -73,6 +78,9 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
   if (!container) return;
 
   currentFilter = 'pending';
+  // Fresh each visit: the module is cached between navigations.
+  reportsData = null;
+  reportsStatus = 'pending';
   allSubmissions = [];
 
   container.innerHTML = `
@@ -105,6 +113,7 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
     renderTabs();
     renderList();
     if (currentFilter === 'picks' && !picksData) loadPicks(picksMonth);
+    if (currentFilter === 'reports' && !reportsData) loadReports(reportsStatus);
   });
 
   // Approve / Reject actions — delegated on the persistent list container.
@@ -122,6 +131,8 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
     else if (action === 'takedown-remove' || action === 'takedown-keep') decideTakedown(id, action === 'takedown-remove' ? 'remove' : 'keep', btn);
     else if (action === 'pick-resend' || action === 'pick-release' || action === 'pick-revoke') pickAction(id, action.slice(5), btn);
     else if (action === 'picks-month') loadPicks(id);
+    else if (action === 'report-approve' || action === 'report-reject' || action === 'report-remove') decideReport(id, action.slice(7), btn);
+    else if (action === 'reports-status') loadReports(id);
   });
 
   // One water type per card: the picker above Approve and the editor's field
@@ -154,10 +165,16 @@ export async function init(STATE) { // eslint-disable-line no-unused-vars
   });
 
   const refreshBtn = container.querySelector('#submissions-refresh');
-  if (refreshBtn) refreshBtn.addEventListener('click', () => load());
+  // Refresh reloads the lists the tabs show, reports and picks included.
+  if (refreshBtn) refreshBtn.addEventListener('click', () => {
+    load();
+    loadReports(reportsStatus);
+    if (picksData) loadPicks(picksMonth);
+  });
 
   renderTabs();
   await load();
+  loadReports('pending');   // so the Reports tab shows its pending count from the start
 }
 
 // ---------------------------------------------------------------------------
@@ -380,7 +397,9 @@ function refreshUI() {
 function renderTabs() {
   if (!tabsEl) return;
   tabsEl.innerHTML = FILTERS.map((f) => {
-    const count = f.picks ? (picksData ? `${picksData.count}/${picksData.cap}` : '·') : allSubmissions.filter((s) => f.match(getStatus(s))).length;
+    const count = f.picks ? (picksData ? `${picksData.count}/${picksData.cap}` : '·')
+      : f.reports ? (reportsData && reportsData.status === 'pending' ? reportsData.reports.length : '·')
+        : allSubmissions.filter((s) => f.match(getStatus(s))).length;
     const active = f.key === currentFilter ? ' active' : '';
     return `<button type="button" class="submissions-tab${active}" data-filter="${f.key}">`
       + `${escapeHtml(f.label)}<span class="submissions-tab-count">${count}</span></button>`;
@@ -392,6 +411,7 @@ function renderList() {
 
   const filter = FILTERS.find((f) => f.key === currentFilter) || FILTERS[0];
   if (filter.picks) { renderPicks(); return; }
+  if (filter.reports) { renderReports(); return; }
   const items = allSubmissions.filter((s) => filter.match(getStatus(s)));
 
   if (countEl) {
@@ -624,6 +644,69 @@ async function pickLake(id, btn) {
     renderTabs();
   } catch (err) {
     showError(err.message || 'Could not pick this lake.');
+    btn.disabled = false;
+  }
+}
+
+async function loadReports(status) {
+  if (listEl && currentFilter === 'reports') listEl.innerHTML = '<div class="loading">Loading reports…</div>';
+  try {
+    const res = await apiFetch(`/paddlingOut/admin/reports?status=${encodeURIComponent(status || 'pending')}`);
+    if (!res) return;
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Failed to load reports (${res.status})`);
+    reportsData = data;
+    reportsStatus = data.status;
+    renderTabs();
+    if (currentFilter === 'reports') renderReports();
+  } catch (err) {
+    if (listEl && currentFilter === 'reports') listEl.innerHTML = `<div class="submissions-error">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+/** The Reports tab: each report, its photo, and Approve / Reject (the reporter is emailed if they left an address). */
+function renderReports() {
+  if (!listEl) return;
+  if (!reportsData) { listEl.innerHTML = '<div class="loading">Loading reports…</div>'; return; }
+  const tabs = ['pending', 'approved', 'rejected', 'withdrawn', 'removed'].map((st) =>
+    `<button type="button" class="btn ${st === reportsData.status ? 'btn-primary' : 'btn-secondary'}" data-action="reports-status" data-id="${st}">${escapeHtml(st[0].toUpperCase() + st.slice(1))}</button>`).join('');
+  const help = '<p class="picks-help">What paddlers say they saw at a spot, with the day. You cannot confirm a report, only judge it. An approved report shows on the spot page, with its note, photo and name, until a year after the day seen (marked old after 90 days), and never changes the Paddle Score. A report on a spot still in review can be approved only once the spot is approved. Take an approved report down if it is wrong or its sender asks: it stops showing and its photo and the sender\'s details are deleted.</p>';
+  const rows = reportsData.reports.map((r) => {
+    const photo = r.photo ? `<a href="${escapeHtml(r.photo)}" target="_blank" rel="noopener">photo</a>` : 'no photo';
+    const acts = reportsData.status === 'pending'
+      ? `<div class="picks-acts"><button type="button" class="btn btn-primary" data-action="report-approve" data-id="${jsAttr(r.id)}">Approve</button><button type="button" class="btn btn-secondary" data-action="report-reject" data-id="${jsAttr(r.id)}">Reject</button></div>`
+      : reportsData.status === 'approved'
+        ? `<div class="picks-acts"><button type="button" class="btn btn-danger" data-action="report-remove" data-id="${jsAttr(r.id)}">Take down</button></div>`
+        : '';
+    return `<div class="picks-row">
+        <span class="picks-n">${escapeHtml(r.kind || '')}</span>
+        <div class="picks-main"><strong>${escapeHtml(r.label || r.type)}</strong> <span class="picks-sub">at ${escapeHtml(r.lakeName || r.spotId)}${r.spotPending ? ' (spot still in review)' : ''}</span>
+          <div class="picks-sub">Seen ${escapeHtml(r.seenOn || '')} &middot; ${r.creditName ? `by ${escapeHtml(r.creditName)}` : 'no name'} &middot; ${r.hasEmail ? 'has an email' : 'no email'} &middot; ${photo}</div>
+          ${r.note ? `<div class="picks-held">${escapeHtml(r.note)}</div>` : ''}
+          ${r.rejectionReason ? `<div class="picks-sub">Reason: ${escapeHtml(r.rejectionReason)}</div>` : ''}
+        </div>${acts}</div>`;
+  }).join('');
+  listEl.innerHTML = `<div class="picks-panel"><div class="picks-nav">${tabs}</div>${help}${rows || `<div class="submissions-empty">No ${escapeHtml(reportsData.status)} reports.</div>`}</div>`;
+}
+
+async function decideReport(id, decision, btn) {
+  let reason = '';
+  if (decision === 'remove' && !window.confirm('Take this report down? It stops showing, and its photo and the sender\'s details are deleted. This cannot be undone.')) return;
+  if (decision === 'reject') {
+    const answer = window.prompt('Reason (optional). It is emailed to the person who sent it, if they left an address, and shown on their Mapmakers page.', '');
+    if (answer === null) return;
+    reason = answer.trim();
+  }
+  btn.disabled = true;
+  try {
+    const res = await apiFetch(`/paddlingOut/admin/reports/${encodeURIComponent(id)}/${decision}`, { method: 'POST', body: JSON.stringify({ reason }) });
+    if (!res) throw new Error('Session expired. Please sign in again.');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Failed (${res.status})`);
+    showSuccess(decision === 'remove' ? 'Taken down.' : `${decision === 'approve' ? 'Approved: it shows on the spot page.' : 'Rejected.'} ${data.emailed ? 'The reporter has been emailed.' : 'No email on it, so nobody was told.'}`);
+    await loadReports(reportsStatus);
+  } catch (err) {
+    showError(err.message || 'Could not record the decision.');
     btn.disabled = false;
   }
 }
