@@ -91,7 +91,7 @@
       '<label class="spr-field"><span>A note <i>optional</i></span><textarea name="note" maxlength="280" rows="2" placeholder="Where exactly, and anything the next paddler should know."></textarea></label>' +
       '<label class="spr-field"><span>A photo <i>optional</i></span><input type="file" name="images" accept="image/*"></label>' +
       '<label class="spr-field"><span>Your name, shown with it <i>optional</i></span><input type="text" name="creditName" maxlength="40" autocomplete="nickname"></label>' +
-      '<label class="spr-field"><span>Your email <i>optional</i>: to follow it on your Mapmakers page</span><input type="email" name="email" autocomplete="email"></label>' +
+      '<label class="spr-field"><span>Your email <i>optional</i>: to follow it on your Scout page</span><input type="email" name="email" autocomplete="email"></label>' +
       '<p class="spr-fine">By sending, you confirm the photo is yours and let Kaayko show this report, its note and photo, the day and the name you give on Paddling Out. A person at Kaayko checks every report before it shows. <a href="/privacy#spot-reports">Privacy</a></p>' +
       '<div class="spr-actions"><button type="submit" class="spr-send">Send report</button><button type="button" class="spr-cancel" id="spr-cancel">Cancel</button></div>' +
       '<p class="spr-msg" id="spr-msg" aria-live="polite"></p></form>' +

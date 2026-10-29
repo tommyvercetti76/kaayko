@@ -1,4 +1,4 @@
-// kaay.link/m (Mapmakers, 28 Oct 2026): Firebase Hosting applies its own header
+// kaay.link/m (Kaayko Scouts, was Mapmakers, 28 Oct 2026): Firebase Hosting applies its own header
 // rules over a function's on 2xx/3xx answers, so the site-wide CSP ("form-action
 // 'self'", no Firebase Storage images) would stop the claim reaching Stripe and hide
 // every photo. The site-wide block must skip /m, and /m must carry the router's own

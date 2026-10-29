@@ -131,9 +131,9 @@
 
   <!-- Finding a lake and adding one are one job (3 Oct 2026): search; if we cover it,
        open it; if we do not, add it right here, with the name and the pin carried over. -->
-  <div class="lake-modes" role="tablist" aria-label="Find or add a lake">
+  <div class="lake-modes" role="tablist" aria-label="Find or add a spot">
     <button type="button" role="tab" id="mode-find" class="lake-mode" aria-selected="true" aria-controls="find-pane">Find a lake</button>
-    <button type="button" role="tab" id="mode-add" class="lake-mode" aria-selected="false" aria-controls="add-pane" tabindex="-1">Add a lake</button>
+    <button type="button" role="tab" id="mode-add" class="lake-mode" aria-selected="false" aria-controls="add-pane" tabindex="-1">Add a spot</button>
   </div>
   <script>
     // Pick the tab BEFORE first paint: deciding it in search.js painted Find, then
@@ -147,7 +147,7 @@
       var f = document.getElementById('mode-find'), a = document.getElementById('mode-add');
       f.setAttribute('aria-selected', 'false'); f.tabIndex = -1;
       a.setAttribute('aria-selected', 'true'); a.tabIndex = 0;
-      if (window.PoHeader) PoHeader.setTitle(document.documentElement.hasAttribute('data-lake-edit') ? 'Suggest an edit' : 'Add a lake');
+      if (window.PoHeader) PoHeader.setTitle(document.documentElement.hasAttribute('data-lake-edit') ? 'Suggest an edit' : 'Add a spot');
     })();
   </script>
   <main class="search-page" id="find-pane" role="tabpanel" aria-labelledby="mode-find">
@@ -225,7 +225,7 @@
     </div>
   </main>
   <section class="add-pane" id="add-pane" role="tabpanel" aria-labelledby="mode-add" hidden>
-    <!-- Add a lake, rebuilt 21 Oct 2026: one question per screen, one button.
+    <!-- Add a spot (was "Add a lake"), rebuilt 21 Oct 2026: one question per screen, one button.
          Photos → "Where do you put in?" (move the map under a fixed cross) →
          "Which water is this?" (USGS answers, one tap) → Sent. The server
          fills in town, county, state and country from the pin; the note,
@@ -250,7 +250,7 @@
         </label>
         <div class="al-thumbs" id="al-thumbs"></div>
         <p class="al-msg" id="al-photos-msg" aria-live="polite"></p>
-        <p class="al-fine al-maker-fine">Sign it at the end and your name goes on the lake. Each month we pick up to ten by hand. <a href="/paddlingout/mapmakers">Mapmakers</a></p>
+        <p class="al-fine al-maker-fine">Sign it at the end and your name goes on the spot. <a href="/paddlingout/scouts">Kaayko Scouts</a></p>
       </section>
 
       <!-- 2 · Where do you put in? -->
@@ -261,8 +261,8 @@
           <div id="al-map" class="al-map pp-map" aria-label="Map. Move it so the cross in the middle sits on the launch."></div>
           <div class="al-cross" aria-hidden="true"></div>
           <div class="al-mapbar">
-            <input id="al-search" type="search" placeholder="Search a lake or town" autocomplete="off" enterkeyhint="search"
-                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="al-search-list" aria-label="Search a lake, town or coordinates">
+            <input id="al-search" type="search" placeholder="Search a lake, river or town" autocomplete="off" enterkeyhint="search"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="al-search-list" aria-label="Search a lake, river, town or coordinates">
             <button type="button" class="al-gps" id="al-gps" aria-label="Go to my location" data-kicon-raw="gps"></button>
             <div class="search-suggest al-suggest" id="al-search-list" role="listbox" hidden></div>
           </div>
@@ -304,7 +304,7 @@
         </div>
         <label class="al-field"><span class="al-label">Email me when it&rsquo;s reviewed <i>optional</i></span><input id="al-e-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
         <p class="al-msg" id="al-edit-msg" aria-live="polite"></p>
-        <p class="al-fine">Public launches and your own photos only. To stop spam we keep a one-way hash of your IP, and your browser&rsquo;s user-agent and the page addresses as they are. An email also brings you a Mapmaker code to follow your entries at kaay.link/m. <a href="/privacy#lake-submissions">Privacy</a></p>
+        <p class="al-fine">Public launches and your own photos only. To stop spam we keep a one-way hash of your IP, and your browser&rsquo;s user-agent and the page addresses as they are. An email also brings you a Scout code to follow your entries at kaay.link/m. <a href="/privacy#lake-submissions">Privacy</a></p>
       </section>
 
       <!-- 4 · Sent -->
@@ -322,8 +322,8 @@
           <div class="al-maker">
             <h3 class="al-extras-h">Your name on the map <span>optional</span></h3>
             <label class="al-field"><span class="al-label">Shown as &ldquo;Added by&rdquo;</span><input id="al-name" type="text" maxlength="40" autocomplete="nickname" placeholder="First name or a nickname"></label>
-            <label class="al-tog al-tog--wide"><input type="checkbox" id="al-picks"> Put this lake up for the monthly picks</label>
-            <p class="al-fine al-maker-fine">Each month we pick up to ten new lakes by hand. The people who found them choose one piece from the Kaayko store under $25, free. 18 or older, US addresses. Needs your email, which also brings you a Mapmaker code to follow your lakes at kaay.link/m. <a href="/paddlingout/mapmakers" target="_blank" rel="noopener">How it works</a> &middot; <a href="/privacy#mapmaker-code" target="_blank" rel="noopener">Privacy</a></p>
+            <label class="al-tog al-tog--wide"><input type="checkbox" id="al-picks"> Put this spot up for the monthly picks</label>
+            <p class="al-fine al-maker-fine">Each month we pick up to ten new spots by hand. The people who found them choose one piece from the Kaayko store under $25, free. 18 or older, US addresses. Needs your email, which also brings you a Scout code to follow your spots at kaay.link/m. <a href="/paddlingout/scouts/rules" target="_blank" rel="noopener">The rules</a> &middot; <a href="/privacy#mapmaker-code" target="_blank" rel="noopener">Privacy</a></p>
           </div>
           <button type="submit" class="al-secondary" id="al-save">Save</button>
           <p class="al-msg" id="al-extras-msg" aria-live="polite"></p>
@@ -331,7 +331,7 @@
         <!-- Seen anything? Wildlife, a hazard, or whether paddling is allowed (components/SpotReports.js) -->
         <div class="al-reports" id="al-reports"></div>
         <div class="al-after">
-          <button type="button" class="al-primary" id="al-another">Add another lake</button>
+          <button type="button" class="al-primary" id="al-another">Add another spot</button>
           <button type="button" class="al-link" id="al-tomap">Back to the map</button>
         </div>
       </section>
@@ -351,7 +351,7 @@
   <footer class="site-footer">
     <nav aria-label="Footer">
       <a href="/paddlingout">Paddling Out</a>
-      <a href="/paddlingout/mapmakers">Mapmakers</a>
+      <a href="/paddlingout/scouts">Scouts</a>
       <a href="/paddlingout/methodology">Methodology</a>
       <a href="/about">About</a>
       <a href="/privacy">Privacy</a>
@@ -372,7 +372,7 @@
       <div class="tour-step"><span class="n">2</span><span class="t">Tap anywhere on the map to search there, or drag it and tap <b>&ldquo;Search this area&rdquo;</b>.</span></div>
       <div class="tour-step"><span class="n">3</span><span class="t">Tap any <b>pin</b> to open that lake&rsquo;s forecast.</span></div>
       <div class="tour-step"><span class="n">4</span><span class="t">Tap the <b>&hearts;</b> on a lake to save it &mdash; saved lakes show first everywhere.</span></div>
-      <div class="tour-step"><span class="n">5</span><span class="t">Not on the map yet? Tap <b>Add this lake</b> on a result, or the <b>Add a lake</b> tab &mdash; the name and pin come with you.</span></div>
+      <div class="tour-step"><span class="n">5</span><span class="t">Not on the map yet? Tap <b>Add this spot</b> on a result, or the <b>Add a spot</b> tab &mdash; the name and pin come with you.</span></div>
       <div class="tour-step"><span class="n">6</span><span class="t">Change units anytime in <b>Settings</b> &mdash; the gear, top-right.</span></div>
       <button type="button" class="tour-go" id="search-tour-go">Start exploring</button>
     </div>

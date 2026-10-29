@@ -11,7 +11,7 @@
  *
  * data-title    page title (default "Paddling Out"); data-eyebrow default "Kaayko"
  * data-back     href for the ‹ chevron; omit on the section home
- * data-current  which action is "here": search | mapmakers | settings | none ("submit" = search)
+ * data-current  which action is "here": search | scouts | settings | none ("submit" = search)
  * data-brand-href  where the title links (default "/paddlingout"; the home
  *                  page points at "/")
  *
@@ -24,7 +24,7 @@
     back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>',
     submit: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm1 8v3h-2v-3H8V8h3V5h2v3h3v2h-3z"/></svg>',
-    mapmakers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+    scouts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8-4.3-4.1 5.9-.9z"/></svg>',
     settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
   };
 
@@ -32,8 +32,8 @@
   // and if we do not cover the water, add it there with the name and pin carried.
   var ACTIONS = [
     { key: 'search',   href: '/paddlingout/search',      label: 'Find or add', aria: 'Find a lake, or add one', primary: true },
-    // Mapmakers (28 Oct 2026): names on lakes and the monthly picks.
-    { key: 'mapmakers', href: '/paddlingout/mapmakers',  label: 'Mapmakers', aria: 'Mapmakers: add a lake, get your name on it' },
+    // Kaayko Scouts (28 Oct 2026 as Mapmakers, renamed 29 Oct): names on spots and the monthly picks.
+    { key: 'scouts',    href: '/paddlingout/scouts',     label: 'Scouts',    aria: 'Kaayko Scouts: add a spot, get your name on it' },
     { key: 'settings', href: '/paddlingout/settings',    label: 'Settings', aria: 'Settings and saved lakes' }
   ];
 

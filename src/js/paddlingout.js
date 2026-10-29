@@ -6,7 +6,7 @@
  *   1) fetches spots (list vs single detail)
  *   2) orders favorites first + renders via PaddleCard in the user's chosen style
  *   3) re-renders instantly when the "Card style" preference changes (Settings)
- *   4) appends the "Add a lake" tile + inserts the footer year
+ *   4) appends the "Add a spot" tile + inserts the footer year
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener('kaayko:boattypechange', () => { if (spotId) fetchSingle(spotId); else fetchAll(); });
 
   //──────────────────────────────────────────────────────────────────────────────
-  // "Add a lake" tile — matches whichever card style is active
+  // "Add a spot" tile — matches whichever card style is active
   //──────────────────────────────────────────────────────────────────────────────
   function renderSubmitEntryCard(v) {
     const openSubmitPage = () => { window.location.href = "/paddlingout/search?mode=add"; };
@@ -168,10 +168,10 @@ document.addEventListener("DOMContentLoaded", () => {
       tile.className = "pcard-submit";
       tile.tabIndex = 0;
       tile.setAttribute("role", "link");
-      tile.setAttribute("aria-label", "Add a new lake to Paddling Out");
+      tile.setAttribute("aria-label", "Add a new spot to Paddling Out");
       tile.innerHTML =
         '<span class="plus" aria-hidden="true">+</span>' +
-        '<span class="t">Add a lake</span>' +
+        '<span class="t">Add a spot</span>' +
         '<span class="s">Sign it, or stay anonymous</span>';
       tile.addEventListener("click", openSubmitPage);
       tile.addEventListener("keydown", e => {
@@ -184,14 +184,14 @@ document.addEventListener("DOMContentLoaded", () => {
     card.className = "card submit-entry-card";
     card.tabIndex = 0;
     card.setAttribute("role", "link");
-    card.setAttribute("aria-label", "Add a new lake to Paddling Out");
+    card.setAttribute("aria-label", "Add a new spot to Paddling Out");
     card.innerHTML = `
       <div class="submit-entry-plus" aria-hidden="true">+</div>
       <div class="submit-entry-copy">
-        <span class="submit-entry-kicker">Kaayko Mapmakers</span>
-        <h2>Add a lake you know</h2>
-        <p>Photos and the pin where you put in. Your name can go on it, and each month we pick up to ten by hand. Anonymous is fine too.</p>
-        <span class="submit-entry-action">Add a lake</span>
+        <span class="submit-entry-kicker">Kaayko Scouts</span>
+        <h2>Add a spot you know</h2>
+        <p>A lake, a river, a beach or a launch point: photos and the pin where you put in. Your name can go on it, or leave it anonymous.</p>
+        <span class="submit-entry-action">Add a spot</span>
       </div>
     `;
     card.addEventListener("click", openSubmitPage);

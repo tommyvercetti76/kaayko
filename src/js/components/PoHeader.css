@@ -121,7 +121,7 @@
   .po-title { font-size: 1.4rem; }
 }
 
-/* Three actions since 28 Oct 2026 (Mapmakers). On the narrowest phones the
+/* Three actions since 28 Oct 2026 (Kaayko Scouts). On the narrowest phones the
    spacing gives way, never the 44 px tap targets, so the title and eyebrow
    keep one line each and the header stays as tall as it was. */
 @media (max-width: 380px) {

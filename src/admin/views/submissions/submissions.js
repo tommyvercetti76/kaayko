@@ -36,10 +36,10 @@ const FILTERS = [
   { key: 'pending',   label: 'Pending',  match: (s) => s === 'pending' || s === 'applying' },
   { key: 'validated', label: 'Approved', match: (s) => s === 'validated' },
   { key: 'rejected',  label: 'Rejected', match: (s) => s === 'rejected' },
-  // Mapmakers: the finder withdrew it in review, or asked and it was taken down.
+  // Kaayko Scouts: the finder withdrew it in review, or asked and it was taken down.
   { key: 'withdrawn', label: 'Withdrawn', match: (s) => s === 'withdrawn' || s === 'removed' },
   { key: 'all',       label: 'All',      match: () => true },
-  // Mapmakers monthly picks (28 Oct 2026): not a status, its own list.
+  // Kaayko Scouts monthly picks (28 Oct 2026): not a status, its own list.
   { key: 'picks',     label: 'Picks',    match: () => false, picks: true },
   // Reports from paddlers (29 Oct 2026): wildlife, hazards, access, with the day seen.
   { key: 'reports',   label: 'Reports',  match: () => false, reports: true },
@@ -282,7 +282,7 @@ async function approveEdit(id, card) {
 }
 
 async function reject(id, btn) {
-  const reason = window.prompt('Reason (optional). It is emailed to the person who sent it and shown on their Mapmakers page; leave blank to reject without one.');
+  const reason = window.prompt('Reason (optional). It is emailed to the person who sent it and shown on their Scout page; leave blank to reject without one.');
   if (reason === null) return; // user cancelled
 
   const card = btn.closest('.submission-card');
@@ -529,7 +529,7 @@ function submissionCard(sub) {
 }
 
 /**
- * Mapmakers (28 Oct 2026). The name the person asked to show is an editable box
+ * Kaayko Scouts (28 Oct 2026, named Mapmakers until 29 Oct). The name the person asked to show is an editable box
  * while the lake is pending — Approve publishes whatever it says, and an empty
  * box leaves the lake unnamed. After Approve it reads as it appears publicly.
  * Nobody is named who did not ask to be, so there is no box without a name.
@@ -551,7 +551,7 @@ function mapmakerLines(sub, id, status) {
       </div>`
     : '';
   const sendLink = sub.contactEmail
-    ? `<button type="button" class="btn btn-secondary sub-send-link" data-action="send-link" data-id="${jsAttr(id)}" title="Emails the finder a link to their Mapmakers page on kaay.link">Send their link</button>`
+    ? `<button type="button" class="btn btn-secondary sub-send-link" data-action="send-link" data-id="${jsAttr(id)}" title="Emails the finder a link to their Scout page on kaay.link">Send their link</button>`
     : '';
   const picks = (finder || sendLink ? `<div class="sub-amenities">${finder}${sendLink}</div>` : '') + takedown + samePersonFlag(sub);
   if (status === 'pending' && sub.creditName) {
@@ -589,7 +589,7 @@ async function decideTakedown(id, decision, btn) {
   if (decision === 'remove') {
     const sub = allSubmissions.find((s) => cardId(s) === id);
     const picked = (sub && (sub.pick || sub.mapmakerPickId)) || ((picksData && picksData.takedowns) || []).some((t) => t.id === id && t.picked);
-    if (!window.confirm(`Take ${name} off the map? Its photos and the finder's details on the entry and in the edit log are deleted, and the finder is emailed. This cannot be undone.${picked ? '\n\nThis lake has a Mapmakers pick. It is not withdrawn by this; withdraw it in Picks if it should be.' : ''}`)) return;
+    if (!window.confirm(`Take ${name} off the map? Its photos and the finder's details on the entry and in the edit log are deleted, and the finder is emailed. This cannot be undone.${picked ? '\n\nThis lake has a Kaayko Scouts pick. It is not withdrawn by this; withdraw it in Picks if it should be.' : ''}`)) return;
   } else {
     const answer = window.prompt(`Keep ${name} on the map? The finder is emailed; say why (sent to them):`, '');
     if (answer === null) return;
@@ -619,7 +619,7 @@ async function sendFinderLink(id, btn) {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `Failed (${res.status})`);
     if (data.sent === false) showError(`Not sent to ${data.to}: ${data.reason || 'try again tomorrow.'}`);
-    else showSuccess(`Sent a link to their Mapmakers page to ${data.to}.`);
+    else showSuccess(`Sent a link to their Scout page to ${data.to}.`);
   } catch (err) {
     showError(err.message || 'Could not send the link.');
   }
@@ -629,7 +629,7 @@ async function sendFinderLink(id, btn) {
 async function pickLake(id, btn) {
   const sub = allSubmissions.find((s) => cardId(s) === id);
   const name = mapmakerName(id);
-  if (!window.confirm(`Pick ${name} for this month's Mapmakers? This emails the finder a link to choose one store piece, free.`)) return;
+  if (!window.confirm(`Pick ${name} for this month's Scouts picks? This emails the finder a link to choose one store piece, free.`)) return;
   btn.disabled = true;
   try {
     const res = await apiFetch('/paddlingOut/admin/mapmakers/picks', { method: 'POST', body: JSON.stringify({ submissionId: id }) });
@@ -693,7 +693,7 @@ async function decideReport(id, decision, btn) {
   let reason = '';
   if (decision === 'remove' && !window.confirm('Take this report down? It stops showing, and its photo and the sender\'s details are deleted. This cannot be undone.')) return;
   if (decision === 'reject') {
-    const answer = window.prompt('Reason (optional). It is emailed to the person who sent it, if they left an address, and shown on their Mapmakers page.', '');
+    const answer = window.prompt('Reason (optional). It is emailed to the person who sent it, if they left an address, and shown on their Scout page.', '');
     if (answer === null) return;
     reason = answer.trim();
   }

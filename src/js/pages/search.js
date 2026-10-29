@@ -278,7 +278,7 @@
 
   // ── Find / Add: one page, two tabs (3 Oct 2026) ────────────────────────────
   // Searching for a lake and adding one are the same job. A result we do not
-  // cover becomes an "Add this lake" that opens the form here, filled in.
+  // cover becomes an "Add this spot" that opens the form here, filled in.
   var tabFind = $('mode-find'), tabAdd = $('mode-add');
   var findPane = $('find-pane'), addPane = $('add-pane');
   function setMode(mode, params, opts) {
@@ -379,7 +379,7 @@
       var bits = [b.type || 'Water', P.fmtDist(distKm) + (b.areaKm2 ? ' · ' + P.fmtArea(b.areaKm2) : '')];
       var row = window.PaddleCard.create({ id: '', title: b.name, subtitle: bits[1], paddleScore: null }, {
         variant: 'row', metaBits: bits, showFavorite: false, onOpen: function () { openForecast(b); },
-        actions: [{ label: 'Add this lake', title: 'Add it to Paddling Out: the name and pin carry over', onClick: function () { requestLake(b); } },
+        actions: [{ label: 'Add this spot', title: 'Add it to Paddling Out: the name and pin carry over', onClick: function () { requestLake(b); } },
                   { label: 'Open in Maps', icon: I ? I.get('pin') : 'Map', onClick: function () { window.open('https://www.google.com/maps/search/?api=1&query=' + b.lat + ',' + b.lng, '_blank', 'noopener'); } }]
       });
       row.style.animationDelay = (idx * 35) + 'ms';

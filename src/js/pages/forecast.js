@@ -600,15 +600,15 @@ window.addEventListener('kaayko:unitschange', () => {
   if (__lastLocInfo) renderLocationInfo(__lastLocInfo.location, __lastLocInfo.spot);
 });
 
-// Who added a lake that came from a paddler (Mapmakers, 28 Oct 2026). The API
+// Who added a spot that came from a paddler (Kaayko Scouts, 28 Oct 2026). The API
 // sends the name they chose and how many of their lakes are live, never who
 // they are; a curated spot has no `addedBy` and gets no row.
 function creditRow(spot) {
   const by = spot?.addedBy;
   if (!by) return '';
   const who = by.name ? esc(by.name) : 'A paddler';
-  const more = by.name && by.lakes > 1 ? ` <span class="loc-credit-count">&middot; ${Number(by.lakes)} lakes on Kaayko</span>` : '';
-  return `<div class="loc-row loc-credit"><span class="loc-label">Added by</span><span>${who}${more} <a class="loc-credit-link" href="/paddlingout/mapmakers">Mapmakers</a></span></div>`;
+  const more = by.name && by.lakes > 1 ? ` <span class="loc-credit-count">&middot; ${Number(by.lakes)} spots on Kaayko</span>` : '';
+  return `<div class="loc-row loc-credit"><span class="loc-label">Added by</span><span>${who}${more} <a class="loc-credit-link" href="/paddlingout/scouts">Scouts</a></span></div>`;
 }
 
 function renderLocationInfo(location, spot) {

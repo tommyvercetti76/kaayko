@@ -269,7 +269,7 @@
     if (S.point) { $('al-pin-sub').textContent = 'Move the map until the cross sits on the launch.'; return [S.point.lat, S.point.lng, 17]; }
     if (S.fix) { $('al-pin-sub').textContent = 'Your photo was taken here. Nudge the map if the launch is a few steps off.'; return [S.fix.lat, S.fix.lng, 17]; }
     if (S.handoff && S.handoff.lat != null) { $('al-pin-sub').textContent = 'Move the map until the cross sits on the shore where you put in.'; return [S.handoff.lat, S.handoff.lng, 15]; }
-    $('al-pin-sub').textContent = 'Search for the lake or a nearby town, or use your location. Then move the map until the cross sits on the launch.';
+    $('al-pin-sub').textContent = 'Search for the water or a nearby town, or use your location. Then move the map until the cross sits on the launch.';
     return null;
   }
   function enterPin() {
@@ -385,7 +385,7 @@
       if (picker) picker.map.setView([pos.coords.latitude, pos.coords.longitude], 17);
     }, function (err) {
       gpsBtn.classList.remove('is-busy');
-      say('al-pin-msg', err && err.code === 1 ? 'Location is off for this site. Search for the lake instead.' : 'Could not get your location. Search for the lake instead.', 'error');
+      say('al-pin-msg', err && err.code === 1 ? 'Location is off for this site. Search for the place instead.' : 'Could not get your location. Search for the place instead.', 'error');
     }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
   });
 
@@ -499,12 +499,12 @@
     if (!S.result || !S.result.token) return;
     var email = $('al-email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say('al-extras-msg', 'That email address does not look right.', 'error'); return; }
-    // Mapmakers: the name for "Added by" and the monthly-picks opt-in. The
+    // Kaayko Scouts: the name for "Added by" and the monthly-picks opt-in. The
     // server checks both again; the picks need an email to reach the person.
     var name = $('al-name').value.replace(/\s+/g, ' ').trim();
     var picks = $('al-picks').checked;
     if (name && name.length < 2) { say('al-extras-msg', 'Use at least 2 characters for your name.', 'error'); $('al-name').focus(); return; }
-    if (picks && !email) { say('al-extras-msg', 'Add your email so we can tell you if your lake is picked.', 'error'); $('al-email').focus(); return; }
+    if (picks && !email) { say('al-extras-msg', 'Add your email so we can tell you if your spot is picked.', 'error'); $('al-email').focus(); return; }
     var body = {
       token: S.result.token,
       parkingAvl: $('al-parking').checked ? 'Y' : 'N',
@@ -643,7 +643,7 @@
 
   // ── Entry ──────────────────────────────────────────────────────────────
   var started = false;
-  // ?picks=1 (the Mapmakers page's buttons): the monthly-picks box starts ticked,
+  // ?picks=1 (old Mapmakers links): the monthly-picks box starts ticked,
   // one tap fewer. It still needs the email before Save, like any other time.
   var picksPreset = false;
   window.KaaykoAddLake = {

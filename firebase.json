@@ -365,6 +365,11 @@
           "type": 301
         },
         {
+          "regex": "^/paddlingout/mapmakers(?:\\.html)?$",
+          "destination": "/paddlingout/scouts",
+          "type": 301
+        },
+        {
           "source": "/paddlingout/submitentry",
           "destination": "/paddlingout/search?mode=add",
           "type": 301
@@ -948,6 +953,11 @@
         {
           "source": "/card.html",
           "destination": "https://kaayko.com/",
+          "type": 301
+        },
+        {
+          "regex": "^/paddlingout/mapmakers(?:\\.html)?$",
+          "destination": "https://kaayko.com/paddlingout/scouts",
           "type": 301
         },
         {

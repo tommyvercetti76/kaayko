@@ -1,0 +1,129 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   /paddlingout/scouts and /paddlingout/scouts/rules — Kaayko Scouts (29 Oct 2026,
+   renamed from Mapmakers). One column of plain text in the order a first-time
+   reader asks: what is this, why me, what happens, what do I get. The photos are
+   Ambazari's own (1008 px wide), so on a wide screen the photo sits beside the
+   words instead of across the page.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.sc-page {
+  --sc-bg: #080808;
+  --sc-fg: #ede8df;
+  --sc-muted: rgba(237, 232, 223, 0.7);
+  --sc-gold: #b5935a;
+  --sc-gold-bright: #d9bd7b;
+  --sc-line: rgba(181, 147, 90, 0.22);
+  --sc-serif: 'Cormorant Garamond', Georgia, serif;
+  --sc-sans: 'Josefin Sans', Arial, sans-serif;
+  --sc-display: 'Bebas Neue', 'Josefin Sans', Arial, sans-serif;
+  --sc-clip: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  background: var(--sc-bg) !important;
+  color: var(--sc-fg);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+html.dark-theme { background: #080808; }
+.sc-page .theme-toggle-icon { display: none !important; }
+
+/* body is display:flex (sticky footer); min-width:0 lets main shrink on phones */
+.sc { width: 100%; min-width: 0; box-sizing: border-box; padding: 0 0 6rem; margin: 0; max-width: none; }
+.sc *, .sc *::before, .sc *::after { box-sizing: border-box; }
+
+/* ── Buttons and links ──────────────────────────────────────────────────── */
+.sc-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 1.6rem; text-decoration: none;
+  clip-path: var(--sc-clip);
+  background: linear-gradient(135deg, #e6cd8e, var(--sc-gold)); color: #141210;
+  font: 600 0.9rem var(--sc-sans); letter-spacing: 0.16em; text-transform: uppercase;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.sc-btn:hover { filter: brightness(1.07); }
+.sc-btn:active { transform: translateY(1px); }
+.sc-btn:focus-visible, .sc-ghost:focus-visible, .sc-link:focus-visible { outline: 2px solid var(--sc-gold-bright); outline-offset: 3px; }
+.sc-ghost, .sc-link {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.2rem;
+  color: var(--sc-fg); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(217, 189, 123, 0.6);
+  font: italic 1.12rem var(--sc-serif);
+}
+.sc-ghost:hover, .sc-link:hover { color: var(--sc-gold-bright); }
+.sc-eyebrow { margin: 0 0 0.5rem; font: 600 0.72rem var(--sc-sans); letter-spacing: 0.3em; text-transform: uppercase; color: var(--sc-gold-bright); }
+
+/* ── 1 · Hero: the photo, then the words; side by side when there is room ── */
+.sc-hero { max-width: 1080px; margin: 0 auto; }
+.sc-hero-media { position: relative; margin: 0; overflow: hidden; }
+.sc-hero-img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+.sc-hero-media::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 8, 8, 0) 60%, #080808 100%); pointer-events: none; }
+.sc-credit { position: absolute; z-index: 1; right: 0.9rem; top: 0.7rem; margin: 0; font: italic 0.82rem var(--sc-serif); color: rgba(255, 255, 255, 0.8); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); }
+.sc-hero-in { position: relative; z-index: 1; margin-top: -2.4rem; padding: 0 1.25rem; }
+.sc-h1 { margin: 0; max-width: 12ch; font: 400 clamp(2.9rem, 12.5vw, 5.6rem)/0.92 var(--sc-display); letter-spacing: 0.035em; color: #fff; }
+.sc-lede { margin: 0.9rem 0 1.3rem; max-width: 34rem; font: 400 clamp(1.14rem, 3.6vw, 1.32rem)/1.45 var(--sc-serif); color: rgba(237, 232, 223, 0.92); }
+.sc-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.2rem; }
+.sc-count { min-height: 1.6em; margin: 1rem 0 0; font: 600 0.7rem/1.6 var(--sc-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sc-gold-bright); }
+.sc-safety {
+  max-width: 34rem; margin: 0.8rem 0 0; padding: 0.8rem 1rem;
+  border-left: 3px solid var(--sc-gold-bright); background: rgba(181, 147, 90, 0.08);
+  font: 400 1.02rem/1.5 var(--sc-serif); color: rgba(237, 232, 223, 0.9);
+}
+.sc-safety strong { color: var(--sc-gold-bright); font-weight: 600; }
+@media (min-width: 900px) {
+  .sc-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: center; gap: 3rem; padding: 2.5rem 1.5rem 0; }
+  .sc-hero-media { order: 2; clip-path: var(--sc-clip); }
+  .sc-hero-media::after { display: none; }
+  .sc-hero-in { margin: 0; padding: 0; }
+}
+
+/* ── Bands of text ──────────────────────────────────────────────────────── */
+.sc-band { max-width: 720px; margin: 0 auto; padding: 3rem 1.25rem 0; scroll-margin-top: 4rem; }
+.sc-h2 { margin: 0 0 0.8rem; font: 400 clamp(2rem, 7vw, 2.8rem)/1 var(--sc-display); letter-spacing: 0.04em; color: var(--sc-fg); }
+.sc-h3 { margin: 1.8rem 0 0.8rem; font: 600 0.82rem var(--sc-sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sc-gold-bright); }
+.sc-p { margin: 0 0 1rem; font: 400 1.14rem/1.6 var(--sc-serif); color: rgba(237, 232, 223, 0.9); }
+.sc-p em, .sc-looks em { color: var(--sc-fg); }
+.sc-when { color: var(--sc-gold-bright); font-style: italic; }
+
+/* The one real example */
+.sc-example { margin: 1.4rem 0 1.4rem; }
+.sc-example a:first-child { display: block; clip-path: var(--sc-clip); overflow: hidden; }
+.sc-example img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.6s cubic-bezier(.2, .7, .2, 1); }
+.sc-example a:first-child:hover img, .sc-example a:first-child:focus-visible img { transform: scale(1.04); }
+.sc-example a:first-child:focus-visible { outline: 2px solid var(--sc-gold-bright); outline-offset: 2px; }
+.sc-example figcaption { margin-top: 0.7rem; font: italic 1.06rem/1.5 var(--sc-serif); color: var(--sc-muted); }
+.sc-example figcaption b { font-style: normal; font-weight: 600; color: var(--sc-fg); }
+.sc-example figcaption a { display: flex; align-items: center; width: max-content; min-height: 44px; color: var(--sc-gold-bright); }
+
+/* What we look for */
+.sc-looks { display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.sc-looks li {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 0.8rem; row-gap: 0.1rem;
+  padding: 0.85rem 1rem; border: 1px solid var(--sc-line); background: rgba(255, 255, 255, 0.015);
+}
+.sc-look-i { grid-row: 1 / span 2; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--sc-gold-bright); background: rgba(181, 147, 90, 0.1); clip-path: var(--sc-clip); font-size: 1.15rem; }
+.sc-looks b { font: 600 0.78rem var(--sc-sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--sc-fg); align-self: end; }
+.sc-looks span:not(.sc-look-i) { font: 400 1.04rem/1.45 var(--sc-serif); color: rgba(237, 232, 223, 0.82); }
+
+/* ── Dock: one tap to the form, always ──────────────────────────────────── */
+.sc-dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+  padding: 0.7rem max(1rem, env(safe-area-inset-right)) calc(0.7rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: linear-gradient(180deg, rgba(8, 8, 8, 0), rgba(8, 8, 8, 0.92) 28%, #080808);
+  transform: translateY(110%); transition: transform 0.28s cubic-bezier(.2, .7, .2, 1);
+}
+.sc-dock[hidden] { display: flex; visibility: hidden; }
+.sc-dock.is-on { transform: none; visibility: visible; }
+.sc-dock-t { font: italic 1.02rem var(--sc-serif); color: var(--sc-muted); }
+.sc-dock .sc-btn { flex: 0 0 auto; min-height: 48px; }
+@media (max-width: 380px) { .sc-dock-t { display: none; } .sc-dock .sc-btn { flex: 1 1 auto; } }
+@media (min-width: 900px) { .sc-dock { left: auto; right: 1.5rem; bottom: 1.5rem; padding: 0.6rem 0.6rem 0.6rem 1.2rem; background: rgba(12, 11, 9, 0.92); border: 1px solid var(--sc-line); clip-path: var(--sc-clip); } }
+
+/* ── The rules page (/paddlingout/scouts/rules) ─────────────────────────── */
+.sc-doc { max-width: 720px; margin: 0 auto; padding: 2.4rem 1.25rem 5rem; }
+.sc-doc .sc-h1 { max-width: none; font-size: clamp(2.6rem, 10vw, 4rem); }
+.sc-meta { margin: 0.7rem 0 2rem; font: italic 1.02rem/1.5 var(--sc-serif); color: var(--sc-muted); }
+.sc-doc h2 { margin: 2rem 0 0.5rem; font: 600 0.84rem var(--sc-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--sc-gold-bright); scroll-margin-top: 4rem; }
+.sc-doc p { margin: 0 0 0.9rem; font: 400 1.1rem/1.6 var(--sc-serif); color: rgba(237, 232, 223, 0.9); }
+.sc-doc a { color: var(--sc-gold-bright); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-example img, .sc-dock { transition: none; }
+}

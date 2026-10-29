@@ -43,7 +43,7 @@ const SETS = {
   // Anything under Paddling Out: stay in the paddling context.
   paddling: [
     ['/paddlingout', 'Paddling Out'],
-    ['/paddlingout/mapmakers', 'Mapmakers'],
+    ['/paddlingout/scouts', 'Scouts'],
     ['/paddlingout/methodology', 'Methodology'],
     ['/about', 'About'],
     ['/privacy', 'Privacy'],
@@ -96,7 +96,8 @@ const PAGES = {
   'paddlingout.html': 'paddling',
   'paddlingout/search.html': 'paddling',
   'paddlingout/methodology.html': 'paddling',
-  'paddlingout/mapmakers.html': 'paddling',
+  'paddlingout/scouts.html': 'paddling',
+  'paddlingout/scouts/rules.html': 'paddling',
   'paddlingout/rate.html': 'paddling',
   'paddlingout/forecast.html': 'paddling',
 

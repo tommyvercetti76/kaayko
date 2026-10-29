@@ -80,7 +80,7 @@
 - `kaayko/src/js/components/PoHeader.js` — the one page header
 - `kaayko/src/css/tokens.css` — the only token sheet; `css/po-system.css` — chamfers + field styles (po-tokens.css was folded into these); `css/search.css` — search layout (map panel pinned only on screens ≥700 px tall)
 - `kaayko/src/js/pages/search.js` — Find tab; `js/pages/addlake.js` + `css/addlake.css` — Add a lake + Suggest an edit
-- `kaayko/src/paddlingout/mapmakers.html` + `css/mapmakers.css` + `js/pages/mapmakers.js` — /paddlingout/mapmakers: Mapmakers (HD lake photos in `assets/mapmakers/`, live rail of community lakes from GET /paddlingOut, real counts, days to the first picks, folded #rules, a dock that keeps "Add a lake" one tap away). Linked from the PoHeader star on every Paddling Out page, the paddling footer set, About, Privacy, the list's Add tile and the Add flow. `?mode=add&picks=1` pre-ticks the picks box. `kaayko-api/functions/api/weather/contributors.js` — contributor id, name rules, live-lake count, and the reviewer-only "maybe the same person" (`sameSource` stored at submit, `samePerson` on GET /admin/submissions: same email > same network + browser > same network) (28 Oct 2026)
+- `kaayko/src/paddlingout/scouts.html` + `scouts/rules.html` + `css/scouts.css` + `js/pages/scouts.js` — /paddlingout/scouts: Kaayko Scouts (29 Oct 2026; was Mapmakers, `/paddlingout/mapmakers` 301s here). Ambazari photos in `assets/scouts/`; live count "N spots, M in India" from GET /paddlingOut (India = subtitle ends ", India"); days to the first picks; the rules on their own page. Internal names (`mapmaker_*` collections, `services/mapmakers.js`, `/admin/mapmakers/*` routes, kaay.link/m) stay as they were
 - `kaayko/src/js/services/apiClient.js` — fetch wrapper with fallback generation + caching
 - `kaayko/src/js/components/RatingHero.js` — paddle score display
 - `kaayko/src/js/components/SafetyWarnings.js` — safety alerts
@@ -89,7 +89,7 @@
 **APIs used:**
 ```
 GET  /api/paddlingOut                          → all PUBLIC paddle spots + cached scores (+ `addedByName` on a community lake) (no `tags`: removed 13 Oct 2026, schema in kaayko-api `spotSchema.js`)
-GET  /api/paddlingOut/{id}                    → single spot detail (404 if hidden); `addedBy` {name, lakes} on a community lake (null on curated) — Mapmakers, contributors.js
+GET  /api/paddlingOut/{id}                    → single spot detail (404 if hidden); `addedBy` {name, lakes} on a community lake (null on curated) — Kaayko Scouts, contributors.js
 GET  /api/paddlingOut/geocode?q=              → cached Nominatim forward proxy
 GET  /api/paddlingOut/reverse-geocode?lat=&lng= → cached Nominatim reverse → {city,region,country,water}
 GET  /api/paddlingOut/locate?lat=&lng=        → water near the pin (USGS NHD, ranked by distance to shore; inside/edgeM) + place (Census TIGERweb: town, county, state); OSM/HydroLAKES outside the US (spotLocate.js)
@@ -99,7 +99,7 @@ POST /api/paddlingOut/spots/{id}/suggest      → suggested edit to a live spot 
 --- platform admin only (requireAuth + requireAdmin + requirePlatformAdmin; the X-Admin-Key way in was removed 3 Oct 2026) ---
 GET  /api/paddlingOut/admin/submissions       → review queue, new lakes and edits (+ possibleDuplicateOf, place/water sources; edits carry proposed + live)
 POST /api/paddlingOut/admin/submissions/{id}/validate → new: publish; refuses an incomplete spot (spotSchema.publicSpotProblems); water type from pick/USGS/hint/name; warms score inline; body `creditName` (the review card's box) → spot `addedBy`, submission `contributorId` (HMAC of the normalised email) + links that person's earlier lakes. edit: body {fields:[…]} applies only those changes, copies ticked photos in under the spot's naming rule, audits
-kaay.link/m, /m/<token>, /m/home, /m/pick/{id}[/piece/{productId}|/claim], /m/claimed, /m/lake/{id}/{action} → the finder's own page: sign in with email + Mapmaker code or an emailed link; follow, opt in/out of picks, take name off, withdraw (in review) or ask to take down (live); choose a store piece and claim it at $0 via Stripe Checkout (api/kortex/mapmakerRouter.js + mapmakerPages.js → services/mapmakers.js, services/mapmakerPicks.js)
+kaay.link/m, /m/<token>, /m/home, /m/pick/{id}[/piece/{productId}|/claim], /m/claimed, /m/lake/{id}/{action} → the finder's own page: sign in with email + Scout code (SC-…; MK-… codes from before the rename still read) or an emailed link; follow, opt in/out of picks, take name off, withdraw (in review) or ask to take down (live); choose a store piece and claim it at $0 via Stripe Checkout (api/kortex/mapmakerRouter.js + mapmakerPages.js → services/mapmakers.js, services/mapmakerPicks.js)
 POST /api/paddlingOut/spots/{id}/reports → a report from a paddler (multipart: kind, type, seenOn, note?, creditName?, email?, 1 photo, token for a spot still in review) → spot_reports; GET same path → approved reports from the last year + the vocabulary (components/SpotReports.js on the spot page and at the end of Add a spot)
 GET /api/paddlingOut/admin/reports?status= · POST /api/paddlingOut/admin/reports/{id}/approve|reject → Kortex → Submissions → Reports (platform admin)
 POST /api/paddlingOut/admin/mapmakers/send-link {submissionId} → Kortex "Send their link" (platform admin)

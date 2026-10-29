@@ -311,7 +311,7 @@ async function main() {
         if (!r.add || r.find) p.push('the Add tab is not the one showing');
         if (r.title !== 'Add a lake') p.push(`header says "${r.title}"`);
         if (r.step !== 'photos' || r.next !== 'Add photos') p.push(`first screen is "${r.step}" with button "${r.next}"`);
-        if (r.actions !== 3) p.push(`header has ${r.actions} actions, expected Find-or-add + Mapmakers + Settings`);
+        if (r.actions !== 3) p.push(`header has ${r.actions} actions, expected Find-or-add + Scouts + Settings`);
         // A photo moves it on; the map opens where Find left off (the hand-off).
         const pin = await ev(`(async () => {
           const c = document.createElement('canvas'); c.width = 320; c.height = 240; c.getContext('2d').fillRect(0, 0, 320, 240);
@@ -345,24 +345,47 @@ async function main() {
       }, { settle: 7000 });
 
       // ── 5. Stories
-      // ── 4c. Mapmakers (28 Oct 2026): the photo loads, the rail shows every lake
-      //    paddlers added (as the API lists them), the counts match, and every
-      //    "Add a lake" opens the form with the picks box ticked.
-      await checkPage(b.port, 'mapmakers', `${BASE}/paddlingout/mapmakers`, view, async (ev) => {
-        const r = await ev(`({ hero: (document.querySelector('.mm-hero-img') || {}).naturalWidth || 0, lakes: document.querySelectorAll('.mm-lake:not(.mm-lake--you):not(.mm-lake--skel)').length, you: !!document.querySelector('.mm-lake--you a'), stats: (document.getElementById('mm-stats') || {}).textContent || '', adds: [...document.querySelectorAll('a.mm-btn')].map(a => a.getAttribute('href')), star: !!document.querySelector('.po-btn--mapmakers.is-current'), rules: document.querySelectorAll('#rules details').length })`);
+      // ── 4c. Kaayko Scouts (29 Oct 2026, was Mapmakers): the old address 301s
+      //    here; the page answers what / why / what next / what you get in that
+      //    order, with the safety line before the first of them; both photos load;
+      //    the live count matches the API; every "Add a spot" opens the plain form.
+      await checkPage(b.port, 'scouts', `${BASE}/paddlingout/scouts`, view, async (ev) => {
+        const r = await ev(`(() => { const safe = document.querySelector('.sc-safety'), h2 = document.querySelector('.sc-h2');
+          return { hero: (document.querySelector('.sc-hero-img') || {}).naturalWidth || 0,
+            example: (document.querySelector('.sc-example img') || {}).naturalWidth || 0,
+            count: (document.getElementById('sc-count') || {}).textContent || '',
+            adds: [...document.querySelectorAll('a.sc-btn')].map(a => a.getAttribute('href')),
+            star: !!document.querySelector('.po-btn--scouts.is-current'),
+            safetyFirst: !!(safe && h2 && (safe.compareDocumentPosition(h2) & Node.DOCUMENT_POSITION_FOLLOWING)),
+            heads: [...document.querySelectorAll('.sc-h2')].map(h => h.textContent.trim()),
+            rules: (document.querySelector('a.sc-link[href="/paddlingout/scouts/rules"]') || null) !== null,
+            words: document.querySelector('main').innerText.split(/\s+/).filter(Boolean).length }; })()`);
         const api = await fetch(`${BASE}/api/paddlingOut`).then(x => x.json()).catch(() => null);
-        const want = Array.isArray(api) ? api.filter(s => s.communitySubmission).length : null;
+        const old = await fetch(`${BASE}/paddlingout/mapmakers`, { redirect: 'manual' }).catch(() => null);
         const p = [];
         if (!r.hero) p.push('the hero photo did not load');
-        if (want === null) p.push('could not read the API to compare lakes');
-        else if (r.lakes !== want) p.push(`${r.lakes} lakes on the rail, API lists ${want} added by paddlers`);
-        if (Array.isArray(api) && !r.stats.includes(`${api.length}lakes on the map`)) p.push(`counts say "${r.stats}"`);
-        if (!r.you) p.push('no "Your lake here" card');
-        if (!r.adds.length || r.adds.some(h => h !== '/paddlingout/search?mode=add&picks=1')) p.push(`Add buttons go to ${r.adds.join(', ')}`);
+        if (!r.example) p.push('the Ambazari example photo did not load');
+        if (!Array.isArray(api)) p.push('could not read the API to compare counts');
+        else {
+          const india = api.filter(s => /,\s*India$/.test(String(s.subtitle || ''))).length;
+          const want = `On the map today: ${api.length} ${api.length === 1 ? 'spot' : 'spots'}, ${india} in India.`;
+          if (r.count !== want) p.push(`count says "${r.count}", API says "${want}"`);
+        }
+        if (!r.adds.length || r.adds.some(h => h !== '/paddlingout/search?mode=add')) p.push(`Add buttons go to ${r.adds.join(', ')}`);
         if (!r.star) p.push('the header star is not marked current');
-        if (r.rules !== 10) p.push(`${r.rules} rules, expected 10`);   // 10 since "Your Mapmakers page" (28 Oct 2026)
+        if (!r.safetyFirst) p.push('the safety line is not above the first section');
+        const order = ['What the score can’t see', 'What happens next', 'A thank-you'];
+        if (r.heads.join('|') !== order.join('|')) p.push(`sections are ${r.heads.join(' / ')}`);
+        if (!r.rules) p.push('no link to the rules page');
+        if (r.words > 450) p.push(`${r.words} words on the page; the brief asked for about a quarter of the old 1,129`);
+        if (!old || old.status !== 301 || !/\/paddlingout\/scouts$/.test(old.headers.get('location') || '')) p.push(`/paddlingout/mapmakers answered ${old ? old.status + ' ' + (old.headers.get('location') || '') : 'nothing'}, not a 301 to /paddlingout/scouts`);
         return p;
       }, { settle: 5000 });
+
+      await checkPage(b.port, 'scouts rules', `${BASE}/paddlingout/scouts/rules`, view, async (ev) => {
+        const n = await ev(`document.querySelectorAll('.sc-doc h2').length`);
+        return n === 10 ? [] : [`${n} rules, expected 10`];
+      });
 
       await checkPage(b.port, 'stories', `${BASE}/stories`, view, async (ev) =>
         (await ev('document.querySelectorAll(".cover-wrap").length')) >= 1 ? [] : ['no story covers on the shelf']);

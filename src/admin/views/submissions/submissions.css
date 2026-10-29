@@ -318,7 +318,7 @@
   color: var(--text-muted);
 }
 
-/* Mapmakers (28 Oct 2026): the name on the lake + the monthly-picks opt-in */
+/* Kaayko Scouts (28 Oct 2026): the name on the lake + the monthly-picks opt-in */
 .sub-credit-input {
   min-height: 40px;
   max-width: 320px;
@@ -457,7 +457,7 @@
   .sub-change-arrow { display: none; }
 }
 
-/* ── Mapmakers picks (28 Oct 2026): the Pick control and the Picks tab ── */
+/* ── Kaayko Scouts picks (28 Oct 2026): the Pick control and the Picks tab ── */
 .picks-panel { grid-column: 1 / -1; min-width: 0; }
 .sub-pick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
 .sub-pick select { min-height: 40px; padding: 6px 10px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); background: var(--bg-input, transparent); color: var(--text-primary); font: inherit; }
