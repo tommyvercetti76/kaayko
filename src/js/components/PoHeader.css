@@ -101,7 +101,7 @@
 /* Primary action: Add a lake — solid gold, square */
 .po-btn--primary { padding: 0 0.9rem 0 0.7rem; background: var(--poh-gold-bright); color: #141210; }
 .po-btn--primary:hover { background: #e6cd8e; color: #141210; }
-.po-btn--primary.is-current { box-shadow: none; background: var(--poh-gold); }
+.po-btn--primary.is-current { box-shadow: none; background: var(--poh-gold); color: #141210; }   /* .po-btn.is-current made the label gold on gold, 1.6:1 (axe, 30 Oct 2026) */
 
 /* Back chevron — plain */
 .po-back { width: 44px; padding: 0; justify-content: center; }
