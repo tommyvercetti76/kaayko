@@ -91,7 +91,7 @@ Agents: identify the page here, then look up the module in MODULE-MAP.md for ful
 |-----|------|
 | `/` | `src/index.html` → `js/pages/card.js` — the card (it was `/card` until 22 Oct 2026; `/card` and `/card.html` now 301 to `/`, and on kaay.store to `https://kaayko.com/`). `window.KaaykoCard.start()/stop()`; card modules carry `?v=` stamps, re-run `npm run stamp` when they change |
 | `/archive/home-2026` | `src/archive/home-2026.html` → `js/pages/home-entrance.js` + `js/pages/index.js` — the split landing that was `/` until 22 Oct 2026, kept unlinked and `noindex` (not served on kaay.store) |
-| `/paddlingout` | `src/paddlingout.html` |
+| `/paddlingout` | `src/paddlingout.html` + `src/js/pages/po-list.js` + `src/css/po-list.css` (HUD list, 30 Oct 2026) |
 | `/paddlingout/forecast?id=` | `src/paddlingout/forecast.html` → `js/pages/forecast.js` (all page logic; lake-local time from `js/services/spotTime.js`; API shapes in `js/contracts/paddling.js`). The Spot card's first row is "Added by" on a community lake (`creditRow`) |
 | `/paddlingout/scouts` | `src/paddlingout/scouts.html` — Kaayko Scouts (renamed from Mapmakers 29 Oct 2026; `/paddlingout/mapmakers` 301s here, `#rules` goes on to the rules page). Cut 30 Oct 2026 to ~140 words for every paddler, no one market named: what it is + Add a spot, the safety line, what we look for, the monthly thank-you. `js/pages/scouts.js` only runs the dock |
 | `/paddlingout/scouts/rules` | `src/paddlingout/scouts/rules.html` — the Kaayko Scouts rules (10 sections, static; Terms/Returns/Shipping/Kortex terms link here) |

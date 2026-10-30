@@ -71,7 +71,8 @@
 - Video: a still until played, then the YouTube privacy-mode player in the same frame (`www.youtube-nocookie.com`, allowed in the hosting CSP frame-src)
 
 **JS files (paddlingout):**
-- `kaayko/src/js/paddlingout.js` — list page controller (stale-while-revalidate list cache)
+- `kaayko/src/js/pages/po-list.js` + `src/css/po-list.css` — the list page since 30 Oct 2026 (HUD cards: verdict chip from the half-point rating, best 3-hour daylight window today/tomorrow at the lake's clock, single-day heat strip; tap opens photos + hour readout + one link to `forecast?id=…#heatmapContainer`; search, sort, region/water chips, dead ends hand off to map search or Add). Two requests: `/paddlingOut`, then `/fastForecast/list`
+- `kaayko/src/js/paddlingout.js` — the OLD list controller; no page loads it since 30 Oct 2026 (kept only for `tests/paddlingoutListCache.test.mjs`)
 - `kaayko/src/js/pages/search.js` — Search controller: one `state`, one `render()`; map is the input (tap / type / locate)
 - `kaayko/src/js/util.js` — `KaaykoUtil`: escapeHtml, debounce, haversineKm, num, fetchJson, apiBase (the ONLY copies)
 - `kaayko/src/js/services/geo.js` — `KaaykoGeo`: forward / suggest / reverse geocode via the API proxies, memoised, abortable
@@ -115,7 +116,8 @@ POST /api/paddlingOut/admin/fact-proposals/{id}/approve|reject → approve write
 POST /api/paddlingOut/admin/spots/{id}/images (multipart) / DELETE …/images?path=  → photo add/remove (ownership-checked)
 POST /api/paddlingOut/admin/spots/{id}/warm-score → recompute cached score now
 GET  /api/paddleScore?location={lat},{lon}    → ML score for custom location
-GET  /api/fastForecast?lat=&lng=              → cached weather (free); location.timeZone = the lake's IANA zone (contract: src/js/contracts/paddling.js)
+GET  /api/fastForecast?lat=&lng=              → cached weather (free); location.timeZone = the lake's IANA zone (contract: src/js/contracts/paddling.js); `&view=list` = compact hours (~25 KB not ~110 KB)
+GET  /api/fastForecast/list?spotIds=a,b,…      → {spots: {id: list view}} for ≤40 known spots in ONE request (the list page; one call per lake hit the 120/10 min limit)
 GET  /api/forecast?location=...               → premium on-demand weather
 GET  /api/nearbyWater?lat=&lon=               → find nearby lakes/rivers
 GET  /api/valentine                            → valentine campaign data
