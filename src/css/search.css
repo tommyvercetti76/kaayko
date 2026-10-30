@@ -300,7 +300,7 @@
     @media (max-width: 600px) {
       .po-page-header { padding: 1.4rem 1.1rem 1rem; }
       .po-title { font-size: 1.4rem; }
-      main.search-page { padding: 1.5rem 1rem 4rem; }
+      .search-page { padding: 1.5rem 1rem 4rem; }
       .btn-map { display: none; }
       .btn-request-lake { padding: 0 9px; }
     }
@@ -394,6 +394,9 @@
 /* ── Find / Add: one page, two tabs (3 Oct 2026) ─────────────────────────── */
 /* .search-page sets display:grid, which beats the UA's [hidden] rule. */
 .search-page[hidden], .add-pane[hidden] { display: none !important; }
+/* The one main landmark around both panes (30 Oct 2026): no box of its own, so the
+   panes lay out exactly as they did as children of body. */
+main.search-main { flex: 1; padding: 0; display: flex; flex-direction: column; min-width: 0; width: 100%; }
 /* first paint of ?mode=add, before search.js runs (set by an inline script) */
 html[data-lake-mode="add"] #find-pane { display: none !important; }
 html[data-lake-mode="add"] #add-pane[hidden] { display: block !important; }
@@ -417,7 +420,7 @@ html[data-lake-mode="add"] .tour-help { display: none !important; }
 @media (min-width: 900px) {
   .lake-modes { padding-left: 2rem; padding-right: 2rem; }
   /* the tab row (45px) sits between the header and the sticky panel */
-  .lake-modes ~ .search-page .search-panel { height: calc(100vh - 155px); }
+  .lake-modes ~ .search-main .search-page .search-panel { height: calc(100vh - 155px); }
 }
 
 /* ── Phone audit fixes (21 Oct 2026) ───────────────────────────────────────

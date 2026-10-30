@@ -24,7 +24,7 @@
 .al-steps li {
   white-space: nowrap;
   font: 600 0.68rem var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(237, 232, 223, 0.42); display: flex; align-items: center; gap: 0.4rem;
+  color: var(--muted); display: flex; align-items: center; gap: 0.4rem;   /* 0.42 alpha read 3.5:1 at this size (axe, 30 Oct 2026) */
 }
 .al-steps li::before { content: ''; width: 7px; height: 7px; border-radius: 50%; border: 1px solid currentColor; }
 .al-steps li.is-done { color: var(--gold); }

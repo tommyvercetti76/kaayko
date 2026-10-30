@@ -150,7 +150,8 @@
       if (window.PoHeader) PoHeader.setTitle(document.documentElement.hasAttribute('data-lake-edit') ? 'Suggest an edit' : 'Add a spot');
     })();
   </script>
-  <main class="search-page" id="find-pane" role="tabpanel" aria-labelledby="mode-find">
+  <main class="search-main">
+  <div class="search-page" id="find-pane" role="tabpanel" aria-labelledby="mode-find">
     <!-- Sticky panel: the search bar and the map. The map is the input. -->
     <div class="search-panel" id="search-panel">
       <div class="search-bar-row">
@@ -223,7 +224,7 @@
         </p>
       </section>
     </div>
-  </main>
+  </div>
   <section class="add-pane" id="add-pane" role="tabpanel" aria-labelledby="mode-add" hidden>
     <!-- Add a spot (was "Add a lake"), rebuilt 21 Oct 2026: one question per screen, one button.
          Photos → "Where do you put in?" (move the map under a fixed cross) →
@@ -258,7 +259,7 @@
         <h2 class="al-h" id="al-h-pin" tabindex="-1">Where do you put in?</h2>
         <p class="al-sub" id="al-pin-sub">Move the map until the cross sits on the launch.</p>
         <div class="al-mapwrap">
-          <div id="al-map" class="al-map pp-map" aria-label="Map. Move it so the cross in the middle sits on the launch."></div>
+          <div id="al-map" class="al-map pp-map" role="region" aria-label="Map. Move it so the cross in the middle sits on the launch."></div>
           <div class="al-cross" aria-hidden="true"></div>
           <div class="al-mapbar">
             <input id="al-search" type="search" placeholder="Search a lake, river or town" autocomplete="off" enterkeyhint="search"
@@ -347,6 +348,7 @@
       <input class="al-hp" type="text" id="al-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
     </div>
   </section>
+  </main>
 
   <footer class="site-footer">
     <nav aria-label="Footer">
