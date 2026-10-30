@@ -292,8 +292,8 @@
     else document.documentElement.removeAttribute('data-lake-mode');
     tabFind.setAttribute('aria-selected', String(!add)); tabAdd.setAttribute('aria-selected', String(add));
     tabFind.tabIndex = add ? -1 : 0; tabAdd.tabIndex = add ? 0 : -1;
-    if (window.PoHeader) window.PoHeader.setTitle(add ? 'Add a lake' : 'Find a lake');
-    document.title = (add ? 'Add a Lake' : 'Find Kayak & Paddle Spots Near You') + ' | Kaayko Paddling Out';
+    if (window.PoHeader) window.PoHeader.setTitle(add ? 'Add a spot' : 'Find a lake');
+    document.title = (add ? 'Add a Spot' : 'Find Kayak & Paddle Spots Near You') + ' | Kaayko Paddling Out';
     if (add && window.KaaykoAddLake) window.KaaykoAddLake.show(params || null);
     if (!add && picker) picker.invalidate();   // a map built while hidden measured 0x0
     if (!(opts && opts.keepUrl)) {
@@ -362,7 +362,7 @@
           ? 'You are on it \u2014 add it and it goes in the map for everyone. The name and the pin carry over.'
           : 'Try a larger lake name, a nearby city, or drag the pin somewhere else.') + '</p>' +
         '<button class="btn-request-lake" type="button" data-action="request">' +
-        (typed ? 'Add ' + U.escapeHtml(typed) : 'Add a lake here') + '</button></div>';
+        (typed ? 'Add ' + U.escapeHtml(typed) : 'Add a spot here') + '</button></div>';
       return;
     }
     var n = state.bodies.length;

@@ -109,12 +109,14 @@ html.dark-theme { background: #080808; }
   background: linear-gradient(180deg, rgba(8, 8, 8, 0), rgba(8, 8, 8, 0.92) 28%, #080808);
   transform: translateY(110%); transition: transform 0.28s cubic-bezier(.2, .7, .2, 1);
 }
-.sc-dock[hidden] { display: flex; visibility: hidden; }
-.sc-dock.is-on { transform: none; visibility: visible; }
+/* Off screen it is also hidden from the keyboard and screen readers; visibility waits
+   for the slide out to finish before it goes. */
+.sc-dock[hidden], .sc-dock:not(.is-on) { display: flex; visibility: hidden; transition: transform 0.28s cubic-bezier(.2, .7, .2, 1), visibility 0s linear 0.28s; }
+.sc-dock.is-on { transform: none; visibility: visible; transition: transform 0.28s cubic-bezier(.2, .7, .2, 1), visibility 0s; }
 .sc-dock-t { font: italic 1.02rem var(--sc-serif); color: var(--sc-muted); }
 .sc-dock .sc-btn { flex: 0 0 auto; min-height: 48px; }
 @media (max-width: 380px) { .sc-dock-t { display: none; } .sc-dock .sc-btn { flex: 1 1 auto; } }
-@media (min-width: 900px) { .sc-dock { left: auto; right: 1.5rem; bottom: 1.5rem; padding: 0.6rem 0.6rem 0.6rem 1.2rem; background: rgba(12, 11, 9, 0.92); border: 1px solid var(--sc-line); clip-path: var(--sc-clip); } }
+@media (min-width: 900px) { .sc-dock:not(.is-on) { transform: translateY(calc(110% + 1.5rem)); } .sc-dock { left: auto; right: 1.5rem; bottom: 1.5rem; padding: 0.6rem 0.6rem 0.6rem 1.2rem; background: rgba(12, 11, 9, 0.92); border: 1px solid var(--sc-line); clip-path: var(--sc-clip); } }
 
 /* ── The rules page (/paddlingout/scouts/rules) ─────────────────────────── */
 .sc-doc { max-width: 720px; margin: 0 auto; padding: 2.4rem 1.25rem 5rem; }
@@ -125,5 +127,5 @@ html.dark-theme { background: #080808; }
 .sc-doc a { color: var(--sc-gold-bright); }
 
 @media (prefers-reduced-motion: reduce) {
-  .sc-example img, .sc-dock { transition: none; }
+  .sc-example img, .sc-dock, .sc-dock:not(.is-on), .sc-dock.is-on { transition: none; }
 }

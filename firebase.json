@@ -365,7 +365,7 @@
           "type": 301
         },
         {
-          "regex": "^/paddlingout/mapmakers(?:\\.html)?$",
+          "regex": "^/paddlingout/mapmakers(?:\\.html|/)?$",
           "destination": "/paddlingout/scouts",
           "type": 301
         },
@@ -956,8 +956,18 @@
           "type": 301
         },
         {
-          "regex": "^/paddlingout/mapmakers(?:\\.html)?$",
+          "regex": "^/paddlingout/mapmakers(?:\\.html|/)?$",
           "destination": "https://kaayko.com/paddlingout/scouts",
+          "type": 301
+        },
+        {
+          "regex": "^/paddlingout/scouts(?:\\.html|/)?$",
+          "destination": "https://kaayko.com/paddlingout/scouts",
+          "type": 301
+        },
+        {
+          "regex": "^/paddlingout/scouts/rules(?:\\.html|/)?$",
+          "destination": "https://kaayko.com/paddlingout/scouts/rules",
           "type": 301
         },
         {

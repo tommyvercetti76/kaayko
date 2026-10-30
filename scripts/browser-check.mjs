@@ -309,7 +309,7 @@ async function main() {
         const p = [];
         if (!/^\/paddlingout\/search\?mode=add/.test(r.url)) p.push(`old add address landed on ${r.url}`);
         if (!r.add || r.find) p.push('the Add tab is not the one showing');
-        if (r.title !== 'Add a lake') p.push(`header says "${r.title}"`);
+        if (r.title !== 'Add a spot') p.push(`header says "${r.title}"`);
         if (r.step !== 'photos' || r.next !== 'Add photos') p.push(`first screen is "${r.step}" with button "${r.next}"`);
         if (r.actions !== 3) p.push(`header has ${r.actions} actions, expected Find-or-add + Scouts + Settings`);
         // A photo moves it on; the map opens where Find left off (the hand-off).
