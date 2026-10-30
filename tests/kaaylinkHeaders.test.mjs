@@ -35,6 +35,9 @@ test('/m carries the router\'s own headers: Stripe form-action, Storage images, 
     assert.match(h['Content-Security-Policy'], /form-action 'self' https:\/\/checkout\.stripe\.com/);
     assert.match(h['Content-Security-Policy'], /img-src https:\/\/firebasestorage\.googleapis\.com/);
     assert.match(h['Content-Security-Policy'], /default-src 'none'/);
+    // Paddling Out's fonts (29 Oct 2026); must match mapmakerRouter.js CSP in kaayko-api.
+    assert.match(h['Content-Security-Policy'], /style-src 'unsafe-inline' https:\/\/fonts\.googleapis\.com;/);
+    assert.match(h['Content-Security-Policy'], /font-src https:\/\/fonts\.gstatic\.com;/);
     assert.equal(h['Cache-Control'], 'private, no-store');
     assert.equal(h['Referrer-Policy'], 'no-referrer');
     assert.equal(h['X-Frame-Options'], 'DENY');

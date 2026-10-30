@@ -1,37 +1,76 @@
 /* Reported by paddlers: the block on a spot page and the form, also used at the end
-   of Add a spot (components/SpotReports.js, 29 Oct 2026). Needs tokens.css. */
-.spr-warn { margin: 0 0 0.6rem; font-size: 0.86rem; color: rgba(237, 232, 223, 0.72); font-style: italic; }
-.spr-row .spr-when { color: rgba(237, 232, 223, 0.62); font-size: 0.84rem; }
+   of Add a spot (components/SpotReports.js, 29 Oct 2026). Needs tokens.css.
+   Type and controls are the add flow's (addlake.css): Josefin capitals for labels,
+   chips and buttons, Cormorant for anything read or typed. Nothing inherits the
+   page's body font, which on the spot page is Arial. */
+.spr-block { font-family: var(--font-serif); }
+.spr-warn { margin: 0 0 0.6rem; font: italic 1rem/1.55 var(--font-serif); color: var(--muted); }
+.spr-row .spr-when { font: italic 0.95rem var(--font-serif); color: var(--muted); }
 .spr-row .spr-note { display: block; margin-top: 0.2rem; }
-.spr-row .spr-by { display: block; margin-top: 0.2rem; font-size: 0.8rem; color: rgba(237, 232, 223, 0.6); }
+.spr-row .spr-by { display: block; margin-top: 0.2rem; font: italic 0.92rem var(--font-serif); color: var(--muted); }
 .spr-row .spr-by a { color: var(--gold-bright); }
 .spr-old { opacity: 0.7; }
-.spr-hazard .kbg-icon { color: #c59a61; }
-.spr-empty { margin: 0 0 0.6rem; color: rgba(237, 232, 223, 0.7); font-size: 0.92rem; }
-.spr-open, .spr-send, .spr-cancel {
-  margin-top: 0.6rem; min-height: 44px; padding: 0.55rem 0.9rem; font: inherit; font-size: 0.9rem; cursor: pointer;
-  border: 1px solid rgba(217, 189, 123, 0.45); background: transparent; color: var(--gold-bright); clip-path: var(--clip-sm); text-align: left;
-}
-.spr-send { background: var(--gold-bright); color: #141210; border-color: transparent; font-weight: 600; }
-.spr-form { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 0.7rem; }
-.spr-block [hidden] { display: none !important; }   /* forecast.html has no global [hidden] rule */
-.spr-set { border: 0; padding: 0; margin: 0; }
-.spr-set legend, .spr-field > span { display: block; font-size: 0.82rem; letter-spacing: 0.04em; color: rgba(237, 232, 223, 0.8); margin-bottom: 0.35rem; }
-.spr-field i { font-style: italic; color: rgba(237, 232, 223, 0.55); }
-.spr-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.45rem; }
-.spr-chip { position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.75rem; border: 1px solid var(--line); cursor: pointer; font-size: 0.88rem; clip-path: var(--clip-sm); }
-.spr-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.spr-chip:has(input:checked) { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(217, 189, 123, 0.12); }
-.spr-chip:has(input:focus-visible) { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
-.spr-field input, .spr-field textarea {
-  width: 100%; min-width: 0; box-sizing: border-box; padding: 0.55rem 0.65rem; font: inherit; font-size: 16px;
-  color: var(--fg); background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); border-radius: 0;
-}
-.spr-hp { position: absolute; left: -9999px; width: 1px; height: 1px; }
-.spr-fine { margin: 0; font-size: 0.8rem; color: rgba(237, 232, 223, 0.62); }
-.spr-fine a { color: var(--gold-bright); }
-.spr-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.spr-msg { margin: 0; font-size: 0.88rem; color: #e6b98a; min-height: 1.2em; }
-.spr-done { margin: 0.6rem 0 0; color: rgba(237, 232, 223, 0.9); }
-.spr-done:focus { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+.spr-hazard .kbg-icon { color: var(--moderate); }
+.spr-empty { margin: 0 0 0.6rem; font: 1.02rem/1.5 var(--font-serif); color: rgba(237, 232, 223, 0.88); }
 
+/* Buttons: Report something / Cancel are the add flow's secondary, Send its primary */
+.spr-open, .spr-cancel {
+  margin-top: 0.6rem; min-height: 46px; padding: 0.6rem 1.1rem; cursor: pointer; clip-path: var(--clip-sm); text-align: left;
+  background: var(--surface-2); border: 1px solid rgba(181, 147, 90, 0.42); color: var(--gold-bright);
+  font: 600 0.78rem/1.4 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase;
+}
+.spr-send {
+  min-height: 52px; padding: 0 1.4rem; border: 0; cursor: pointer; clip-path: var(--clip-md);
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: var(--gold-ink);
+  font: 600 0.92rem var(--font-sans); letter-spacing: 0.16em; text-transform: uppercase;
+}
+.spr-send:hover, .spr-open:hover, .spr-cancel:hover { filter: brightness(1.07); }
+.spr-open:focus-visible, .spr-cancel:focus-visible, .spr-send:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+
+.spr-form { margin-top: 0.9rem; display: flex; flex-direction: column; gap: 1rem; }
+.spr-block [hidden] { display: none !important; }   /* forecast.html has no global [hidden] rule */
+.spr-set { border: 0; padding: 0; margin: 0; min-width: 0; }
+
+/* Labels: the add flow's .al-label */
+.spr-set legend, .spr-field > span {
+  display: block; margin-bottom: 0.45rem; padding: 0;
+  font: 600 0.78rem/1.4 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-bright);
+}
+.spr-field i { font-style: normal; color: var(--muted); letter-spacing: 0.04em; text-transform: none; margin-left: 0.2rem; }
+
+/* Chips: the add flow's toggles */
+.spr-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+.spr-chip {
+  position: relative; display: inline-flex; align-items: center; min-height: 46px; padding: 0 1rem; cursor: pointer;
+  clip-path: var(--clip-sm); background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.3);
+  font: 600 0.8rem var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg);
+}
+.spr-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.spr-chip:has(input:checked) { border-color: var(--gold-bright); background: rgba(181, 147, 90, 0.16); color: var(--gold-bright); }
+.spr-chip:has(input:focus-visible) { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+
+/* Fields: the add flow's inputs */
+.spr-field { display: block; min-width: 0; }
+.spr-field input, .spr-field textarea {
+  width: 100%; min-width: 0; min-height: 50px; box-sizing: border-box; padding: 0.75rem 0.9rem;
+  background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.32); border-radius: 0; clip-path: var(--clip-sm);
+  color: var(--fg); font: 16px/1.4 var(--font-serif); outline: none;
+}
+.spr-field input[type="file"] { padding: 0.6rem 0.9rem; font: 0.95rem var(--font-serif); }
+.spr-field input::file-selector-button {
+  margin-right: 0.8rem; padding: 0.45rem 0.8rem; cursor: pointer; border: 1px solid rgba(181, 147, 90, 0.42);
+  background: var(--surface-2); color: var(--gold-bright); font: 600 0.72rem var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase;
+}
+.spr-field input:focus-visible, .spr-field textarea:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 1px; }
+.spr-field textarea { min-height: 84px; resize: vertical; }
+.spr-field input::placeholder, .spr-field textarea::placeholder { color: rgba(237, 232, 223, 0.55); }
+.spr-field input[type="date"] { color-scheme: dark; }
+
+.spr-hp { position: absolute; left: -9999px; width: 1px; height: 1px; }
+.spr-fine { margin: 0; font: 0.86rem/1.45 var(--font-serif); color: var(--muted); }
+.spr-fine a { color: var(--gold-bright); }
+.spr-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
+.spr-actions .spr-cancel { margin-top: 0; }
+.spr-msg { margin: 0; min-height: 1.2em; font: italic 1rem/1.4 var(--font-serif); color: var(--gold-bright); }   /* status and errors share it, as in the add flow's .al-msg.is-warn */
+.spr-done { margin: 0.6rem 0 0; font: 1.02rem/1.5 var(--font-serif); color: var(--fg); }
+.spr-done:focus { outline: 2px solid var(--gold-bright); outline-offset: 2px; }

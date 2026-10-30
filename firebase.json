@@ -1043,7 +1043,7 @@
           "headers": [
             {
               "key": "Content-Security-Policy",
-              "value": "default-src 'none'; style-src 'unsafe-inline'; img-src https://firebasestorage.googleapis.com https://storage.googleapis.com; form-action 'self' https://checkout.stripe.com; base-uri 'none'; frame-ancestors 'none'"
+              "value": "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src https://firebasestorage.googleapis.com https://storage.googleapis.com; form-action 'self' https://checkout.stripe.com; base-uri 'none'; frame-ancestors 'none'"
             },
             {
               "key": "Cache-Control",
@@ -1076,7 +1076,7 @@
           "headers": [
             {
               "key": "Content-Security-Policy",
-              "value": "default-src 'none'; style-src 'unsafe-inline'; img-src https://firebasestorage.googleapis.com https://storage.googleapis.com; form-action 'self' https://checkout.stripe.com; base-uri 'none'; frame-ancestors 'none'"
+              "value": "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src https://firebasestorage.googleapis.com https://storage.googleapis.com; form-action 'self' https://checkout.stripe.com; base-uri 'none'; frame-ancestors 'none'"
             },
             {
               "key": "Cache-Control",
