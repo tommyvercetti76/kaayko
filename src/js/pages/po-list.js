@@ -7,10 +7,8 @@
  *
  * Each spot's best window (3 daylight hours with the highest mean half-point rating)
  * today if at least 2 daylight hours are left at the spot, else tomorrow, read
- * from the cached 3-day hourly forecast (GET /fastForecast?spotId=). In the
- * shipped version this moves server-side into GET /paddlingOut as one small
- * field per spot; for now the browser asks GET /fastForecast?view=list for each open
- * spot (~25 KB each; the full response is ~110 KB).
+ * from the cached 3-day hourly forecast: GET /fastForecast/list, one request for
+ * every open spot (the compact ?view=list shape, ~25 KB a spot instead of ~110 KB).
  * Tiers are the canonical 3.7 / 2.7. The score model is not touched.
  */
 (function () {
@@ -241,23 +239,22 @@
   async function load() {
     $('pn-list').innerHTML = Array(8).fill('<li class="pn-skel" aria-hidden="true"></li>').join('');
     var r = await U.fetchJson(P.withCraft(API + '/paddlingOut'), { timeoutMs: 12000 });
-    if (!r.ok || !Array.isArray(r.data)) { $('pn-list').innerHTML = '<li class="pn-empty">Could not load spots. Try again in a moment.</li>'; return; }
+    if (!r.ok || !Array.isArray(r.data)) { document.body.classList.remove('pn-wait'); $('pn-list').innerHTML = '<li class="pn-empty">Could not load spots. Try again in a moment.</li>'; return; }
     state.paused = r.data.filter(function (s) { return s.status && /season|closed/.test(state_(s) || ''); });
     state.spots = r.data.filter(function (s) { return state.paused.indexOf(s) === -1; });
     paintChips(); context(false);
-    var queue = state.spots.slice(), running = 0;
-    await new Promise(function (done) {
-      function next() {
-        if (!queue.length && !running) return done();
-        while (running < 6 && queue.length) {
-          var sp = queue.shift(); running++;
-          U.fetchJson(P.withCraft(API + '/fastForecast?view=list&spotId=' + encodeURIComponent(sp.id)), { timeoutMs: 15000 })
-            .then(function (sp) { return function (x) { if (x.ok && x.data && x.data.forecast) sp.win = windowFor(x.data); }; }(sp))
-            .finally(function () { running--; next(); });
-        }
-      }
-      next();
-    });
+    // One placeholder per lake, and the paused count, so nothing below the list moves when the cards land
+    $('pn-list').innerHTML = Array(state.spots.length).fill('<li class="pn-skel" aria-hidden="true"></li>').join('');
+    $('pn-paused-t').hidden = !state.paused.length;
+    $('pn-paused-t').textContent = state.paused.length + (state.paused.length === 1 ? ' spot' : ' spots') + ' out of season or closed · Show';
+    document.body.classList.remove('pn-wait');
+    // One request for the whole list (40 lakes each): one per lake ran into the rate limit by the seventh reload
+    var chunks = [];
+    for (var i = 0; i < state.spots.length; i += 40) chunks.push(state.spots.slice(i, i + 40));
+    await Promise.all(chunks.map(function (c) {
+      return U.fetchJson(P.withCraft(API + '/fastForecast/list?spotIds=' + c.map(function (sp) { return encodeURIComponent(sp.id); }).join(',')), { timeoutMs: 20000 })
+        .then(function (x) { var m = x.ok && x.data && x.data.spots; if (m) c.forEach(function (sp) { if (m[sp.id] && m[sp.id].forecast) sp.win = windowFor(m[sp.id]); }); });
+    }));
     paintBest(); paint();
   }
 

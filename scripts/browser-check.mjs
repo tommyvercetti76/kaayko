@@ -29,7 +29,8 @@ const { checkContract } = require('../src/js/contracts/paddling.js');
 
 const BASE = (process.env.BASE || 'https://kaayko.com').replace(/\/$/, '');
 const STORE = (process.env.STORE_BASE || 'https://kaay.store').replace(/\/$/, '');
-const API = `${BASE}/api`;
+// Preview channels serve no /api rewrite; pages there call the function directly, and so does this.
+const API = process.env.API || (/^https:\/\/kaayko\.com/.test(BASE) ? `${BASE}/api` : 'https://api-vwcc5j4qda-uc.a.run.app');
 const CHROME = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const ONLY = process.env.ONLY || '';   // ONLY=forecast checks just the pages whose label contains it
 const CLS_MAX = Number(process.env.CLS_MAX || 0.1);   // Google's "good" line; lower it to see smaller shifts
@@ -212,7 +213,7 @@ async function main() {
       await checkPage(b.port, 'paddlingout', `${BASE}/paddlingout`, view, async (ev) => {
         const r = await ev(`new Promise((done) => { const t0 = Date.now(); (function wait() {
           if (document.querySelector('#pn-list .pn-h') && !document.querySelector('#pn-list .pn-skel') || Date.now() - t0 > 20000) {
-            return fetch('/api/paddlingOut').then(x => x.json()).then(api => done({ api,
+            return fetch('${API}/paddlingOut').then(x => x.json()).then(api => done({ api,
               live: [...document.querySelectorAll('#pn-list .pn-h')].map(c => ({ id: c.dataset.spotId, r: ((c.querySelector('.pn-h-tap .pn-vd span') || {}).textContent || '').replace('/5', '') })),
               paused: [...document.querySelectorAll('#pn-paused .pn-h')].map(c => c.dataset.spotId),
               wide: document.documentElement.scrollWidth - innerWidth }));
@@ -243,7 +244,7 @@ async function main() {
       // ── 3b. a static spot page: the same rule on its live pill
       for (const [id, slug] of [['ambazari', 'ambazari-lake-nagpur'], ['powell', 'lake-powell-utah'], ['antero', 'antero-reservoir-colorado'], ['jenny', 'jenny-lake-wyoming']]) {
         await checkPage(b.port, `spot page ${id}`, `${BASE}/paddlingout/${slug}`, view, async (ev) => {
-          const r = await ev(`fetch('/api/paddlingOut').then(x => x.json()).then(api => ({ api, text: (document.getElementById('live-text') || {}).textContent || '' }))`);
+          const r = await ev(`fetch('${API}/paddlingOut').then(x => x.json()).then(api => ({ api, text: (document.getElementById('live-text') || {}).textContent || '' }))`);
           const want = expectFor(r.api.find((s) => s.id === id) || {});
           const p = [];
           if (want.closed && !/^(Closed|Out of season)/.test(r.text)) p.push(`pill says "${r.text}" while the spot has no rating`);
@@ -259,7 +260,7 @@ async function main() {
         await checkPage(b.port, `forecast ${s.id}`, `${BASE}/paddlingout/forecast?id=${s.id}`, view, async (ev) => {
           const ff = forecasts[s.id];
           const now = T.nowAt(ff.location);
-          const dom = await ev(`fetch('/api/paddleScore?spotId=${s.id}').then(x => x.json()).then(ps => ({ ps, labels: [...document.querySelectorAll('.khm-day-label')].map(e => e.textContent.replace(/\\s+/g,' ').trim()), now: (document.querySelector('.khm-now') || {}).style?.left || null, nightMark: !!document.querySelector('.night-mark'), next: ((document.querySelector('.night-next-when') || {}).textContent || '').trim() }))`);
+          const dom = await ev(`fetch('${API}/paddleScore?spotId=${s.id}').then(x => x.json()).then(ps => ({ ps, labels: [...document.querySelectorAll('.khm-day-label')].map(e => e.textContent.replace(/\\s+/g,' ').trim()), now: (document.querySelector('.khm-now') || {}).style?.left || null, nightMark: !!document.querySelector('.night-mark'), next: ((document.querySelector('.night-next-when') || {}).textContent || '').trim() }))`);
           const p = [];
           const night = T.isNightAt({ ...dom.ps.paddleScore, conditions: dom.ps.conditions });
           if (night !== dom.nightMark) p.push(night ? 'it is night at the lake but the hero shows a score' : 'the hero says "after dark" in daylight at the lake');
@@ -291,7 +292,7 @@ async function main() {
         }
         // Since 14 Oct 2026 facts come only from approved official feeds, so the
         // count varies: the page must show exactly what the API serves.
-        const api = await fetch(`${BASE}/api/paddlingOut/jenny`).then(x => x.json()).catch(() => null);
+        const api = await fetch(`${API}/paddlingOut/jenny`).then(x => x.json()).catch(() => null);
         const f = (api && api.facts) || {};
         const want = Object.keys(f).filter(k => k !== 'hazards' && f[k]).length + (Array.isArray(f.hazards) ? f.hazards.length : 0);
         if (!api) p.push('could not read the API to compare facts');

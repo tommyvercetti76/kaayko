@@ -150,3 +150,7 @@ html.dark-theme, .pn { background: var(--bg); }
 .pn-intro p { margin: 0 0 0.8rem; font: 0.98rem/1.65 var(--font-serif); color: var(--muted); }
 .pn-intro a { color: var(--gold-bright); }
 .pn .site-footer { background: transparent; }
+
+/* Until the lake count is known, nothing sits below the list, so placeholders
+   growing to one per lake move nothing on screen (desktop CLS was 0.11). */
+.pn-wait .pn-add, .pn-wait .pn-intro, .pn-wait .site-footer { display: none; }
