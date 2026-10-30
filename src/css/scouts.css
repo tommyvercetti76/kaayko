@@ -30,6 +30,7 @@ html.dark-theme { background: var(--bg); }
 .sc-p { margin: 0 0 0.8rem; font: 400 1rem/1.7 var(--font-serif); color: var(--fg); }
 .sc-p em, .sc-looks em { color: var(--fg); font-style: italic; }   /* gold would read as a link */
 .sc-when { color: var(--muted); font-style: italic; }
+.sc-p a, .sc-looks a, .sc-safety a { color: var(--gold-bright); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ── Buttons and links: the add flow's ───────────────────────────────────── */
 .sc-btn {

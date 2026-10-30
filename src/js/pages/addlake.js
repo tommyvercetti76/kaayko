@@ -117,7 +117,7 @@
     var target = (e.state && e.state.al) || STEPS[S.mode][0];
     if (STEPS[S.mode].indexOf(target) === -1) return;
     // After sending, going back starts a fresh entry rather than re-opening a sent one.
-    if (S.result && target !== 'sent') { if (S.mode === 'edit') { goto('sent', { push: false }); return; } startOver(); return; }
+    if (S.result && target !== 'sent') { if (S.mode === 'edit') { goto('sent', { push: false }); return; } if (!mayLeaveSent()) { history.forward(); return; } startOver(); return; }
     goto(target, { push: false });
   });
 
@@ -488,7 +488,8 @@
     $('al-sent-sub').textContent = 'We have ' + name + (where ? ', near ' + where : '') + '. A person checks every entry before it goes on the map.';
     $('al-extras').hidden = !S.result.token;
     // Seen anything? A report on the spot just sent, proved theirs by the details token.
-    if (window.KaaykoReports && S.result.token) window.KaaykoReports.mountForm($('al-reports'), S.result.id, { token: S.result.token });
+    // The name and email are the ones typed above; the report form does not ask again.
+    if (window.KaaykoReports && S.result.token) window.KaaykoReports.mountForm($('al-reports'), S.result.id, { token: S.result.token, creditName: function () { return $('al-name').value; }, email: function () { return $('al-email').value; } });
     else if ($('al-reports')) $('al-reports').innerHTML = '';
     goto('sent', { replace: true });
   }
@@ -522,10 +523,26 @@
     });
     btn.disabled = false; btn.textContent = 'Save';
     if (!r.ok || !r.data || !r.data.success) { say('al-extras-msg', errorText(r, 'Could not save. Please try again.'), 'error'); return; }
+    S.extrasSaved = true; btn.disabled = true; btn.textContent = 'Saved';
     say('al-extras-msg', picks ? 'Saved. Your spot is up for the monthly picks. Check your email for a link to follow it.'
       : email ? 'Saved. Check your email for a link to follow it; we will write again when it is reviewed.' : 'Saved. Thank you.', 'ok');
   });
-  $('al-another').addEventListener('click', startOver);
+  // Typing again after a save makes Save live again; leaving the screen with
+  // unsaved words asks first (30 Oct 2026 audit: the big button threw them away).
+  $('al-extras').addEventListener('input', function () {
+    S.extrasSaved = false;
+    var b = $('al-save');
+    if (b.disabled && b.textContent === 'Saved') { b.disabled = false; b.textContent = 'Save'; }
+  });
+  function extrasDirty() {
+    if (!S.result || !S.result.token || S.extrasSaved) return false;
+    return ['al-note', 'al-email', 'al-name'].some(function (id) { return $(id).value.trim(); }) ||
+      ['al-parking', 'al-restrooms', 'al-picks'].some(function (id) { return $(id).checked; });
+  }
+  function mayLeaveSent() {
+    return !extrasDirty() || window.confirm('Your name, email or picks are not saved yet. Leave without saving them?');
+  }
+  $('al-another').addEventListener('click', function () { if (mayLeaveSent()) startOver(); });
   $('al-tomap').addEventListener('click', function () {
     var find = $('mode-find');
     if (find) find.click(); else location.href = '/paddlingout/search';
@@ -534,7 +551,6 @@
   function clearInputs() {
     ['al-note', 'al-email', 'al-name', 'al-other', 'al-search', 'al-e-name', 'al-e-note', 'al-e-email'].forEach(function (id) { if ($(id)) $(id).value = ''; });
     ['al-parking', 'al-restrooms', 'al-picks', 'al-e-parking', 'al-e-restrooms'].forEach(function (id) { if ($(id)) $(id).checked = false; });
-    if (picksPreset && $('al-picks')) $('al-picks').checked = true;
     ['al-photos-msg', 'al-pin-msg', 'al-water-msg', 'al-extras-msg', 'al-edit-msg'].forEach(function (id) { say(id, ''); });
   }
   function startOver() {
@@ -643,13 +659,11 @@
 
   // ── Entry ──────────────────────────────────────────────────────────────
   var started = false;
-  // ?picks=1 (old Mapmakers links): the monthly-picks box starts ticked,
-  // one tap fewer. It still needs the email before Save, like any other time.
-  var picksPreset = false;
+  // ?picks=1 (old Mapmakers links) once ticked the monthly-picks box in advance.
+  // It no longer does: the tick is the person's 18+ opt-in (30 Oct 2026 audit).
   window.KaaykoAddLake = {
     show: function (params) {
       var p = params || new URLSearchParams(location.search);
-      if (p.get('picks') === '1') { picksPreset = true; if ($('al-picks')) $('al-picks').checked = true; }
       var editId = p.get('edit');
       if (editId && /^[a-zA-Z0-9_-]+$/.test(editId)) { started = true; startEdit(editId); return; }
       if (S.mode === 'edit') {

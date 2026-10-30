@@ -78,9 +78,15 @@
       (img ? ' &middot; <a href="' + esc(img) + '" target="_blank" rel="noopener">photo</a>' : '') + '</span></span></div>';
   }
 
-  function form(spot, kinds, token) {
-    var kindChips = Object.keys(kinds).map(function (k, i) {
-      return '<label class="spr-chip"><input type="radio" name="kind" value="' + esc(k) + '"' + (i === 0 ? ' checked' : '') + '>' + esc(kinds[k].label) + '</label>';
+  // opts: token (a spot still in review), and creditName/email getters when the
+  // page already asked for them (the end of Add a spot), so they are not asked twice.
+  // Nothing is chosen for the sender: a one-tap "Crocodile, seen today" was the
+  // risk the 30 Oct 2026 audit found.
+  function form(spot, kinds, opts) {
+    opts = opts || {};
+    var token = opts.token;
+    var kindChips = Object.keys(kinds).map(function (k) {
+      return '<label class="spr-chip"><input type="radio" name="kind" value="' + esc(k) + '">' + esc(kinds[k].label) + '</label>';
     }).join('');
     return '<form class="spr-form" id="spr-form" hidden novalidate>' +
       '<input type="text" name="website" class="spr-hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
@@ -90,8 +96,8 @@
       '<label class="spr-field"><span>The day you saw it</span><input type="date" name="seenOn" required max="' + localToday() + '" min="' + yearAgo() + '" value="' + localToday() + '"></label>' +
       '<label class="spr-field"><span>A note <i>optional</i></span><textarea name="note" maxlength="280" rows="2" placeholder="Where exactly, and anything the next paddler should know."></textarea></label>' +
       '<label class="spr-field"><span>A photo <i>optional</i></span><input type="file" name="images" accept="image/*"></label>' +
-      '<label class="spr-field"><span>Your name, shown with it <i>optional</i></span><input type="text" name="creditName" maxlength="40" autocomplete="nickname"></label>' +
-      '<label class="spr-field"><span>Your email <i>optional</i>: to follow it on your Scout page</span><input type="email" name="email" autocomplete="email"></label>' +
+      (opts.creditName ? '' : '<label class="spr-field"><span>Your name, shown with it <i>optional</i></span><input type="text" name="creditName" maxlength="40" autocomplete="nickname"></label>') +
+      (opts.email ? '' : '<label class="spr-field"><span>Your email <i>optional</i>: to follow it on your Scout page</span><input type="email" name="email" autocomplete="email"></label>') +
       '<p class="spr-fine">By sending, you confirm the photo is yours and let Kaayko show this report, its note and photo, the day and the name you give on Paddling Out. A person at Kaayko checks every report before it shows. <a href="/privacy#spot-reports">Privacy</a></p>' +
       '<div class="spr-actions"><button type="submit" class="spr-send">Send report</button><button type="button" class="spr-cancel" id="spr-cancel">Cancel</button></div>' +
       '<p class="spr-msg" id="spr-msg" aria-live="polite"></p></form>' +
@@ -101,13 +107,15 @@
   function paintTypes(kinds) {
     var host = document.getElementById('spr-types');
     var k = (document.querySelector('#spr-kinds input:checked') || {}).value;
-    if (!host || !kinds[k]) return;
-    host.innerHTML = Object.keys(kinds[k].types).map(function (t, i) {
-      return '<label class="spr-chip"><input type="radio" name="type" value="' + esc(t) + '"' + (i === 0 ? ' checked' : '') + '>' + esc(kinds[k].types[t]) + '</label>';
+    if (!host) return;
+    if (!kinds[k]) { host.innerHTML = ''; return; }   // nothing until a kind is chosen
+    host.innerHTML = Object.keys(kinds[k].types).map(function (t) {
+      return '<label class="spr-chip"><input type="radio" name="type" value="' + esc(t) + '">' + esc(kinds[k].types[t]) + '</label>';
     }).join('');
   }
 
-  function wire(spot, kinds) {
+  function wire(spot, kinds, opts) {
+    opts = opts || {};
     var open = document.getElementById('spr-open');
     var f = document.getElementById('spr-form');
     if (!open || !f) return;
@@ -124,7 +132,9 @@
       var msg = document.getElementById('spr-msg');
       var btn = f.querySelector('.spr-send');
       var fd = new FormData(f);
-      if (!fd.get('type')) { msg.textContent = 'Choose what you saw.'; return; }
+      if (opts.creditName) fd.set('creditName', String(opts.creditName() || '').replace(/\s+/g, ' ').trim());
+      if (opts.email) fd.set('email', String(opts.email() || '').trim());
+      if (!fd.get('kind') || !fd.get('type')) { msg.textContent = 'Choose what you saw.'; return; }
       var file = f.querySelector('input[type=file]').files[0];
       fd.delete('images');
       fd.append('pageUrl', location.href.slice(0, 500));
@@ -183,15 +193,15 @@
   function mountForm(host, spotId, opts) {
     if (!host || !spotId) return;
     host.innerHTML = '';
-    var token = opts && opts.token;
+    opts = opts || {};
     fetch(apiBase() + '/paddlingOut/spots/' + encodeURIComponent(spotId) + '/reports')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (b) {
         if (!b || !b.success) return;
         host.innerHTML = '<div class="spr-block spr-inline"><h3 class="al-extras-h">Seen anything? <span>optional</span></h3>' +
           '<p class="spr-warn">Wildlife, a hazard, or whether paddling is allowed here, with the day you saw it.</p>' +
-          '<button type="button" class="spr-open" id="spr-open">Add a report</button>' + form({ id: spotId }, b.kinds || {}, token) + '</div>';
-        wire({ id: spotId }, b.kinds || {});
+          '<button type="button" class="spr-open" id="spr-open">Add a report</button>' + form({ id: spotId }, b.kinds || {}, opts) + '</div>';
+        wire({ id: spotId }, b.kinds || {}, opts);
       })
       .catch(function () {});
   }
