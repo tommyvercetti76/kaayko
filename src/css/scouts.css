@@ -37,9 +37,9 @@ html.dark-theme { background: var(--bg); }
 /* ── Buttons and links: the add flow's ───────────────────────────────────── */
 .sc-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  min-height: 52px; padding: 0 1.6rem; text-decoration: none; clip-path: var(--clip-md);
+  min-height: 44px; padding: 0 1.1rem; text-decoration: none; clip-path: var(--clip-sm);
   background: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: var(--gold-ink);
-  font: 600 0.92rem var(--font-sans); letter-spacing: 0.16em; text-transform: uppercase;
+  font: 600 0.78rem var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase;
   transition: filter 0.15s ease, transform 0.15s ease;
 }
 .sc-btn:hover { filter: brightness(1.07); }
@@ -50,7 +50,7 @@ html.dark-theme { background: var(--bg); }
 }
 /* A chamfer (clip-path) clips an outline drawn outside the box, so every clipped
    control draws its focus ring inside (30 Oct 2026 audit). */
-.sc-btn:focus-visible { outline: 3px solid var(--gold-ink); outline-offset: -5px; }
+.sc-btn:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: -4px; }
 .sc-ghost:focus-visible, .sc-link:focus-visible, .sc-p a:focus-visible, .sc-looks a:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
 
 /* ── 1 · Hero: the photo, then the words; side by side when there is room ── */
@@ -107,7 +107,7 @@ html.dark-theme { background: var(--bg); }
 .sc-dock[hidden], .sc-dock:not(.is-on) { display: flex; visibility: hidden; transition: transform 0.28s cubic-bezier(.2, .7, .2, 1), visibility 0s linear 0.28s; }
 .sc-dock.is-on { transform: none; visibility: visible; transition: transform 0.28s cubic-bezier(.2, .7, .2, 1), visibility 0s; }
 .sc-dock-t { font: italic 1.02rem var(--font-serif); color: var(--muted); }
-.sc-dock .sc-btn { flex: 0 0 auto; min-height: 48px; }
+.sc-dock .sc-btn { flex: 0 0 auto; }
 @media (max-width: 380px) { .sc-dock-t { display: none; } .sc-dock .sc-btn { flex: 1 1 auto; } }
 @media (min-width: 900px) { .sc-dock:not(.is-on) { transform: translateY(calc(110% + 1.5rem)); } .sc-dock { left: auto; right: 1.5rem; bottom: 1.5rem; padding: 0.6rem 0.6rem 0.6rem 1.2rem; background: var(--panel-a); border: 1px solid var(--line); clip-path: var(--clip-md); } }
 
