@@ -12,6 +12,8 @@
 .sc-page { background: var(--bg) !important; color: var(--fg); margin: 0; -webkit-font-smoothing: antialiased; }
 html.dark-theme { background: var(--bg); }
 .sc-page .theme-toggle-icon { display: none !important; }
+/* base.css paints html.dark-theme footer #222; the list, spot and add pages end in black */
+.sc-page .site-footer { background: transparent; color: var(--muted); }
 
 /* body is display:flex (sticky footer); min-width:0 lets main shrink on phones */
 .sc { width: 100%; min-width: 0; box-sizing: border-box; padding: 0 0 6rem; margin: 0; max-width: none; }
@@ -46,14 +48,17 @@ html.dark-theme { background: var(--bg); }
   display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.2rem;
   font: 1.02rem var(--font-serif); color: var(--gold-bright); text-decoration: underline; text-underline-offset: 3px;
 }
-.sc-btn:focus-visible, .sc-ghost:focus-visible, .sc-link:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+/* A chamfer (clip-path) clips an outline drawn outside the box, so every clipped
+   control draws its focus ring inside (30 Oct 2026 audit). */
+.sc-btn:focus-visible { outline: 3px solid var(--gold-ink); outline-offset: -5px; }
+.sc-ghost:focus-visible, .sc-link:focus-visible, .sc-p a:focus-visible, .sc-looks a:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
 
 /* ── 1 · Hero: the photo, then the words; side by side when there is room ── */
 .sc-hero { max-width: 1080px; margin: 0 auto; }
 .sc-hero-media { position: relative; margin: 0; overflow: hidden; }
 .sc-hero-img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
 .sc-credit { position: absolute; right: 0.9rem; bottom: 0.7rem; margin: 0; font: italic 0.82rem var(--font-serif); color: rgba(255, 255, 255, 0.85); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); }
-.sc-hero-in { padding: 1.4rem 1.25rem 0; }
+.sc-hero-in { padding: 1.4rem 1.5rem 0; }   /* the rules page's and methodology's gutter */
 .sc-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.2rem; }
 .sc-count { min-height: 1.6em; margin: 1rem 0 0; font: 600 0.7rem/1.6 var(--font-sans); letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-bright); }
 .sc-safety {
@@ -69,14 +74,14 @@ html.dark-theme { background: var(--bg); }
 }
 
 /* ── Sections ───────────────────────────────────────────────────────────── */
-.sc-band { max-width: 720px; margin: 0 auto; padding: 2.6rem 1.25rem 0; scroll-margin-top: 4rem; }
+.sc-band { max-width: 720px; margin: 0 auto; padding: 2.6rem 1.5rem 0; scroll-margin-top: 4rem; }
 
 /* The one real example */
 .sc-example { margin: 1.2rem 0; }
-.sc-example a:first-child { display: block; clip-path: var(--clip-md); overflow: hidden; }
+.sc-example a:first-child { display: block; clip-path: var(--clip-md); overflow: hidden; color: var(--gold-bright); font: italic 0.98rem var(--font-serif); }   /* the alt, should the photo fail */
 .sc-example img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.6s cubic-bezier(.2, .7, .2, 1); }
 .sc-example a:first-child:hover img, .sc-example a:first-child:focus-visible img { transform: scale(1.04); }
-.sc-example a:first-child:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+.sc-example a:first-child:focus-visible { outline: 3px solid var(--gold-bright); outline-offset: -5px; }
 .sc-example figcaption { margin-top: 0.6rem; font: italic 0.98rem/1.6 var(--font-serif); color: var(--muted); }
 .sc-example figcaption b { font-style: normal; font-weight: 600; color: var(--fg); }
 .sc-example figcaption a { display: flex; align-items: center; width: max-content; min-height: 44px; font-style: normal; color: var(--gold-bright); }
@@ -111,6 +116,8 @@ html.dark-theme { background: var(--bg); }
 .sc-doc-head { text-align: center; padding: 1.5rem 0 2rem; }
 .sc-meta { margin: 0.4rem 0 0; font: 400 italic clamp(0.95rem, 2vw, 1.1rem)/1.5 var(--font-serif); color: var(--muted); }
 .sc-rule { margin-bottom: 2rem; scroll-margin-top: 4rem; }
+.sc-rule ul { margin: 0 0 0.8rem; padding-left: 1.2rem; }
+.sc-rule li { margin-bottom: 0.4rem; font: 400 1rem/1.7 var(--font-serif); color: var(--fg); }
 .sc-rule p, .sc-doc-end { margin: 0 0 0.8rem; font: 400 1rem/1.7 var(--font-serif); color: var(--fg); }   /* not .sc-doc p: it would beat the eyebrow and the meta line */
 .sc-doc a { color: var(--gold); }
 .sc-doc a:hover { color: var(--gold-bright); }

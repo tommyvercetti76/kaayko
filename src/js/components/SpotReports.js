@@ -88,16 +88,16 @@
     var kindChips = Object.keys(kinds).map(function (k) {
       return '<label class="spr-chip"><input type="radio" name="kind" value="' + esc(k) + '">' + esc(kinds[k].label) + '</label>';
     }).join('');
-    return '<form class="spr-form" id="spr-form" hidden novalidate>' +
-      '<input type="text" name="website" class="spr-hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+    return '<form class="spr-form" id="spr-form" aria-labelledby="spr-h" hidden novalidate>' +
+      '<input type="text" name="hp" class="spr-hp" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       (token ? '<input type="hidden" name="token" value="' + esc(token) + '">' : '') +
-      '<fieldset class="spr-set"><legend>What was it?</legend><div class="spr-chips" id="spr-kinds">' + kindChips + '</div>' +
-      '<div class="spr-chips" id="spr-types" role="radiogroup" aria-label="Which one"></div></fieldset>' +
-      '<label class="spr-field"><span>The day you saw it</span><input type="date" name="seenOn" required max="' + localToday() + '" min="' + yearAgo() + '" value="' + localToday() + '"></label>' +
+      '<fieldset class="spr-set"><legend>What was it?</legend><div class="spr-chips" id="spr-kinds">' + kindChips + '</div></fieldset>' +
+      '<fieldset class="spr-set" id="spr-types-set" hidden><legend>Which one</legend><div class="spr-chips" id="spr-types"></div></fieldset>' +
+      '<label class="spr-field"><span>The day you saw it <i>within the last year</i></span><input type="date" name="seenOn" required max="' + localToday() + '" min="' + yearAgo() + '" value="' + localToday() + '"></label>' +
       '<label class="spr-field"><span>A note <i>optional</i></span><textarea name="note" maxlength="280" rows="2" placeholder="Where exactly, and anything the next paddler should know."></textarea></label>' +
       '<label class="spr-field"><span>A photo <i>optional</i></span><input type="file" name="images" accept="image/*"></label>' +
       (opts.creditName ? '' : '<label class="spr-field"><span>Your name, shown with it <i>optional</i></span><input type="text" name="creditName" maxlength="40" autocomplete="nickname"></label>') +
-      (opts.email ? '' : '<label class="spr-field"><span>Your email <i>optional</i>: to follow it on your Scout page</span><input type="email" name="email" autocomplete="email"></label>') +
+      (opts.email ? '' : '<label class="spr-field"><span>Your email <i>optional, to follow it on your Scout page</i></span><input type="email" name="email" autocomplete="email"></label>') +
       '<p class="spr-fine">By sending, you confirm the photo is yours and let Kaayko show this report, its note and photo, the day and the name you give on Paddling Out. A person at Kaayko checks every report before it shows. <a href="/privacy#spot-reports">Privacy</a></p>' +
       '<div class="spr-actions"><button type="submit" class="spr-send">Send report</button><button type="button" class="spr-cancel" id="spr-cancel">Cancel</button></div>' +
       '<p class="spr-msg" id="spr-msg" aria-live="polite"></p></form>' +
@@ -108,7 +108,9 @@
     var host = document.getElementById('spr-types');
     var k = (document.querySelector('#spr-kinds input:checked') || {}).value;
     if (!host) return;
-    if (!kinds[k]) { host.innerHTML = ''; return; }   // nothing until a kind is chosen
+    var set = document.getElementById('spr-types-set');
+    if (!kinds[k]) { host.innerHTML = ''; if (set) set.hidden = true; return; }   // nothing until a kind is chosen
+    if (set) set.hidden = false;
     host.innerHTML = Object.keys(kinds[k].types).map(function (t) {
       return '<label class="spr-chip"><input type="radio" name="type" value="' + esc(t) + '">' + esc(kinds[k].types[t]) + '</label>';
     }).join('');
@@ -134,24 +136,32 @@
       var fd = new FormData(f);
       if (opts.creditName) fd.set('creditName', String(opts.creditName() || '').replace(/\s+/g, ' ').trim());
       if (opts.email) fd.set('email', String(opts.email() || '').trim());
-      if (!fd.get('kind') || !fd.get('type')) { msg.textContent = 'Choose what you saw.'; return; }
+      var tell = function (t, bad) { msg.textContent = t; msg.classList.toggle('is-error', !!bad); };
+      if (!fd.get('kind') || !fd.get('type')) { tell('Choose what you saw.', true); return; }
+      // The browser accepts any typed date; say so here, on the field, before a round trip.
+      var d = f.querySelector('input[name=seenOn]');
+      if (!d.value || d.value < d.min || d.value > d.max) {
+        tell('Choose the day you saw it: within the last year, not ahead.', true);
+        d.setAttribute('aria-invalid', 'true'); d.setAttribute('aria-describedby', 'spr-msg'); d.focus(); return;
+      }
+      d.removeAttribute('aria-invalid'); d.removeAttribute('aria-describedby');
       var file = f.querySelector('input[type=file]').files[0];
       fd.delete('images');
       fd.append('pageUrl', location.href.slice(0, 500));
       btn.disabled = true;
-      msg.textContent = file ? 'Preparing the photo…' : 'Sending…';
+      tell(file ? 'Preparing the photo…' : 'Sending…');
       (file ? shrink(file) : Promise.resolve(null))
         .then(function (photo) {
           if (file && !photo) throw new Error('photo');
           if (photo) fd.append('images', photo, photo.name);
-          msg.textContent = 'Sending…';
+          tell('Sending…');
           return fetch(apiBase() + '/paddlingOut/spots/' + encodeURIComponent(spot.id) + '/reports', { method: 'POST', body: fd });
         })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { return { ok: r.ok, b: b }; }); })
         .then(function (x) {
-          if (!x.ok || !x.b.success) { msg.textContent = (x.b && x.b.error) || 'Could not send it. Please try again.'; btn.disabled = false; return; }
+          if (!x.ok || !x.b.success) { tell((x.b && x.b.error) || 'Could not send it. Please try again.', true); btn.disabled = false; return; }
           // Said in a live region outside the form, focus moved to it; the form resets for another.
-          f.reset(); paintTypes(kinds); f.hidden = true; btn.disabled = false; msg.textContent = '';
+          f.reset(); paintTypes(kinds); f.hidden = true; btn.disabled = false; tell('');
           if (done) {
             done.textContent = 'Sent: ' + x.b.label + '. A person at Kaayko checks it before it shows.' + (fd.get('email') ? ' Check your email for a link to follow it.' : '');
             done.hidden = false; done.focus();
@@ -159,7 +169,7 @@
           open.textContent = 'Report something else'; open.hidden = false;
         })
         .catch(function (err) {
-          msg.textContent = err && err.message === 'photo' ? 'That photo could not be read. Try a JPEG or PNG.' : 'Could not send it. Please try again.';
+          tell(err && err.message === 'photo' ? 'That photo could not be read. Try a JPEG or PNG.' : 'Could not send it. Please try again.', true);
           btn.disabled = false;
         });
     });
@@ -176,10 +186,10 @@
         if (!b || !b.success || document.getElementById('spr-block')) return;
         var list = (b.reports || []).map(row).join('');
         host.insertAdjacentHTML('beforeend',
-          '<div class="kbg-block spr-block" id="spr-block"><div class="kbg-title">Reported by paddlers</div>' +
+          '<div class="kbg-block spr-block" id="spr-block"><h3 class="kbg-title" id="spr-h">Reported by paddlers</h3>' +
           '<p class="spr-warn">What paddlers say they saw here, and the day. Kaayko checks each report before it shows but cannot confirm it. It is not a safety check and not permission to paddle, and no report does not mean there is nothing there. Check the local rules before you go.</p>' +
           (list || '<p class="spr-empty">No reports from the last year yet.</p>') +
-          '<button type="button" class="spr-open" id="spr-open">Report something: wildlife, a hazard, or whether paddling is allowed</button>' +
+          '<button type="button" class="spr-open" id="spr-open">Report something</button>' +
           form(spot, b.kinds || {}) + '</div>');
         wire(spot, b.kinds || {});
       })
@@ -198,7 +208,7 @@
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (b) {
         if (!b || !b.success) return;
-        host.innerHTML = '<div class="spr-block spr-inline"><h3 class="al-extras-h">Seen anything? <span>optional</span></h3>' +
+        host.innerHTML = '<div class="spr-block spr-inline"><h3 class="al-extras-h" id="spr-h">Seen anything? <span>optional</span></h3>' +
           '<p class="spr-warn">Wildlife, a hazard, or whether paddling is allowed here, with the day you saw it.</p>' +
           '<button type="button" class="spr-open" id="spr-open">Add a report</button>' + form({ id: spotId }, b.kinds || {}, opts) + '</div>';
         wire({ id: spotId }, b.kinds || {}, opts);
