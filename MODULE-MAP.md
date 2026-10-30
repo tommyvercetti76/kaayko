@@ -80,7 +80,7 @@
 - `kaayko/src/js/components/PoHeader.js` — the one page header
 - `kaayko/src/css/tokens.css` — the only token sheet; `css/po-system.css` — chamfers + field styles (po-tokens.css was folded into these); `css/search.css` — search layout (map panel pinned only on screens ≥700 px tall)
 - `kaayko/src/js/pages/search.js` — Find tab; `js/pages/addlake.js` + `css/addlake.css` — Add a lake + Suggest an edit
-- `kaayko/src/paddlingout/scouts.html` + `scouts/rules.html` + `css/scouts.css` + `js/pages/scouts.js` — /paddlingout/scouts: Kaayko Scouts (29 Oct 2026; was Mapmakers, `/paddlingout/mapmakers` 301s here). Ambazari photos in `assets/scouts/`; live count "N spots, M in India" from GET /paddlingOut (India = subtitle ends ", India"); days to the first picks; the rules on their own page. Internal names (`mapmaker_*` collections, `services/mapmakers.js`, `/admin/mapmakers/*` routes, kaay.link/m) stay as they were
+- `kaayko/src/paddlingout/scouts.html` + `scouts/rules.html` + `css/scouts.css` + `js/pages/scouts.js` — /paddlingout/scouts: Kaayko Scouts (29 Oct 2026; was Mapmakers, `/paddlingout/mapmakers` 301s here). Static, ~140 words, no API call (the live count and countdown were cut 30 Oct 2026); one photo in `assets/scouts/`; the rules on their own page. Internal names (`mapmaker_*` collections, `services/mapmakers.js`, `/admin/mapmakers/*` routes, kaay.link/m) stay as they were
 - `kaayko/src/js/services/apiClient.js` — fetch wrapper with fallback generation + caching
 - `kaayko/src/js/components/RatingHero.js` — paddle score display
 - `kaayko/src/js/components/SafetyWarnings.js` — safety alerts

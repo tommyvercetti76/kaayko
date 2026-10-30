@@ -5,8 +5,8 @@
    Josefin gold section heads over a hairline, Cormorant for everything read.
    Bebas stays where Paddling Out uses it (the header, card names), never as a
    poster headline. Colours, fonts and cuts are tokens.css's; nothing local.
-   The photos are Ambazari's own (1008 px wide), so on a wide screen the photo
-   sits beside the words instead of across the page.
+   The photo is 1008 px wide, so on a wide screen it sits beside the words
+   instead of across the page. Copy kept to what a person needs to act (30 Oct 2026).
    ───────────────────────────────────────────────────────────────────────────── */
 
 .sc-page { background: var(--bg) !important; color: var(--fg); margin: 0; -webkit-font-smoothing: antialiased; }
@@ -28,10 +28,9 @@ html.dark-theme { background: var(--bg); }
   margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--line);
   font: 600 0.75rem var(--font-sans); letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold);
 }
-.sc-h3 { margin: 1.6rem 0 0.7rem; font: 600 0.7rem var(--font-sans); letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-bright); }
 .sc-p { margin: 0 0 0.8rem; font: 400 1rem/1.7 var(--font-serif); color: var(--fg); }
 .sc-p em, .sc-looks em { color: var(--fg); font-style: italic; }   /* gold would read as a link */
-.sc-when { color: var(--muted); font-style: italic; }
+.sc-links { display: flex; flex-wrap: wrap; gap: 0 1.4rem; }
 .sc-p a, .sc-looks a, .sc-safety a { color: var(--gold-bright); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ── Buttons and links: the add flow's ───────────────────────────────────── */
@@ -57,12 +56,10 @@ html.dark-theme { background: var(--bg); }
 .sc-hero { max-width: 1080px; margin: 0 auto; }
 .sc-hero-media { position: relative; margin: 0; overflow: hidden; }
 .sc-hero-img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
-.sc-credit { position: absolute; right: 0.9rem; bottom: 0.7rem; margin: 0; font: italic 0.82rem var(--font-serif); color: rgba(255, 255, 255, 0.85); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); }
 .sc-hero-in { padding: 1.4rem 1.5rem 0; }   /* the rules page's and methodology's gutter */
 .sc-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.2rem; }
-.sc-count { min-height: 1.6em; margin: 1rem 0 0; font: 600 0.7rem/1.6 var(--font-sans); letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-bright); }
 .sc-safety {
-  max-width: 34rem; margin: 0.8rem 0 0; padding: 0.75rem 1rem;
+  max-width: 34rem; margin: 1rem 0 0; padding: 0.6rem 0.9rem;
   border-left: 3px solid var(--gold-bright); background: var(--surface);
   font: 400 1rem/1.6 var(--font-serif); color: var(--fg);
 }
@@ -75,16 +72,6 @@ html.dark-theme { background: var(--bg); }
 
 /* ── Sections ───────────────────────────────────────────────────────────── */
 .sc-band { max-width: 720px; margin: 0 auto; padding: 2.6rem 1.5rem 0; scroll-margin-top: 4rem; }
-
-/* The one real example */
-.sc-example { margin: 1.2rem 0; }
-.sc-example a:first-child { display: block; clip-path: var(--clip-md); overflow: hidden; color: var(--gold-bright); font: italic 0.98rem var(--font-serif); }   /* the alt, should the photo fail */
-.sc-example img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.6s cubic-bezier(.2, .7, .2, 1); }
-.sc-example a:first-child:hover img, .sc-example a:first-child:focus-visible img { transform: scale(1.04); }
-.sc-example a:first-child:focus-visible { outline: 3px solid var(--gold-bright); outline-offset: -5px; }
-.sc-example figcaption { margin-top: 0.6rem; font: italic 0.98rem/1.6 var(--font-serif); color: var(--muted); }
-.sc-example figcaption b { font-style: normal; font-weight: 600; color: var(--fg); }
-.sc-example figcaption a { display: flex; align-items: center; width: max-content; min-height: 44px; font-style: normal; color: var(--gold-bright); }
 
 /* What we look for: the spot page's row anatomy (forecast.css .kbg-row) */
 .sc-looks { margin: 0; padding: 0; list-style: none; }
@@ -123,5 +110,5 @@ html.dark-theme { background: var(--bg); }
 .sc-doc a:hover { color: var(--gold-bright); }
 
 @media (prefers-reduced-motion: reduce) {
-  .sc-example img, .sc-dock, .sc-dock:not(.is-on), .sc-dock.is-on { transition: none; }
+  .sc-dock, .sc-dock:not(.is-on), .sc-dock.is-on { transition: none; }
 }

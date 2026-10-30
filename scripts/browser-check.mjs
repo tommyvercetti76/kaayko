@@ -345,42 +345,34 @@ async function main() {
       }, { settle: 7000 });
 
       // ── 5. Stories
-      // ── 4c. Kaayko Scouts (29 Oct 2026, was Mapmakers): the old address 301s
-      //    here; the page answers what / why / what next / what you get in that
-      //    order, with the safety line before the first of them; both photos load;
-      //    the live count matches the API; every "Add a spot" opens the plain form.
+      // ── 4c. Kaayko Scouts (was Mapmakers; cut to the essentials 30 Oct 2026): the
+      //    old address 301s here; the safety line sits above the first section; the
+      //    photo loads; every "Add a spot" opens the plain form; the copy stays short
+      //    and names no one market.
       await checkPage(b.port, 'scouts', `${BASE}/paddlingout/scouts`, view, async (ev) => {
         const r = await ev(`(() => { const safe = document.querySelector('.sc-safety'), h2 = document.querySelector('.sc-h2');
           return { hero: (document.querySelector('.sc-hero-img') || {}).naturalWidth || 0,
-            example: (document.querySelector('.sc-example img') || {}).naturalWidth || 0,
-            count: (document.getElementById('sc-count') || {}).textContent || '',
             adds: [...document.querySelectorAll('a.sc-btn')].map(a => a.getAttribute('href')),
             star: !!document.querySelector('.po-btn--scouts.is-current'),
             safetyFirst: !!(safe && h2 && (safe.compareDocumentPosition(h2) & Node.DOCUMENT_POSITION_FOLLOWING)),
             heads: [...document.querySelectorAll('.sc-h2')].map(h => h.textContent.trim()),
-            rules: (document.querySelector('a.sc-link[href="/paddlingout/scouts/rules"]') || null) !== null,
-            words: document.querySelector('main').innerText.split(/\s+/).filter(Boolean).length }; })()`);
-        const api = await fetch(`${BASE}/api/paddlingOut`).then(x => x.json()).catch(() => null);
+            rules: !!document.querySelector('a.sc-link[href="/paddlingout/scouts/rules"]'),
+            text: document.querySelector('main').innerText }; })()`);
         const old = await fetch(`${BASE}/paddlingout/mapmakers`, { redirect: 'manual' }).catch(() => null);
         const p = [];
         if (!r.hero) p.push('the hero photo did not load');
-        if (!r.example) p.push('the Ambazari example photo did not load');
-        if (!Array.isArray(api)) p.push('could not read the API to compare counts');
-        else {
-          const india = api.filter(s => /,\s*India$/.test(String(s.subtitle || ''))).length;
-          const want = `On the map today: ${api.length} ${api.length === 1 ? 'spot' : 'spots'}, ${india} in India.`;
-          if (r.count !== want) p.push(`count says "${r.count}", API says "${want}"`);
-        }
         if (!r.adds.length || r.adds.some(h => h !== '/paddlingout/search?mode=add')) p.push(`Add buttons go to ${r.adds.join(', ')}`);
         if (!r.star) p.push('the header star is not marked current');
         if (!r.safetyFirst) p.push('the safety line is not above the first section');
-        const order = ['What the score can’t see', 'What happens next', 'A thank-you'];
+        const order = ['What we look for', 'A thank-you'];
         if (r.heads.join('|') !== order.join('|')) p.push(`sections are ${r.heads.join(' / ')}`);
         if (!r.rules) p.push('no link to the rules page');
-        if (r.words > 450) p.push(`${r.words} words on the page; the brief asked for about a quarter of the old 1,129`);
+        const words = r.text.split(/\s+/).filter(Boolean).length;
+        if (words > 180) p.push(`${words} words on the page; keep it under 180`);
+        if (/India|Nagpur|Ambazari/.test(r.text)) p.push('the page names one market (India/Ambazari); it is for every paddler');
         if (!old || old.status !== 301 || !/\/paddlingout\/scouts$/.test(old.headers.get('location') || '')) p.push(`/paddlingout/mapmakers answered ${old ? old.status + ' ' + (old.headers.get('location') || '') : 'nothing'}, not a 301 to /paddlingout/scouts`);
         return p;
-      }, { settle: 5000 });
+      }, { settle: 4000 });
 
       await checkPage(b.port, 'scouts rules', `${BASE}/paddlingout/scouts/rules`, view, async (ev) => {
         const n = await ev(`document.querySelectorAll('.sc-doc h2').length`);
