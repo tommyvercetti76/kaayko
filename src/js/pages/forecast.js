@@ -820,6 +820,12 @@ async function loadForecast() {
     if (!paused) renderTripBriefing(currentData, forecastData, currentSpot);
     if (forecastData && !paused) window.KonditionsHeatmap.render(
       document.getElementById('heatmapContainer'), forecastData, window.__kaaykoCurrentData);
+    // Arrived from a score in the list (…#heatmapContainer): the heatmap draws after load,
+    // so the browser's own jump to the anchor came too early. Go there now it exists.
+    if (location.hash === '#heatmapContainer') requestAnimationFrame(function () {
+      var h = document.getElementById('heatmapContainer');
+      if (h && h.offsetHeight) h.scrollIntoView({ block: 'start', behavior: 'auto' });
+    });
     if (forecastData?.location) renderLocationInfo(forecastData.location, spot);
     else renderLocalTips(spot);   // the facts do not depend on the forecast
     applyClosure(spot);

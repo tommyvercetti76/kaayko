@@ -207,26 +207,36 @@ async function main() {
         return p;
       }, { probe: HOME_PROBE, skip: far });
 
-      // ── 3. Paddling Out list: every card shows night exactly when it is night AT THAT LAKE
+      // ── 3. Paddling Out list (HUD, 29 Oct 2026): every lake once, paused ones apart,
+      //    half-point ratings only, a card opens in place and hands off to the forecast heatmap
       await checkPage(b.port, 'paddlingout', `${BASE}/paddlingout`, view, async (ev) => {
-        const r = await ev(`fetch('/api/paddlingOut').then(x => x.json()).then(api => ({ api, cards: [...document.querySelectorAll('[data-spot-id]')].map(c => ({ id: c.dataset.spotId, text: (c.querySelector('.badge-score, .pcard-stat-val') || {}).textContent || '', label: (c.querySelector('.badge-status, .pcard-stat-label') || {}).textContent || '' })) }))`);
+        const r = await ev(`new Promise((done) => { const t0 = Date.now(); (function wait() {
+          if (document.querySelector('#pn-list .pn-h') && !document.querySelector('#pn-list .pn-skel') || Date.now() - t0 > 20000) {
+            return fetch('/api/paddlingOut').then(x => x.json()).then(api => done({ api,
+              live: [...document.querySelectorAll('#pn-list .pn-h')].map(c => ({ id: c.dataset.spotId, r: ((c.querySelector('.pn-h-tap .pn-vd span') || {}).textContent || '').replace('/5', '') })),
+              paused: [...document.querySelectorAll('#pn-paused .pn-h')].map(c => c.dataset.spotId),
+              wide: document.documentElement.scrollWidth - innerWidth }));
+          }
+          setTimeout(wait, 250);
+        })(); })`);
         const p = [];
-        if (r.cards.length < 10) p.push(`only ${r.cards.length} lake cards rendered`);
-        const byId = new Map(r.api.map((s) => [s.id, s]));
-        for (const c of r.cards) {
-          const want = expectFor(byId.get(c.id));
-          const got = /^(Closed|Out of season)/.test(c.label.trim()) ? 'paused' : c.text.includes('\u263E') ? 'night' : c.text.trim();
-          if (want.text != null && got !== want.text) p.push(`${c.id}: card shows "${got}", the lake says "${want.text}"`);
-        }
-        // Lakes with no rating are last, greyed, after their own heading
-        const order = await ev(`[...document.querySelectorAll('#cardsContainer > [data-spot-id], #cardsContainer > .pcard-paused-head')].map(e => e.classList.contains('pcard-paused-head') ? 'HEAD' : (e.classList.contains('is-paused') ? 'P' : 'A'))`);
-        const head = order.indexOf('HEAD'), pausedWant = r.api.filter((x) => expectFor(x).closed).length;
-        if (pausedWant && head < 0) p.push('no heading above the lakes with no rating');
-        if (head >= 0 && (order.slice(0, head).includes('P') || order.slice(head + 1).includes('A'))) p.push(`rated and paused lakes are interleaved: ${order.join('')}`);
-        if (order.filter((x) => x === 'P').length !== pausedWant) p.push(`${order.filter((x) => x === 'P').length} greyed cards, the API has ${pausedWant} without a rating`);
-        // compared only against a run that saw the same lake states (a sunset between runs is not a bug)
-        const lakeStates = r.cards.map((c) => c.id + '=' + expectFor(byId.get(c.id)).text).join(',');
-        p.push(...sameEverywhere('list|' + lakeStates, view.name, r.cards.map((c) => c.id + '=' + (/^(Closed|Out of season)/.test(c.label.trim()) ? 'paused' : c.text.includes('\u263E') ? 'night' : c.text.trim()))));
+        const pausedWant = r.api.filter((x) => expectFor(x).closed).map((x) => x.id).sort();
+        if (r.live.length + r.paused.length !== r.api.length) p.push(`${r.live.length} + ${r.paused.length} cards, the API has ${r.api.length} spots`);
+        if (JSON.stringify([...r.paused].sort()) !== JSON.stringify(pausedWant)) p.push(`paused list ${r.paused.join(',')} ≠ API ${pausedWant.join(',')}`);
+        const odd = r.live.filter((c) => c.r && !/^\d(\.[05])?$/.test(c.r.trim()));
+        if (odd.length) p.push(`not a half-point rating: ${odd.map((c) => c.id + '=' + c.r).join(', ')}`);
+        if (r.live.filter((c) => c.r).length < r.live.length / 2) p.push(`only ${r.live.filter((c) => c.r).length} of ${r.live.length} cards have a rating`);
+        if (r.wide > 1) p.push(`page is ${r.wide}px wider than the screen`);
+        // Card → tap → opens in place → one link to the forecast heatmap
+        const o = await ev(`(async () => { const c = document.querySelector('#pn-list .pn-h'); c.querySelector('.pn-h-tap').click();
+          await new Promise(r => setTimeout(r, 300)); const m = c.querySelector('.pn-more'), go = m && m.querySelector('.pn-more-go');
+          return { id: c.dataset.spotId, open: !!m && !m.hidden, exp: c.querySelector('.pn-h-tap').getAttribute('aria-expanded'),
+            imgs: m ? m.querySelectorAll('.pn-gal img').length : 0, href: go ? go.getAttribute('href') : '', wide: document.documentElement.scrollWidth - innerWidth }; })()`);
+        if (!o.open || o.exp !== 'true') p.push(`tapping ${o.id} did not open it`);
+        if (!o.imgs) p.push(`${o.id} opened with no photos`);
+        if (!o.href.includes('id=' + encodeURIComponent(o.id)) || !o.href.endsWith('#heatmapContainer')) p.push(`${o.id} forecast link is "${o.href}"`);
+        if (o.wide > 1) p.push(`opened card makes the page ${o.wide}px wider than the screen`);
+        p.push(...sameEverywhere('list|' + r.api.map((x) => x.id + '=' + expectFor(x).text).join(','), view.name, r.live.map((c) => c.id + '=' + c.r)));
         return p;
       });
 
