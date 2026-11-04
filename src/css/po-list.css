@@ -56,7 +56,8 @@ html.dark-theme, .pn { background: var(--bg); }
 .pn-chips::-webkit-scrollbar { display: none; }
 /* phones scroll the chip row and a fade on the row (not the bar) says so; wide screens wrap it */
 .pn-chips.is-more { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent); }
-@media (min-width: 760px) { .pn-bar { align-items: flex-start; } .pn-chips { flex-basis: 0; flex-wrap: wrap; overflow: visible; } .pn-chips.is-more { -webkit-mask-image: none; mask-image: none; } }
+/* ≥760: the chips wrap to two rows once the spots arrive; the bar is that tall from the start, or the list drops a row (desktop CLS 0.16, browser-check 3 Nov 2026) */
+@media (min-width: 760px) { .pn-bar { align-items: flex-start; min-height: calc(68px + 0.45rem + 1.2rem + 1px); } .pn-chips { flex-basis: 0; flex-wrap: wrap; overflow: visible; } .pn-chips.is-more { -webkit-mask-image: none; mask-image: none; } }
 .pn-chip { flex: 0 0 auto; height: 34px; padding: 0 0.8rem; border: 0; cursor: pointer; white-space: nowrap; 
   background: var(--surface-2); color: var(--fg); font: 600 0.64rem var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; }
 .pn-chip:hover { background: rgba(181, 147, 90, 0.2); }
