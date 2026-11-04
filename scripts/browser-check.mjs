@@ -208,9 +208,9 @@ async function main() {
         return p;
       }, { probe: HOME_PROBE, skip: far });
 
-      // ── 3. Paddling Out list (HUD, 29 Oct 2026): every lake once, paused ones apart,
+      // ── 3. the HUD list (29 Oct 2026; at /paddlingout/list since 3 Nov): every lake once, paused ones apart,
       //    half-point ratings only, a card opens in place and hands off to the forecast heatmap
-      await checkPage(b.port, 'paddlingout', `${BASE}/paddlingout`, view, async (ev) => {
+      await checkPage(b.port, 'paddlingout list', `${BASE}/paddlingout/list`, view, async (ev) => {
         const r = await ev(`new Promise((done) => { const t0 = Date.now(); (function wait() {
           if (document.querySelector('#pn-list .pn-h') && !document.querySelector('#pn-list .pn-skel') || Date.now() - t0 > 20000) {
             return fetch('${API}/paddlingOut').then(x => x.json()).then(api => done({ api,
@@ -241,8 +241,8 @@ async function main() {
         return p;
       });
 
-      // ── 3a. the photo grid (the list as it was until 30 Oct 2026, kept as a choice 3 Nov 2026)
-      await checkPage(b.port, 'paddlingout grid', `${BASE}/paddlingout/grid`, view, async (ev) => {
+      // ── 3a. /paddlingout, the photo grid (the default again since 3 Nov 2026)
+      await checkPage(b.port, 'paddlingout', `${BASE}/paddlingout`, view, async (ev) => {
         const r = await ev(`new Promise((done) => { const t0 = Date.now(); (function wait() {
           const n = document.querySelectorAll('#cardsContainer .pcard--minimal, #cardsContainer .card').length;
           if (n || Date.now() - t0 > 20000) return done({ n, skel: document.querySelectorAll('#cardsContainer .pcard-skeleton').length,

@@ -54,9 +54,9 @@
       ? '<a class="po-btn po-back" href="' + esc(back) + '" aria-label="Back to Paddling Out">' + ICONS.back + '</a>'
       : '';
 
-    // data-view-switch="list" (the photo grid, 3 Nov 2026): a first action that goes to the
-    // HUD list and remembers the choice, so /paddlingout stops sending the visitor to the grid.
-    var list = d.viewSwitch === 'list' ? [{ key: 'view', href: '/paddlingout?view=list', label: 'List', aria: 'List view: one line a spot', set: 'hud' }] : [];
+    // data-view-switch="list" (3 Nov 2026): a first action that goes to the HUD list at
+    // /paddlingout/list and remembers the choice, so /paddlingout sends the visitor there next time.
+    var list = d.viewSwitch === 'list' ? [{ key: 'view', href: '/paddlingout/list', label: 'List', aria: 'List view: one line a spot', set: 'hud' }] : [];
     var actions = list.concat(ACTIONS).map(function (a) {
       var here = a.key === current;
       var cls = 'po-btn po-btn--' + a.key + (a.primary ? ' po-btn--primary' : '') + (here ? ' is-current' : '');

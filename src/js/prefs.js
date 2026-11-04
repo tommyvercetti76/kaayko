@@ -17,7 +17,7 @@
   const AREA_KEY  = 'kaayko_my_area';
   const FAV_KEY   = 'kaayko_favorites';
   const CARD_KEY  = 'kaayko_card_style';
-  const VIEW_KEY  = 'kaayko_po_view';      // /paddlingout layout: 'hud' (one line a spot) | 'grid' (photo cards)
+  const VIEW_KEY  = 'kaayko_po_view';      // Paddling Out layout: 'grid' (photo cards, /paddlingout, default) | 'hud' (one line a spot, /paddlingout/list)
   const BOAT_KEY  = 'kaayko_boat_type';
 
   const GOLD        = '#d9bd7b'; // --gold-bright
@@ -136,10 +136,10 @@
     return val;
   }
 
-  // ── List view (3 Nov 2026): 'hud' is /paddlingout; 'grid' sends it to /paddlingout/grid ──
-  function getListView() { try { return localStorage.getItem(VIEW_KEY) === 'grid' ? 'grid' : 'hud'; } catch { return 'hud'; } }
+  // ── List view (3 Nov 2026): 'grid' is /paddlingout (Rohan's default); 'hud' sends it to /paddlingout/list ──
+  function getListView() { try { return localStorage.getItem(VIEW_KEY) === 'hud' ? 'hud' : 'grid'; } catch { return 'grid'; } }
   function setListView(v) {
-    const val = v === 'grid' ? 'grid' : 'hud';
+    const val = v === 'hud' ? 'hud' : 'grid';
     try { localStorage.setItem(VIEW_KEY, val); } catch {}
     dispatch('kaayko:listviewchange', { view: val });
     return val;

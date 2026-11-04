@@ -370,6 +370,11 @@
           "type": 301
         },
         {
+          "source": "/paddlingout/grid",
+          "destination": "/paddlingout",
+          "type": 301
+        },
+        {
           "source": "/paddlingout/submitentry",
           "destination": "/paddlingout/search?mode=add",
           "type": 301

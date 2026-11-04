@@ -4,6 +4,24 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-03 · The photo grid is /paddlingout again; the HUD list is /paddlingout/list
+
+- **Why:** Rohan: "Make grid default." The pages swap rather than redirect, so the default costs no hop
+  and the canonical, indexed page is the one visitors land on.
+- **/paddlingout** = `src/paddlingout.html`, the 29 Oct page (commit 4c06b50) with absolute paths, the
+  List switch in the header, and a before-paint send to `/paddlingout/list` when `kaayko_po_view` is
+  `hud` (`?view=grid` bypasses). Title, robots and structured data as before 30 Oct.
+- **/paddlingout/list** = `src/paddlingout/list.html`, the HUD list, noindex, canonical `/paddlingout`,
+  no structured data; its Grid link goes to `/paddlingout?view=grid`. `/paddlingout/grid` (live for about
+  an hour) 301s to `/paddlingout` in firebase.json.
+- **Default:** `KaaykoPrefs.getListView()` returns `grid` unless `hud` was chosen. Settings → Layout
+  lists Grid first. browser-check: "paddlingout" is the grid, "paddlingout list" the HUD.
+- **Checked:** local no-store server on a phone viewport: grid renders 24 cards, indexable, one
+  structured-data block, List action present, default pref grid; the list page is noindex with the
+  canonical, 16 cards, Grid link sets the pref; the redirect fired when the pref was `hud`.
+
+---
+
 ## 2026-11-03 · The photo grid is back as a choice: /paddlingout/grid
 
 - **Why:** Rohan saw the legibility pass live and still disliked the HUD look ("looks shit"); he asked
