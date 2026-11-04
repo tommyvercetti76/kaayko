@@ -98,13 +98,17 @@
     var img = Array.isArray(sp.imgSrc) && sp.imgSrc[0];
     return img ? '<img class="pn-img" src="' + esc(img) + '" alt="" loading="lazy" decoding="async">' : '<span class="pn-img"></span>';
   }
-  function when(w) { return w.when + ' ' + hourLabel(w.start) + '–' + hourLabel(w.end); }
+  function when(w) { return w.when + ' ' + span(w.start, w.end); }
   function fUrl(id, hash) {
     var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
     return '/paddlingout/forecast' + (local ? '.html' : '') + '?id=' + encodeURIComponent(id) + (hash || '');
   }
   function row(sp, feat) { return rowHud(sp, feat); }
   function hShort(h) { var x = h % 12 || 12; return x + (h < 12 ? 'a' : 'p'); }
+  /** "2–5 pm" when both ends share a meridiem, else "11 am–2 pm". */
+  function span(a, b) { var m = function (h) { return h < 12 || h === 24 ? ' am' : ' pm'; }; return m(a) === m(b) ? (a % 12 || 12) + '–' + (b % 12 || 12) + m(b) : hourLabel(a) + '–' + hourLabel(b); }
+  /** "3–6 mph" wind to gusts; just the wind when no gust above it is known. */
+  function windRead(w) { var a = P.fmtWind(w.wind).split(' '), b = P.fmtWind(w.gust).split(' '); return (Number(b[0]) > Number(a[0]) ? a[0] + '–' + b[0] : a[0]) + ' <small>' + esc(a[1] || '') + '</small>'; }
 
   /** The window's day, one cell an hour, coloured by the half-point rating; the
    *  window raised, past hours dimmed. `tap` makes each hour a button that reads out. */
@@ -130,8 +134,8 @@
   function rowHud(sp, feat) {
     var w = sp.win, fav = P.isFavorite(sp.id) ? ' is-fav' : '', id = 'more-' + sp.id;
     var t = w ? tier(w.rating) : ['t-off', ''];
-    var reads = w ? '<span class="pn-hr"><span title="Best window" class="pn-hw"><i aria-hidden="true">' + I('clock') + '</i>' + (w.when === 'Today' ? '' : 'Tmrw ') + hShort(w.start) + '–' + hShort(w.end) + '</span>' +
-      '<span title="Wind / gust"><i aria-hidden="true">' + I('wind') + '</i>' + P.fmtWind(w.wind).replace(/ .*/, '') + '<small>/' + P.fmtWind(w.gust).replace(/ .*/, '') + '</small></span>' +
+    var reads = w ? '<span class="pn-hr"><span title="Best window" class="pn-hw"><i aria-hidden="true">' + I('clock') + '</i>' + (w.when === 'Today' ? '' : 'Tmrw ') + '<span class="pn-tl">' + span(w.start, w.end) + '</span><span class="pn-ts">' + hShort(w.start) + '–' + hShort(w.end) + '</span></span>' +
+      '<span title="Wind to gusts"><i aria-hidden="true">' + I('wind') + '</i>' + windRead(w) + '</span>' +
       '<span title="Air"><i aria-hidden="true">' + I('thermometer') + '</i>' + P.fmtTemp(w.temp).replace(/[CF]$/, '') + '</span></span>'
       : '<span class="pn-hr pn-off">' + esc((sp.status && sp.status.summary) || 'Out of season') + '</span>';
     var imgs = (Array.isArray(sp.imgSrc) ? sp.imgSrc : []).filter(function (u) { return typeof u === 'string' && /^https:\/\//.test(u); });
@@ -217,7 +221,8 @@
   // No separate "best" block: the list is sorted best-first and the first three carry
   // the mark. The date line says whether the windows are today's or tomorrow's.
   function paintBest() {
-    context(state.spots.filter(function (s) { return s.win && s.win.when === 'Tomorrow'; }).length > state.spots.length / 2);
+    var w = state.spots.map(function (s) { return s.win && s.win.when; }).filter(Boolean);
+    context(!w.length ? 'none' : w.every(function (x) { return x === 'Today'; }) ? 'today' : w.every(function (x) { return x === 'Tomorrow'; }) ? 'tomorrow' : 'mixed');
   }
 
   function paintChips() {
@@ -230,10 +235,11 @@
       chip('parking', 'Parking') + chip('restrooms', 'Restrooms');
   }
 
-  function context(tomorrow) {
-    var d = new Date(); if (tomorrow) d.setDate(d.getDate() + 1);
+  function context(when) {
+    var d = new Date(); if (when === 'tomorrow') d.setDate(d.getDate() + 1);
     var units = P.isMetric() ? '°C' : '°F';
-    $('pn-context').textContent = 'Scores for ' + d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + P.boatTypeLabel() + ' · ' + units + ' · ±0.6';
+    var day = when === 'none' ? 'Conditions' : when === 'mixed' ? 'Today & tomorrow' : (when === 'tomorrow' ? 'Tomorrow, ' : 'Today, ') + d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+    $('pn-context').textContent = day + ' · ' + P.boatTypeLabel() + ' · ' + units + ' · ±0.6';
   }
 
   async function load() {
@@ -242,7 +248,7 @@
     if (!r.ok || !Array.isArray(r.data)) { document.body.classList.remove('pn-wait'); $('pn-list').innerHTML = '<li class="pn-empty">Could not load spots. Try again in a moment.</li>'; return; }
     state.paused = r.data.filter(function (s) { return s.status && /season|closed/.test(state_(s) || ''); });
     state.spots = r.data.filter(function (s) { return state.paused.indexOf(s) === -1; });
-    paintChips(); context(false);
+    paintChips(); context('today');
     // One placeholder per lake, and the paused count, so nothing below the list moves when the cards land
     $('pn-list').innerHTML = Array(state.spots.length).fill('<li class="pn-skel" aria-hidden="true"></li>').join('');
     $('pn-paused-t').hidden = !state.paused.length;
@@ -294,6 +300,11 @@
     if (b) { b.classList.toggle('is-tip'); clearTimeout(b._t); b._t = setTimeout(function () { b.classList.remove('is-tip'); }, 2200); }
   });
   $('pn-paused-t').addEventListener('click', function () { var l = $('pn-paused'); l.hidden = !l.hidden; paint(); });
+  // On a phone the chip row scrolls; a fade on its right edge says so until the end is reached.
+  var bar = $('pn-chips');
+  function moreChips() { bar.classList.toggle('is-more', bar.scrollLeft + bar.clientWidth < bar.scrollWidth - 2); }
+  bar.addEventListener('scroll', moreChips, { passive: true }); window.addEventListener('resize', moreChips);
+  new MutationObserver(moreChips).observe(bar, { childList: true });
 
   load();
 }());

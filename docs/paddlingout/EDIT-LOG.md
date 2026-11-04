@@ -4,6 +4,28 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-03 · HUD list: readable readouts, a chip row that says it scrolls, Add a spot at the top
+
+- **Why:** Rohan felt the list had regressed. The live page was byte-identical to the 30 Oct HUD build;
+  the complaints that held up were the 11 px readouts ("3 /6", "Tmrw 2p-5p"), a filter row cut off at
+  the phone's edge with no hint it scrolls, header targets at 40 px (the 21 Oct rule is 44), and Add a
+  spot only in one line at the bottom. The card shape, the verdict chip and the one-CTA rule are unchanged.
+- **Readouts:** 0.78 rem; window "2–5 pm" / "11 am–2 pm" where there is room, "2p–5p" under 520 px;
+  wind "3–6 mph" (wind to gusts; just the wind when no higher gust is known); at 320 px the units hide
+  and the thumbnail is 64 px so nothing clips.
+- **Filter chips:** the chip row is its own scroller with a right-edge fade while more chips are off
+  screen (`#pn-chips.is-more`, cleared at the end of the row); at ≥760 px the row wraps so every chip
+  is on view and the page never scrolls sideways.
+- **Date line:** "Today, Tue Nov 3" / "Tomorrow, Wed Nov 4" / "Today & tomorrow" (was "Scores for
+  <date>", which named a day half the cards did not show). Right of it, a 44 px "Add a spot" link
+  ("+ Add" on phones). Header icons 44 px; the sticky bar offset follows the header height.
+- **Checked:** local no-store server at 320×568, 375×812 and desktop: no horizontal overflow, no
+  clipped readout, fade on/off at both ends of the row, opened card and its one link intact, no console
+  errors. One review agent read the diff; its medium finding (the fade masked the sticky bar's own
+  background) is what moved the mask onto the chip row.
+
+---
+
 ## 2026-10-21 · Add a lake rebuilt; Suggest an edit; phone audit; one set of numbers
 
 - **Commits:** kaayko-api `08a8e7c` → `df08ae8` (nearbyWater degraded flag, /locate, server-filled place,
