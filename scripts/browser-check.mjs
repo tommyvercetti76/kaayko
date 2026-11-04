@@ -241,6 +241,21 @@ async function main() {
         return p;
       });
 
+      // ── 3a. the photo grid (the list as it was until 30 Oct 2026, kept as a choice 3 Nov 2026)
+      await checkPage(b.port, 'paddlingout grid', `${BASE}/paddlingout/grid`, view, async (ev) => {
+        const r = await ev(`new Promise((done) => { const t0 = Date.now(); (function wait() {
+          const n = document.querySelectorAll('#cardsContainer .pcard--minimal, #cardsContainer .card').length;
+          if (n || Date.now() - t0 > 20000) return done({ n, skel: document.querySelectorAll('#cardsContainer .pcard-skeleton').length,
+            sw: !!document.querySelector('.po-actions [data-set-view="hud"]'), wide: document.documentElement.scrollWidth - innerWidth });
+          setTimeout(wait, 250);
+        })(); })`);
+        const p = [];
+        if (!r.n) p.push('no cards rendered');
+        if (!r.sw) p.push('no List switch in the header');
+        if (r.wide > 1) p.push(`page is ${r.wide}px wider than the screen`);
+        return p;
+      });
+
       // ── 3b. a static spot page: the same rule on its live pill
       for (const [id, slug] of [['ambazari', 'ambazari-lake-nagpur'], ['powell', 'lake-powell-utah'], ['antero', 'antero-reservoir-colorado'], ['jenny', 'jenny-lake-wyoming']]) {
         await checkPage(b.port, `spot page ${id}`, `${BASE}/paddlingout/${slug}`, view, async (ev) => {

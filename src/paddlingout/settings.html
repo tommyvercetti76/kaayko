@@ -181,10 +181,24 @@
       </div>
     </section>
 
+    <!-- ── Layout (3 Nov 2026): the HUD list or the photo grid it replaced ── -->
+    <section class="card">
+      <h2 data-kicon="grid">Layout</h2>
+      <p class="hint">How the Paddling Out page is laid out. List shows one line a spot with its best window; Grid is the photo-card page.</p>
+      <div class="seg" id="viewSeg" role="group" aria-label="Layout">
+        <button type="button" data-view="hud" aria-pressed="false">
+          List <span class="sub">one line a spot</span>
+        </button>
+        <button type="button" data-view="grid" aria-pressed="false">
+          Grid <span class="sub">photo cards</span>
+        </button>
+      </div>
+    </section>
+
     <!-- ── Card style ── -->
     <section class="card">
       <h2 data-kicon="grid">Card style</h2>
-      <p class="hint">How lakes appear on the Paddling Out list. Minimal shows image-first tiles — long-press a tile to love it.</p>
+      <p class="hint">How lakes appear in the Grid layout. Minimal shows image-first tiles — long-press a tile to love it.</p>
       <div class="seg" id="cardSeg" role="group" aria-label="Card style">
         <button type="button" data-card="full" aria-pressed="false">
           Detailed <span class="sub">photo · score · notes</span>
@@ -247,6 +261,23 @@
         b.addEventListener('click', () => { P.setUnits(b.dataset.units); paintUnits(); });
       });
       paintUnits();
+
+      // ── Layout segmented toggle ──
+      const viewSeg = document.getElementById('viewSeg');
+      if (viewSeg && P.getListView) {
+        function paintView() {
+          const cur = P.getListView();
+          viewSeg.querySelectorAll('button').forEach(b => {
+            const on = b.dataset.view === cur;
+            b.classList.toggle('active', on);
+            b.setAttribute('aria-pressed', String(on));
+          });
+        }
+        viewSeg.querySelectorAll('button').forEach(b => {
+          b.addEventListener('click', () => { P.setListView(b.dataset.view); paintView(); });
+        });
+        paintView();
+      }
 
       // ── Card style segmented toggle ──
       const cardSeg = document.getElementById('cardSeg');

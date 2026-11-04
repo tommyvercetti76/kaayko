@@ -239,7 +239,7 @@
     var d = new Date(); if (when === 'tomorrow') d.setDate(d.getDate() + 1);
     var units = P.isMetric() ? '°C' : '°F';
     var day = when === 'none' ? 'Conditions' : when === 'mixed' ? 'Today & tomorrow' : (when === 'tomorrow' ? 'Tomorrow, ' : 'Today, ') + d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
-    $('pn-context').textContent = day + ' · ' + P.boatTypeLabel() + ' · ' + units + ' · ±0.6';
+    $('pn-context').innerHTML = esc(day) + ' · ' + esc(P.boatTypeLabel()) + ' · ' + esc(units) + '<span class="pn-mae"> · ±0.6</span>';
   }
 
   async function load() {
@@ -286,6 +286,8 @@
     if (on) state.filters.add(k); else state.filters.delete(k);
     b.setAttribute('aria-pressed', String(on)); paint();
   });
+  // The Grid switch remembers the choice (prefs), then the link goes there.
+  document.addEventListener('click', function (e) { var v = e.target.closest('[data-set-view]'); if (v && P.setListView) P.setListView(v.getAttribute('data-set-view')); });
   // A tapped icon says what it is, then fades; a second tap or another icon closes it.
   document.addEventListener('click', function (e) {
     var hc = e.target.closest('.pn-hc');

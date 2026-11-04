@@ -4,6 +4,25 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-03 · The photo grid is back as a choice: /paddlingout/grid
+
+- **Why:** Rohan saw the legibility pass live and still disliked the HUD look ("looks shit"); he asked
+  for the old mode as an option. The HUD list stays the default; the grid is one tap away and the
+  choice is remembered.
+- **Grid page:** `src/paddlingout/grid.html` is the 29 Oct page (commit 4c06b50) with absolute paths,
+  `noindex` + canonical `/paddlingout`, no structured data, and the header's new List action
+  (`PoHeader` `data-view-switch="list"`). Same scripts as then: paddlingout.js, PaddleCard, the tour.
+- **Preference:** `KaaykoPrefs.getListView()/setListView()` on `kaayko_po_view` ('hud' | 'grid').
+  `/paddlingout` sends a `grid` visitor to `/paddlingout/grid` before paint; `?view=list` is the way
+  back. Switches: the HUD date line's Grid link, the grid header's List action, Settings → Layout.
+  On phones the date line drops " · ±0.6" to make room.
+- **Checked:** local no-store server, phone and desktop: grid renders 24 cards with no relative
+  script paths and no console errors; each switch sets the pref; Settings toggle paints and sets it;
+  the HUD redirect condition is true only when the pref is grid and `?view=list` is absent.
+  browser-check gained a "paddlingout grid" page.
+
+---
+
 ## 2026-11-03 · HUD list: readable readouts, a chip row that says it scrolls, Add a spot at the top
 
 - **Why:** Rohan felt the list had regressed. The live page was byte-identical to the 30 Oct HUD build;

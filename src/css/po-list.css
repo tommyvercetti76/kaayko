@@ -30,6 +30,7 @@ html.dark-theme, .pn { background: var(--bg); }
 .pn-gear:focus-visible, .pn-search:has(input:focus-visible) { outline: 2px solid var(--gold-bright); outline-offset: -3px; }
 .pn-context { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin: 0; padding: 0 1rem; min-height: 44px; font: 600 0.66rem var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); }
 .pn-context span { flex: 1 1 auto; min-width: 0; }
+.pn-context-acts { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.9rem; }
 .pn-context-add { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.3rem; min-height: 44px; color: var(--gold-bright); white-space: nowrap; }
 .pn-context-add svg { width: 0.9rem; height: 0.9rem; }
 .pn-context-add:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: -3px; }
@@ -148,6 +149,8 @@ html.dark-theme, .pn { background: var(--bg); }
   .pn-brand-k { display: none; }
   .pn-brand-t { font-size: 1.05rem; }
   .pn-context { letter-spacing: 0.1em; }
+  .pn-context .pn-mae { display: none; }   /* ±0.6 stays on the methodology page and wide screens */
+  .pn-context-acts { gap: 0.7rem; }
   .pn-context-add .pn-context-add-l { display: none; }   /* "+ Add": room for the date line (it may still wrap at 320px) */
   .pn-tl { display: none; } .pn-ts { display: inline; }
   .pn-hr { gap: 0.5rem; }

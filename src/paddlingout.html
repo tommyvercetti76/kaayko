@@ -4,6 +4,8 @@
     <script src="/js/prod-config.js"></script>
     <!-- Shared preferences (units / my area / favorites) — load before module scripts -->
     <script src="/js/prefs.js"></script>
+    <!-- The photo grid (the page as it was until 30 Oct 2026) is a choice the visitor keeps; ?view=list is the way back -->
+    <script>try{if(KaaykoPrefs.getListView()==='grid'&&!/[?&]view=list\b/.test(location.search))location.replace('/paddlingout/grid'+location.search)}catch(e){}</script>
     <script src="/js/util.js"></script>
     <script src="/js/kaayko-icons.js"></script>
     <script src="/js/consent-notice.js" defer></script>
@@ -256,7 +258,7 @@
   <a class="pn-gear" href="/paddlingout/search" aria-label="Map: find any water"><span data-kicon-raw="pin" aria-hidden="true"></span></a>
   <a class="pn-gear" href="/paddlingout/settings" aria-label="Settings"><span data-kicon-raw="cog" aria-hidden="true"></span></a>
 </header>
-<p class="pn-context"><span id="pn-context">Loading conditions…</span><a class="pn-context-add" href="/paddlingout/search?mode=add" aria-label="Add a spot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add<span class="pn-context-add-l">&nbsp;a spot</span></a></p>
+<p class="pn-context"><span id="pn-context">Loading conditions…</span><span class="pn-context-acts"><a class="pn-context-add" href="/paddlingout/grid" data-set-view="grid" aria-label="Photo grid view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5"/><rect x="13.5" y="4" width="6.5" height="6.5"/><rect x="4" y="13.5" width="6.5" height="6.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5"/></svg>Grid</a><a class="pn-context-add" href="/paddlingout/search?mode=add" aria-label="Add a spot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add<span class="pn-context-add-l">&nbsp;a spot</span></a></span></p>
 
 <main class="pn-main">
   <h1 class="pn-vh">Paddle conditions for every spot, best first</h1>

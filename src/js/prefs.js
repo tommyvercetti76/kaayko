@@ -17,6 +17,7 @@
   const AREA_KEY  = 'kaayko_my_area';
   const FAV_KEY   = 'kaayko_favorites';
   const CARD_KEY  = 'kaayko_card_style';
+  const VIEW_KEY  = 'kaayko_po_view';      // /paddlingout layout: 'hud' (one line a spot) | 'grid' (photo cards)
   const BOAT_KEY  = 'kaayko_boat_type';
 
   const GOLD        = '#d9bd7b'; // --gold-bright
@@ -135,6 +136,15 @@
     return val;
   }
 
+  // ── List view (3 Nov 2026): 'hud' is /paddlingout; 'grid' sends it to /paddlingout/grid ──
+  function getListView() { try { return localStorage.getItem(VIEW_KEY) === 'grid' ? 'grid' : 'hud'; } catch { return 'hud'; } }
+  function setListView(v) {
+    const val = v === 'grid' ? 'grid' : 'hud';
+    try { localStorage.setItem(VIEW_KEY, val); } catch {}
+    dispatch('kaayko:listviewchange', { view: val });
+    return val;
+  }
+
   // ── Boat type (craft the Paddle Score adjusts for) ───────────────────────────
   // Ids match the API's craft taxonomy (rate.html + ?craft= param). Kayak is the
   // scoring baseline — absent/kayak sends no param, so old URLs stay clean.
@@ -235,6 +245,7 @@
   const STORAGE_EVENTS = {
     [UNITS_KEY]: 'kaayko:unitschange',
     [CARD_KEY]:  'kaayko:cardstylechange',
+    [VIEW_KEY]:  'kaayko:listviewchange',
     [BOAT_KEY]:  'kaayko:boattypechange',
     [FAV_KEY]:   'kaayko:favchange',
     [AREA_KEY]:  'kaayko:areachange'
@@ -315,7 +326,7 @@
     fmtTemp, fmtWind, fmtPrecip, fmtDist, fmtHeight, fmtArea, fmtVolume, fmtFlow, localizeUnits,
     kaaykoApiBase, registerFavPainter,
     paddleScoreColor, scoreMeta, scoreReason, scoreScale,
-    getCardStyle, setCardStyle,
+    getCardStyle, setCardStyle, getListView, setListView,
     BOAT_TYPES, getBoatType, setBoatType, boatTypeLabel, craftParam, withCraft,
     getArea, clearArea,
     getFavorites, isFavorite, addFavorite, removeFavorite, toggleFavorite, sortFavoritesFirst,
