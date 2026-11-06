@@ -500,18 +500,15 @@
     if (!S.result || !S.result.token) return;
     var email = $('al-email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { say('al-extras-msg', 'That email address does not look right.', 'error'); return; }
-    // Kaayko Scouts: the name for "Added by" and the monthly-picks opt-in. The
-    // server checks both again; the picks need an email to reach the person.
+    // Kaayko Scouts: the name for "Added by". The server checks it again. (The
+    // monthly-picks opt-in went on 6 Nov 2026: every approved spot earns a store code.)
     var name = $('al-name').value.replace(/\s+/g, ' ').trim();
-    var picks = $('al-picks').checked;
     if (name && name.length < 2) { say('al-extras-msg', 'Use at least 2 characters for your name.', 'error'); $('al-name').focus(); return; }
-    if (picks && !email) { say('al-extras-msg', 'Add your email so we can tell you if your spot is picked.', 'error'); $('al-email').focus(); return; }
     var body = {
       token: S.result.token,
       parkingAvl: $('al-parking').checked ? 'Y' : 'N',
       restroomsAvl: $('al-restrooms').checked ? 'Y' : 'N',
-      creditName: name,
-      mapmakerOptIn: picks
+      creditName: name
     };
     var note = $('al-note').value.trim();
     if (note) body.note = note;
@@ -524,8 +521,7 @@
     btn.disabled = false; btn.textContent = 'Save';
     if (!r.ok || !r.data || !r.data.success) { say('al-extras-msg', errorText(r, 'Could not save. Please try again.'), 'error'); return; }
     S.extrasSaved = true; btn.disabled = true; btn.textContent = 'Saved';
-    say('al-extras-msg', picks ? 'Saved. Your spot is up for the monthly picks. Check your email for a link to follow it.'
-      : email ? 'Saved. Check your email for a link to follow it; we will write again when it is reviewed.' : 'Saved. Thank you.', 'ok');
+    say('al-extras-msg', email ? 'Saved. Check your email for a link to follow it; we write again when it is reviewed, with your store code if it goes live.' : 'Saved. Thank you.', 'ok');
   });
   // Typing again after a save makes Save live again; leaving the screen with
   // unsaved words asks first (30 Oct 2026 audit: the big button threw them away).
@@ -537,10 +533,10 @@
   function extrasDirty() {
     if (!S.result || !S.result.token || S.extrasSaved) return false;
     return ['al-note', 'al-email', 'al-name'].some(function (id) { return $(id).value.trim(); }) ||
-      ['al-parking', 'al-restrooms', 'al-picks'].some(function (id) { return $(id).checked; });
+      ['al-parking', 'al-restrooms'].some(function (id) { return $(id).checked; });
   }
   function mayLeaveSent() {
-    return !extrasDirty() || window.confirm('Your name, email or picks are not saved yet. Leave without saving them?');
+    return !extrasDirty() || window.confirm('Your name or email is not saved yet. Leave without saving it?');
   }
   $('al-another').addEventListener('click', function () { if (mayLeaveSent()) startOver(); });
   $('al-tomap').addEventListener('click', function () {
@@ -550,7 +546,7 @@
 
   function clearInputs() {
     ['al-note', 'al-email', 'al-name', 'al-other', 'al-search', 'al-e-name', 'al-e-note', 'al-e-email'].forEach(function (id) { if ($(id)) $(id).value = ''; });
-    ['al-parking', 'al-restrooms', 'al-picks', 'al-e-parking', 'al-e-restrooms'].forEach(function (id) { if ($(id)) $(id).checked = false; });
+    ['al-parking', 'al-restrooms', 'al-e-parking', 'al-e-restrooms'].forEach(function (id) { if ($(id)) $(id).checked = false; });
     ['al-photos-msg', 'al-pin-msg', 'al-water-msg', 'al-extras-msg', 'al-edit-msg'].forEach(function (id) { say(id, ''); });
   }
   function startOver() {

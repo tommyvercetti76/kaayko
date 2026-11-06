@@ -106,7 +106,7 @@ GET /api/paddlingOut/admin/reports?status= · POST /api/paddlingOut/admin/report
 POST /api/paddlingOut/admin/mapmakers/send-link {submissionId} → Kortex "Send their link" (platform admin)
 POST /api/paddlingOut/admin/mapmakers/takedown {submissionId, decision: remove|keep, note} → Kortex "Take it down" / "Keep it" on a finder's take-down request; the finder is emailed either way (platform admin)
 POST /api/admin/orders/cancel on a pick's $0 order (parentOrderId cs_…) → withdraws the pick (no refund to make; finder emailed)
-GET|POST /api/paddlingOut/admin/mapmakers/picks[/{id}/resend|release|revoke] → Kortex → Submissions: Pick, and the Picks tab (platform admin)
+GET|POST /api/paddlingOut/admin/mapmakers/picks[/{id}/resend|release|revoke] → Kortex → Submissions: Pick, and the Picks tab (platform admin). The monthly picks ended 6 Nov 2026: Approve now mints a one-use 20% store code (`services/scoutRewards.js` → `arcade_rewards/SCOUT-…`) for any approved spot with an email, sent in the live mail; the picks routes only serve picks made before then
 POST /api/paddlingOut/admin/submissions/{id}/reject   → new: hide + delete every prefixed photo; edit: live spot untouched, pending photos deleted; body {rejectionReason}
 GET  /api/paddlingOut/admin/spots[/{id}]      → whole catalogue incl. hidden, with isPublic/photos/hasCachedScore
 PATCH /api/paddlingOut/admin/spots/{id}       → edit whitelisted fields, archived (publish toggle); live spots must stay complete; audit → paddling_spot_audit

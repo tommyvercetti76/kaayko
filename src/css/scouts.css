@@ -106,6 +106,9 @@ html.dark-theme { background: var(--bg); }
 .sc-rule ul { margin: 0 0 0.8rem; padding-left: 1.2rem; }
 .sc-rule li { margin-bottom: 0.4rem; font: 400 1rem/1.7 var(--font-serif); color: var(--fg); }
 .sc-rule p, .sc-doc-end { margin: 0 0 0.8rem; font: 400 1rem/1.7 var(--font-serif); color: var(--fg); }   /* not .sc-doc p: it would beat the eyebrow and the meta line */
+/* Each rule ends in one plain-words line (6 Nov 2026: "the rules page should EXPLAIN them better") */
+.sc-rule .sc-plain { padding: 0.55rem 0.9rem; border-left: 3px solid var(--gold); background: var(--surface); font-style: italic; color: rgba(237, 232, 223, 0.9); }
+.sc-rule .sc-plain b { display: inline-block; margin-right: 0.6rem; font: 600 0.66rem var(--font-sans); letter-spacing: 0.2em; text-transform: uppercase; font-style: normal; color: var(--gold); }
 .sc-doc a { color: var(--gold); }
 .sc-doc a:hover { color: var(--gold-bright); }
 

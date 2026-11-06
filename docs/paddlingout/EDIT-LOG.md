@@ -4,6 +4,28 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-06 · Scouts: every approved spot earns a 20% code; the page and the rules rewritten
+
+- **Why:** Rohan: the Scouts page was "BANAL", "We check it, then your name goes on it" was AI slop,
+  the rules must be true and explain themselves, and "remove the 10 per month → whoever submits gets a
+  discount code when approved".
+- **The reward (kaayko-api):** `services/scoutRewards.js` mints `SCOUT-<8 Crockford>` once per approved
+  new spot that has an email: a promo in `arcade_rewards`, 20% off one order of Kaayko's own pieces
+  (`scope: 'cart'` already skips Kreator lines), one use (`maxUses: 1`, now honoured by
+  `discounts.js`), 180 days. Kept on the submission as `scoutCode` so Kortex can show it and a lost one
+  can be re-sent by hand. The "your spot is live" mail carries it. Percent and days are env-tunable
+  (`SCOUT_CODE_PERCENT`, `SCOUT_CODE_DAYS`); 20 and 180 are my numbers, not Rohan's.
+- **The picks, retired:** the details step ignores `mapmakerOptIn`; `picks-on/off` on kaay.link/m refuse
+  (409); the finder page shows no picks button or chip; Scout emails no longer mention them; the add
+  flow has no opt-in box. The claim machinery stays so a pick made before 6 Nov is honoured.
+- **Scouts page:** "Put your spot on the map", a lede with a voice, "What makes the cut", "The deal".
+  178 words, names no market. **Rules page:** ten rules, each ending in a "Plainly" line; effective
+  6 Nov 2026. **Privacy:** the Monthly-picks item became "Your thank-you code".
+- **Checked:** jest (api) green; local no-store server at 375 and desktop; browser-check updated
+  (section names; every rule needs its plain line).
+
+---
+
 ## 2026-11-06 · Scouts binoculars drawn with Forge
 
 - **Why:** Rohan: "Binocular image is SHIT, draw using FORGE."

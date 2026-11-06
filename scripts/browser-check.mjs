@@ -392,7 +392,7 @@ async function main() {
         if (!r.adds.length || r.adds.some(h => h !== '/paddlingout/search?mode=add')) p.push(`Add buttons go to ${r.adds.join(', ')}`);
         if (!r.star) p.push('the header star is not marked current');
         if (!r.safetyFirst) p.push('the safety line is not above the first section');
-        const order = ['What we look for', 'A thank-you'];
+        const order = ['What makes the cut', 'The deal'];
         if (r.heads.join('|') !== order.join('|')) p.push(`sections are ${r.heads.join(' / ')}`);
         if (!r.rules) p.push('no link to the rules page');
         const words = r.text.split(/\s+/).filter(Boolean).length;
@@ -403,8 +403,11 @@ async function main() {
       }, { settle: 4000 });
 
       await checkPage(b.port, 'scouts rules', `${BASE}/paddlingout/scouts/rules`, view, async (ev) => {
-        const n = await ev(`document.querySelectorAll('.sc-doc h2').length`);
-        return n === 10 ? [] : [`${n} rules, expected 10`];
+        const r = await ev(`({ n: document.querySelectorAll('.sc-doc h2').length, plain: document.querySelectorAll('.sc-doc .sc-plain').length, picks: /monthly picks|up to ten/i.test(document.querySelector('.sc-doc').innerText.replace(/^[\\s\\S]*?<\\/header>/, '')) })`);
+        const p = [];
+        if (r.n !== 10) p.push(`${r.n} rules, expected 10`);
+        if (r.plain !== r.n) p.push(`${r.plain} plain-words lines for ${r.n} rules: every rule explains itself`);
+        return p;
       });
 
       await checkPage(b.port, 'stories', `${BASE}/stories`, view, async (ev) =>
