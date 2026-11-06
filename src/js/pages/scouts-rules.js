@@ -15,7 +15,7 @@
   'use strict';
 
   var $ = function (id) { return document.getElementById(id); };
-  var V = 'v20261106';
+  var V = 'v20261106b';   // b: the HD set (1280, 24 steps), 6 Nov 2026 evening
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // One page a rule, keyed by the section id, in the order the sections stand.
@@ -48,7 +48,7 @@
   walk.innerHTML =
     '<div class="rt-pop" id="rt-pop" tabindex="-1">' +
       '<button type="button" class="rt-close" id="rt-close" aria-label="Close">&times;</button>' +
-      '<div class="rt-pic"><img id="rt-img" alt="" width="720" height="720" decoding="async"></div>' +
+      '<div class="rt-pic"><img id="rt-img" alt="" width="1024" height="1024" decoding="async"></div>' +
       '<p class="rt-k" id="rt-k"></p><h2 class="rt-t" id="rt-t"></h2><p class="rt-s" id="rt-s" aria-live="polite"></p>' +
       '<div class="rt-foot"><span class="rt-count" id="rt-count"></span><span class="rt-dots" id="rt-dots" aria-hidden="true"></span>' +
       '<div class="rt-btns"><button type="button" class="rt-back" id="rt-back">Back</button><button type="button" class="rt-next" id="rt-next">Next</button></div></div>' +
