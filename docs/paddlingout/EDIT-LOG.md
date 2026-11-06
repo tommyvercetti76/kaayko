@@ -4,6 +4,25 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-06 · The rules tour is a picture book, one Forge picture a rule
+
+- **Why:** Rohan, on the first tour: "you are just cycling through the text". A visual tour needs a
+  picture per rule, not the rule re-read.
+- **Pictures:** ten subjects rendered with Forge's minimalist-tshirt engine (one seed each, mono
+  settings, `~/Desktop/Kaayko_Derived/forge-scouts-rules-icons-2026-11-06-seed300`, sheets inside).
+  Three came back as animals (name badge → antelope, key → moose, calendar → horse: the engine's
+  animal prior) and the life jacket was fussy; re-rendered with plainer object words and an animal
+  negative list. Keyed to the site gold on transparency (`scratchpad gold_mark.py`: luminance → alpha,
+  square crop, 720 px webp) at `src/assets/scouts/rules/<rule>-v20261106.webp` (assets are immutable,
+  so a redraw changes the date in the name).
+- **Tour:** `js/pages/scouts-rules.js` is now a picture book: a centred chamfered card with the
+  picture, the rule's name, one child's-words line, dots, Back/Next, ×, Esc, arrows; the next picture
+  is preloaded. No spotlight, no mask. browser-check demands the first page's picture to have loaded.
+- **Checked:** local no-store server at 375 and desktop, pages 1 and 5; production via browser-check
+  after the deploy.
+
+---
+
 ## 2026-11-06 · Settings apply after the back button; the rules get an "Explain me like I am a child" tour
 
 - **The bug (Rohan: "ANY actions I take in settings DO NOT apply"):** reproduced on production. Grid
