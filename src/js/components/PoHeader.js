@@ -15,24 +15,25 @@
  * data-brand-href  where the title links (default "/paddlingout"; the home
  *                  page points at "/")
  *
- * Every page gets the same two actions in the same order, so the way to
- * Find or add a lake, and to Settings, never moves. Plain script, no module —
- * pages load it before their own scripts.
+ * Every page gets the same three actions in the same order (Search, Scouts,
+ * Settings), all quiet text+icon links: no filled button (Rohan, 6 Nov 2026: the
+ * gold block read as a preselected choice). The current page's action carries a
+ * hairline. Plain script, no module — pages load it before their own scripts.
  */
 (function () {
   var ICONS = {
     back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>',
     submit: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm1 8v3h-2v-3H8V8h3V5h2v3h3v2h-3z"/></svg>',
-    scouts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8-4.3-4.1 5.9-.9z"/></svg>',
-    view: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+    // Binoculars: the Scouts look for spots (was a star until 6 Nov 2026)
+    scouts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6.5" cy="15.5" r="3.5"/><circle cx="17.5" cy="15.5" r="3.5"/><path d="M10 15h4M6.5 12V6.5a1.5 1.5 0 0 1 3 0V10M17.5 12V6.5a1.5 1.5 0 0 0-3 0V10"/></svg>',
     settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
   };
 
-  // Find and Add are one action since 3 Oct 2026: one page, two tabs. Search,
-  // and if we do not cover the water, add it there with the name and pin carried.
+  // Search and Add are one page since 3 Oct 2026 (two tabs): search any water, and
+  // if we do not cover it, add it there with the name and pin carried.
   var ACTIONS = [
-    { key: 'search',   href: '/paddlingout/search',      label: 'Find or add', aria: 'Find a lake, or add one', primary: true },
+    { key: 'search',   href: '/paddlingout/search',      label: 'Search',   aria: 'Search any water, or add a spot' },
     // Kaayko Scouts (28 Oct 2026 as Mapmakers, renamed 29 Oct): names on spots and the monthly picks.
     { key: 'scouts',    href: '/paddlingout/scouts',     label: 'Scouts',    aria: 'Kaayko Scouts: add a spot, get your name on it' },
     { key: 'settings', href: '/paddlingout/settings',    label: 'Settings', aria: 'Settings and saved lakes' }
@@ -54,14 +55,12 @@
       ? '<a class="po-btn po-back" href="' + esc(back) + '" aria-label="Back to Paddling Out">' + ICONS.back + '</a>'
       : '';
 
-    // data-view-switch="list" (3 Nov 2026): a first action that goes to the HUD list at
-    // /paddlingout/list and remembers the choice, so /paddlingout sends the visitor there next time.
-    var list = d.viewSwitch === 'list' ? [{ key: 'view', href: '/paddlingout/list', label: 'List', aria: 'List view: one line a spot', set: 'hud' }] : [];
-    var actions = list.concat(ACTIONS).map(function (a) {
+    // The List / Grid layout choice lives in Settings only (Rohan, 6 Nov 2026), not here.
+    var actions = ACTIONS.map(function (a) {
       var here = a.key === current;
-      var cls = 'po-btn po-btn--' + a.key + (a.primary ? ' po-btn--primary' : '') + (here ? ' is-current' : '');
+      var cls = 'po-btn po-btn--' + a.key + (here ? ' is-current' : '');
       return '<a class="' + cls + '" href="' + a.href + '" aria-label="' + esc(a.aria) + '"' +
-        (here ? ' aria-current="page"' : '') + (a.set ? ' data-set-view="' + a.set + '"' : '') + '>' + ICONS[a.key] +
+        (here ? ' aria-current="page"' : '') + '>' + ICONS[a.key] +
         '<span class="po-btn-label">' + esc(a.label) + '</span></a>';
     }).join('');
 
@@ -75,8 +74,6 @@
         '</div>' +
         '<nav class="po-actions" aria-label="Paddling Out">' + actions + '</nav>' +
       '</div>';
-    var sw = host.querySelector('[data-set-view]');
-    if (sw) sw.addEventListener('click', function () { if (window.KaaykoPrefs && KaaykoPrefs.setListView) KaaykoPrefs.setListView(sw.getAttribute('data-set-view')); });
   }
 
   // Smart back: when the visitor arrived from another page on this site, go

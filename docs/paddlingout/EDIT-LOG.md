@@ -4,6 +4,24 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-06 · Header: quiet links, "Search", binoculars, layout choice in Settings only
+
+- **Why:** Rohan, on the grid page: the gold "Find or Add" block read as a preselected choice and the
+  name "looks crap"; Scouts needs binoculars, not a star; the List/Grid option belongs in Settings,
+  not the header; everything must be clear and sleek on phones too.
+- **PoHeader (every Paddling Out page):** three actions, all the same weight: Search, Scouts, Settings.
+  No filled button; the current page keeps the hairline. Scouts icon is binoculars. The List action
+  (`data-view-switch`) is gone; `.po-btn--primary` is gone from the CSS.
+- **List page:** the Grid link left the date line; Settings → Layout is the one place to switch
+  (the `kaayko_po_view` pref and `?view=grid` bypass are unchanged).
+- **Grid page:** the tour step is titled "Search any water".
+- **browser-check:** the grid check now fails on any filled header action or labels other than
+  Search, Scouts, Settings.
+- **Checked:** local no-store server at 320, 375 and desktop on the grid, Search, Scouts and
+  Settings pages: 44×44 targets, zero filled actions, no sideways overflow, no console errors.
+
+---
+
 ## 2026-11-03 · The photo grid is /paddlingout again; the HUD list is /paddlingout/list
 
 - **Why:** Rohan: "Make grid default." The pages swap rather than redirect, so the default costs no hop

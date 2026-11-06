@@ -286,8 +286,6 @@
     if (on) state.filters.add(k); else state.filters.delete(k);
     b.setAttribute('aria-pressed', String(on)); paint();
   });
-  // The Grid switch remembers the choice (prefs), then the link goes there.
-  document.addEventListener('click', function (e) { var v = e.target.closest('[data-set-view]'); if (v && P.setListView) P.setListView(v.getAttribute('data-set-view')); });
   // A tapped icon says what it is, then fades; a second tap or another icon closes it.
   document.addEventListener('click', function (e) {
     var hc = e.target.closest('.pn-hc');

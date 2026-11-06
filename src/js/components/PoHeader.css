@@ -2,12 +2,12 @@
    PoHeader — the ONE header every Paddling Out page uses.
    Rendered by js/components/PoHeader.js into <div id="po-header" …>.
 
-   Layout, all pages:   [‹ back]  eyebrow / TITLE          [Search] [Add] [Settings]
+   Layout, all pages:   [‹ back]  eyebrow / TITLE      [Search] [Scouts] [Settings]
    Mobile (≤560px):     labels drop, icons stay; back chevron stays first.
    The current section's action is marked aria-current + .is-current.
 
-   Controls are plain: text + icon, one solid gold primary. No boxes, no
-   chamfers on small things.
+   Controls are plain: text + icon, all the same weight. No filled button (the
+   gold block read as a preselected choice, 6 Nov 2026), no boxes, no chamfers.
    ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
@@ -59,8 +59,8 @@
   line-height: 1;
 }
 
-/* Actions: quiet text+icon links; the primary is one solid gold block. No
-   boxes around small controls — they are links, not badges. */
+/* Actions: quiet text+icon links. No boxes around small controls — they are
+   links, not badges. */
 .po-btn {
   flex-shrink: 0;
   /* 44 px tap target (phone audit, 21 Oct 2026: were 36–39 px, the only
@@ -97,11 +97,6 @@
 
 /* Where you are: gold-bright with a hairline underneath */
 .po-btn.is-current { color: var(--poh-gold-bright); box-shadow: inset 0 -2px 0 var(--poh-gold-bright); }
-
-/* Primary action: Add a lake — solid gold, square */
-.po-btn--primary { padding: 0 0.9rem 0 0.7rem; background: var(--poh-gold-bright); color: #141210; }
-.po-btn--primary:hover { background: #e6cd8e; color: #141210; }
-.po-btn--primary.is-current { box-shadow: none; background: var(--poh-gold); color: #141210; }   /* .po-btn.is-current made the label gold on gold, 1.6:1 (axe, 30 Oct 2026) */
 
 /* Back chevron — plain */
 .po-back { width: 44px; padding: 0; justify-content: center; }

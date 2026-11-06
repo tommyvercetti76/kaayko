@@ -246,12 +246,14 @@ async function main() {
         const r = await ev(`new Promise((done) => { const t0 = Date.now(); (function wait() {
           const n = document.querySelectorAll('#cardsContainer .pcard--minimal, #cardsContainer .card').length;
           if (n || Date.now() - t0 > 20000) return done({ n, skel: document.querySelectorAll('#cardsContainer .pcard-skeleton').length,
-            sw: !!document.querySelector('.po-actions [data-set-view="hud"]'), wide: document.documentElement.scrollWidth - innerWidth });
+            filled: [...document.querySelectorAll('.po-actions .po-btn')].filter(b => getComputedStyle(b).backgroundColor !== 'rgba(0, 0, 0, 0)').length,
+            labels: [...document.querySelectorAll('.po-actions .po-btn-label')].map(b => b.textContent), wide: document.documentElement.scrollWidth - innerWidth });
           setTimeout(wait, 250);
         })(); })`);
         const p = [];
         if (!r.n) p.push('no cards rendered');
-        if (!r.sw) p.push('no List switch in the header');
+        if (r.filled) p.push(`${r.filled} header action(s) drawn as a filled button; all are quiet links`);
+        if (r.labels.join(',') !== 'Search,Scouts,Settings') p.push(`header actions are ${r.labels.join(', ')}`);
         if (r.wide > 1) p.push(`page is ${r.wide}px wider than the screen`);
         return p;
       });
@@ -328,7 +330,7 @@ async function main() {
 
       if (far) continue;   // the far viewer only re-reads the lake pages
 
-      // ── 4b. Find or add: one page. The old add address forwards, filled in.
+      // ── 4b. Search and Add: one page. The old add address forwards, filled in.
       //    Add a lake is screens (21 Oct 2026): photos → cross map → water → sent.
       await checkPage(b.port, 'find or add', `${BASE}/paddlingout/submitentry?name=Dillon%20Reservoir&lat=39.6175&lng=-106.0526`, view, async (ev) => {
         const r = await ev(`({ url: location.pathname + location.search, title: (document.getElementById('po-title') || {}).textContent, actions: document.querySelectorAll('.po-actions .po-btn').length, add: !document.getElementById('add-pane').hidden, find: !document.getElementById('find-pane').hidden, step: document.getElementById('al').dataset.step, next: document.getElementById('al-next').textContent })`);
@@ -337,7 +339,7 @@ async function main() {
         if (!r.add || r.find) p.push('the Add tab is not the one showing');
         if (r.title !== 'Add a spot') p.push(`header says "${r.title}"`);
         if (r.step !== 'photos' || r.next !== 'Add photos') p.push(`first screen is "${r.step}" with button "${r.next}"`);
-        if (r.actions !== 3) p.push(`header has ${r.actions} actions, expected Find-or-add + Scouts + Settings`);
+        if (r.actions !== 3) p.push(`header has ${r.actions} actions, expected Search + Scouts + Settings`);
         // A photo moves it on; the map opens where Find left off (the hand-off).
         const pin = await ev(`(async () => {
           const c = document.createElement('canvas'); c.width = 320; c.height = 240; c.getContext('2d').fillRect(0, 0, 320, 240);
