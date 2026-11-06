@@ -31,7 +31,9 @@
     changes: 'We might change the thank-you one day. A code you already have keeps working until its time is up.',
     safety: 'The map shows where. It cannot tell you if the water is safe today. Check the weather and the rules before you go.'
   };
-  var pic = function (id) { return '/assets/scouts/rules/' + id + '-' + V + '.webp'; };
+  // Two rules were redrawn after the b set shipped; assets are cached immutable, so a redraw is a new name.
+  var VER = { changes: 'v20261106c', safety: 'v20261106c' };
+  var pic = function (id) { return '/assets/scouts/rules/' + id + '-' + (VER[id] || V) + '.webp'; };
 
   var head = document.querySelector('.sc-doc-head');
   var rules = Array.prototype.slice.call(document.querySelectorAll('.sc-rule')).filter(function (s) { return SAY[s.id]; });
