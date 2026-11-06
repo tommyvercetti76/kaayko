@@ -4,6 +4,24 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-06 · Scouts binoculars drawn with Forge
+
+- **Why:** Rohan: "Binocular image is SHIT, draw using FORGE."
+- **How:** `forge engine render minimalist-tshirt` (FLUX.1-dev, fp16, 14 steps, 1024²), eight seeds
+  twice. Batch 1 (seed 100+, `~/Desktop/Kaayko_Derived/forge-binoculars-icon-2026-11-06-seed100`)
+  came back as coloured folk binoculars: the engine's folk ink wins over `production.ink=one-ink-black`,
+  and `species_iconography` is not a `--config` knob. Batch 2 (seed 200+, `…-mono-seed200`) with
+  `style.tradition=modern-minimal` and a colour/pattern negative list gave grey silhouettes; seed05
+  (seed 205) is the pick. Keyed at luminance 170, cropped square, downsampled to 128px, traced with
+  vtracer (binary, spline) into one filled path, 4 KB, `fill="currentColor"`; the pick is saved as
+  `PICK-seed05-icon.svg` beside its render. Both sheets (`SHEET.png`) went to Rohan to grade.
+- **Result:** `PoHeader.ICONS.scouts` is that path. A filled mark at 20px carries the same visual weight
+  as the 2px-stroke Search and Settings icons.
+- **Checked:** local no-store server at 320, 375 and desktop on the grid, Scouts and Settings pages:
+  20×20 icon in 44×44 targets, no console errors, no sideways overflow.
+
+---
+
 ## 2026-11-06 · Header: quiet links, "Search", binoculars, layout choice in Settings only
 
 - **Why:** Rohan, on the grid page: the gold "Find or Add" block read as a preselected choice and the
