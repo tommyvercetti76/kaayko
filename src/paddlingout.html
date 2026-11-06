@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
+<html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme" data-po-view="grid">
 <head>
     <script src="/js/prod-config.js"></script>
     <!-- Shared preferences (units / my area / favorites) — load before module scripts -->
     <script src="/js/prefs.js"></script>
-    <!-- The HUD list (/paddlingout/list) is a choice the visitor keeps; ?view=grid is the way back here -->
-    <script>try{if(KaaykoPrefs.getListView()==='hud'&&!/[?&]view=grid\b/.test(location.search))location.replace('/paddlingout/list'+location.search)}catch(e){}</script>
+    <!-- The HUD list (/paddlingout/list) is a choice the visitor keeps (Settings → Layout); po-view.js sends them there on load, on a back-forward restore and when the choice changes; ?view=grid is a deliberate visit -->
+    <script src="/js/po-view.js"></script>
     <script src="/js/util.js"></script>
     <script src="/js/kaayko-icons.js"></script>
     <script src="/js/consent-notice.js" defer></script>

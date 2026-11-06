@@ -2,11 +2,13 @@
 <!-- /paddlingout/list: the HUD list (one line a spot, 30 Oct 2026). It was /paddlingout until
      3 Nov 2026, when Rohan made the photo grid the default again; kept as a choice. noindex,
      canonical /paddlingout. -->
-<html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme">
+<html lang="en" prefix="og: http://ogp.me/ns#" class="dark-theme" data-po-view="hud">
 <head>
     <script src="/js/prod-config.js"></script>
     <!-- Shared preferences (units / my area / favorites) — load before module scripts -->
     <script src="/js/prefs.js"></script>
+    <!-- The grid (/paddlingout) is the default; po-view.js sends a visitor who chose it there on load, on a back-forward restore and when the choice changes; ?view=list is a deliberate visit -->
+    <script src="/js/po-view.js"></script>
     <script src="/js/util.js"></script>
     <script src="/js/kaayko-icons.js"></script>
     <script src="/js/consent-notice.js" defer></script>

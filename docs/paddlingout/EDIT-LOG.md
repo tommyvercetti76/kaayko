@@ -4,6 +4,26 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-06 · Settings apply after the back button; the rules get an "Explain me like I am a child" tour
+
+- **The bug (Rohan: "ANY actions I take in settings DO NOT apply"):** reproduced on production. Grid
+  page → Settings → choose List → the ‹ chevron: the grid came back from the back-forward cache
+  (`performance.navigation.type === 'back_forward'`) with no script re-run, so the Layout choice never
+  took. Units, boat and card style did apply (they listen for the relayed `storage` event). Fix:
+  `js/po-view.js`, in the head of both list pages (`<html data-po-view="grid|hud">`), routes on load,
+  on `pageshow` with `persisted`, and on `kaayko:listviewchange` (another tab, or prefs.js's bfcache
+  re-broadcast). `?view=grid` / `?view=list` stay deliberate visits.
+- **Rules page:** the "Plainly" lines are gone (Rohan: "What is this Plainly"). One button under the
+  title, "Explain me like I am a child" (his words), opens a spotlight walkthrough of the ten rules,
+  each in a child's words (`js/pages/scouts-rules.js`): dim mask with a cut-out and ring around the
+  rule, a chamfered callout (bottom-pinned on phones, beside the rule on desktop), Next/Back/Skip,
+  arrows, Enter, Esc, focus on the callout, body scroll locked, reduced-motion honoured.
+- **browser-check:** the rules check presses the button and expects the tour open at "1 / 10".
+- **Checked:** local no-store server at 375 and desktop: ten steps, Done and Esc close it, no overflow,
+  no console errors. The bfcache route is checked on production after the deploy (see below).
+
+---
+
 ## 2026-11-06 · Scouts: every approved spot earns a 20% code; the page and the rules rewritten
 
 - **Why:** Rohan: the Scouts page was "BANAL", "We check it, then your name goes on it" was AI slop,

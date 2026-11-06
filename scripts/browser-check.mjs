@@ -403,10 +403,13 @@ async function main() {
       }, { settle: 4000 });
 
       await checkPage(b.port, 'scouts rules', `${BASE}/paddlingout/scouts/rules`, view, async (ev) => {
-        const r = await ev(`({ n: document.querySelectorAll('.sc-doc h2').length, plain: document.querySelectorAll('.sc-doc .sc-plain').length, picks: /monthly picks|up to ten/i.test(document.querySelector('.sc-doc').innerText.replace(/^[\\s\\S]*?<\\/header>/, '')) })`);
+        const r = await ev(`(async () => { const b = document.getElementById('sc-explain'); if (!b) return { n: document.querySelectorAll('.sc-doc h2').length, btn: false };
+          b.click(); await new Promise(r => setTimeout(r, 400));
+          return { n: document.querySelectorAll('.sc-doc h2').length, btn: true, open: !document.getElementById('rt-walk').hidden, count: (document.getElementById('rt-count') || {}).textContent, say: ((document.getElementById('rt-s') || {}).textContent || '').length, wide: document.documentElement.scrollWidth - innerWidth }; })()`);
         const p = [];
         if (r.n !== 10) p.push(`${r.n} rules, expected 10`);
-        if (r.plain !== r.n) p.push(`${r.plain} plain-words lines for ${r.n} rules: every rule explains itself`);
+        if (!r.btn) p.push('no "Explain me like I am a child" button');
+        else { if (!r.open) p.push('the button did not open the tour'); if (r.count !== '1 / 10') p.push(`the tour counts "${r.count}", expected 1 / 10`); if (r.say < 30) p.push('the first step says nothing'); if (r.wide > 1) p.push(`the tour makes the page ${r.wide}px wider than the screen`); }
         return p;
       });
 
