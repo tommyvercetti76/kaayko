@@ -31,7 +31,7 @@ html.dark-theme { background: var(--bg); }
 .sc-p { margin: 0 0 0.8rem; font: 400 1rem/1.7 var(--font-serif); color: var(--fg); }
 .sc-p em, .sc-looks em { color: var(--fg); font-style: italic; }   /* gold would read as a link */
 .sc-links { display: flex; flex-wrap: wrap; gap: 0 1.4rem; }
-.sc-p a, .sc-looks a, .sc-safety a { color: var(--gold-bright); text-decoration: underline; text-underline-offset: 3px; }
+.sc-p a, .sc-lede a, .sc-looks a, .sc-safety a { color: var(--gold-bright); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ── Buttons and links: the add flow's ───────────────────────────────────── */
 .sc-btn {
@@ -50,7 +50,7 @@ html.dark-theme { background: var(--bg); }
 /* A chamfer (clip-path) clips an outline drawn outside the box, so every clipped
    control draws its focus ring inside (30 Oct 2026 audit). */
 .sc-btn:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: -4px; }
-.sc-ghost:focus-visible, .sc-link:focus-visible, .sc-p a:focus-visible, .sc-looks a:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+.sc-ghost:focus-visible, .sc-link:focus-visible, .sc-p a:focus-visible, .sc-lede a:focus-visible, .sc-looks a:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
 
 /* ── 1 · Hero: the photo, then the words; side by side when there is room ── */
 .sc-hero { max-width: 1080px; margin: 0 auto; }
