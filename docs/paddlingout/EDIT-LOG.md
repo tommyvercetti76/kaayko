@@ -4,6 +4,29 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-06 · The rules tour's pictures are vectors
+
+- **Why:** Rohan, on the HD webp set: "Can these be any better?" The answer was yes in three ways
+  and he chose the first, SVG only: a bitmap at 1024 still softens on a 3x phone, a traced vector
+  does not, and it weighs less.
+- **How:** `scripts/scouts-rules-svg.py` (kept in the repo; runs on the Frameworks python with
+  vtracer, numpy, scipy). Each HD render (`~/Desktop/Kaayko_Derived/forge-scouts-rules-icons-2026-11-06-hd1280-seed400`:
+  who2, earns, code2, hearing, check, name2, photos, page, changes3, safety3) is keyed at the
+  solid-ink cut (130), cleaned (the mark is every component ≥ 1/5 of the largest plus anything
+  inside their joint box; signatures and grain outside it go; a thin canvas-spanning frame goes;
+  vtracer's paper path goes), cropped square with a 7% margin on paper, traced, and written as one
+  gold fill in viewBox 0 0 1024 1024. Three wrong turns on the way: a border-touching rule dropped
+  the whole tag (its string reaches the canvas edge); a crop past the canvas filled with ink and
+  drew a gold bar; the paper path, filled gold, drew a frame. All three are in the script's notes.
+- **Files:** `src/assets/scouts/rules/<rule>-v20261106d.svg` (8–59 KB, 11–47 KB typical; the
+  webps were 13–54 KB). The `-v20261106b/c.webp` set is removed. `js/pages/scouts-rules.js` reads
+  `.svg` under one version name, no per-rule overrides.
+- **Checked:** every SVG against its webp on the site's dark ground at 1000 px; the tour at 375
+  (pages 1 and 3, picture loaded at naturalWidth 1024, no page overflow, all ten preloaded);
+  `npm run check`; production via browser-check after the deploy.
+
+---
+
 ## 2026-11-06 · The rules tour is a picture book, one Forge picture a rule
 
 - **Why:** Rohan, on the first tour: "you are just cycling through the text". A visual tour needs a

@@ -7,15 +7,16 @@
  * the arrow keys, Enter, Esc. Ten pages, then Done. Nothing on the page behind
  * is read out or re-used: the rules page reads as the rules, the book as the book.
  *
- * Pictures: /assets/scouts/rules/<rule>-v<date>.webp (assets are cached immutable,
- * so a redraw gets a new date in the name). Plain script; without it the page is
+ * Pictures: /assets/scouts/rules/<rule>-v<date>.svg, the Forge renders traced to vectors
+ * (scripts/scouts-rules-svg.py), so they stay sharp at any size and weigh 8-60 KB. Assets
+ * are cached immutable, so a redraw gets a new date in the name. Plain script; without it the page is
  * complete and the button simply does not exist (it is drawn here).
  */
 (function () {
   'use strict';
 
   var $ = function (id) { return document.getElementById(id); };
-  var V = 'v20261106b';   // b: the HD set (1280, 24 steps), 6 Nov 2026 evening
+  var V = 'v20261106d';   // d: the HD set (1280, 24 steps) traced to SVG, 6 Nov 2026 night
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // One page a rule, keyed by the section id, in the order the sections stand.
@@ -31,9 +32,7 @@
     changes: 'We might change the thank-you one day. A code you already have keeps working until its time is up.',
     safety: 'The map shows where. It cannot tell you if the water is safe today. Check the weather and the rules before you go.'
   };
-  // Two rules were redrawn after the b set shipped; assets are cached immutable, so a redraw is a new name.
-  var VER = { changes: 'v20261106c', safety: 'v20261106c' };
-  var pic = function (id) { return '/assets/scouts/rules/' + id + '-' + (VER[id] || V) + '.webp'; };
+  var pic = function (id) { return '/assets/scouts/rules/' + id + '-' + V + '.svg'; };
 
   var head = document.querySelector('.sc-doc-head');
   var rules = Array.prototype.slice.call(document.querySelectorAll('.sc-rule')).filter(function (s) { return SAY[s.id]; });
