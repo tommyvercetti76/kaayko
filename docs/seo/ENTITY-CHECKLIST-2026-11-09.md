@@ -23,6 +23,15 @@ Do them in this order. Each one makes the next one stick.
    plenty; the sitemaps do the rest.
 5. Come back in a week: Pages report shows what got in and why anything was left out.
 
+## 1b. www.kaay.link — Firebase console, 2 minutes
+
+Google indexed `https://www.kaay.link/` instead of `https://kaay.link/`. The www host is
+connected to the kaay-link site and serves the page itself (DNS CNAME to
+kaay-link.web.app). In https://console.firebase.google.com → project kaaykostore →
+Hosting → site **kaay-link** → Custom domains → `www.kaay.link` → edit → turn ON
+"Redirect to kaay.link". Check with `curl -sI https://www.kaay.link/` → `HTTP/2 301`.
+Do the same for `www.kaayko.com` and `www.kaay.store` if they are connected.
+
 ## 2. Google Business Profile — this week
 
 https://business.google.com → create a profile for **Kaayko** as an online business

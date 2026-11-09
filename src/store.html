@@ -37,7 +37,7 @@
   <meta property="og:title" content="Kaayko Store">
   <meta property="og:description" content="Printed to order. Indian wildlife, stamp-series bottles, satirical shirts. Five things to a bag, no tricks.">
   <meta property="og:image" content="https://kaayko.com/assets/store-og.png">
-  <meta property="og:site_name" content="Kaayko">
+  <meta property="og:site_name" content="Kaayko Store">
   
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
@@ -46,10 +46,23 @@
   <meta name="twitter:description" content="Printed to order. Indian wildlife, stamp-series bottles, satirical shirts. Five things to a bag, no tricks.">
   <meta name="twitter:image" content="https://kaayko.com/assets/store-og.png">
   
-  <!-- Schema.org: the store, owned by the Kaayko organisation declared on the home page -->
+  <!-- Schema.org: the store, owned by the Kaayko organisation declared on the home page.
+       kaay.store serves this page as its home, so the WebSite node names the site "Kaayko Store"
+       in search results rather than the bare domain. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
+    "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://kaayko.com/store#website",
+      "name": "Kaayko Store",
+      "alternateName": "kaay.store",
+      "url": "https://kaayko.com/store",
+      "inLanguage": "en",
+      "publisher": { "@id": "https://kaayko.com/#organization" }
+    },
+    {
     "@type": "OnlineStore",
     "@id": "https://kaayko.com/store#store",
     "name": "Kaayko Store",
@@ -62,6 +75,8 @@
     "priceRange": "$9.99 - $29.99",
     "currenciesAccepted": "USD",
     "paymentAccepted": "Credit Card"
+    }
+    ]
   }
   </script>
   
