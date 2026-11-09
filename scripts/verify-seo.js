@@ -107,9 +107,18 @@ const explicit = (p) =>
     (pat.endsWith('/**') && p.startsWith(pat.slice(0, -3) + '/')) ||
     (pat.endsWith('**') && p.startsWith(pat.slice(0, -2)))
   );
+// An exact hosting rewrite (/store/about → /store-about.html) names the file a
+// sitemap URL is served from; the check saw those URLs as missing before.
+const exactRewrites = new Map(
+  (fb.rewrites || [])
+    .filter((r) => r.destination && !/[*{]/.test(r.source))
+    .map((r) => [r.source, `src/${r.destination.replace(/^\//, '')}`])
+);
+
 function sourceFor(urlPath) {
   const p = urlPath.split('?')[0].split('#')[0];
   if (p === '/' || p === '') return 'src/index.html';
+  if (exactRewrites.has(p) && exists(exactRewrites.get(p))) return exactRewrites.get(p);
   const q = p.replace(/^\//, '');
   if (exists(`src/${q}`)) return `src/${q}`;
   if (exists(`src/${q}.html`)) return `src/${q}.html`;
