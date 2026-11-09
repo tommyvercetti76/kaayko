@@ -5,3 +5,4 @@ Allow: /
 Disallow: /paddlingout/forecast?
 
 Sitemap: https://kaayko.com/sitemap.xml
+Sitemap: https://kaayko.com/sitemap-products.xml

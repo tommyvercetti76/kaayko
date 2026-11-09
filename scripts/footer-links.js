@@ -77,6 +77,7 @@ const SETS = {
     ['/legal/terms', 'Terms'],
     ['/legal/returns', 'Returns'],
     ['/legal/shipping', 'Shipping'],
+    ['mailto:help@kaayko.com', 'Help'],   // added to the pages by the 25 Oct 2026 store audit; the source of truth lagged
   ],
 };
 

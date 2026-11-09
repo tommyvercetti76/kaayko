@@ -52,6 +52,12 @@ try {
   note('sitemap.xml has stale lastmod dates. Run: node scripts/generate-sitemap.js (after committing content).');
 }
 
+try {
+  execFileSync('node', ['scripts/generate-product-sitemap.js', '--check'], { cwd: root, stdio: 'pipe' });
+} catch (e) {
+  note('sitemap-products.xml is missing or malformed. Run: node scripts/generate-product-sitemap.js');
+}
+
 // ── 1b. one footer, one shape, everywhere ──────────────────────────────────
 // The site shipped six different footer variants before this check existed.
 {

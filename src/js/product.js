@@ -59,11 +59,23 @@ function describe(product, image) {
     if (!m) { m = document.createElement('meta'); m.setAttribute(attr, key); head.appendChild(m); }
     m.setAttribute('content', value);
   };
+  const imageUrl = image ? new URL(image, location.href).href : '';
+  const cents0 = priceCents(product);
   meta('name', 'description', summary);
+  meta('property', 'og:type', 'product');
+  meta('property', 'og:site_name', 'Kaayko');
   meta('property', 'og:title', `${titleFor(product)} · Kaayko`);
   meta('property', 'og:description', summary);
   meta('property', 'og:url', url);
-  if (image) meta('property', 'og:image', new URL(image, location.href).href);
+  if (imageUrl) meta('property', 'og:image', imageUrl);
+  if (Number.isFinite(cents0) && cents0 > 0) {
+    meta('property', 'product:price:amount', (cents0 / 100).toFixed(2));
+    meta('property', 'product:price:currency', 'USD');
+  }
+  meta('name', 'twitter:card', 'summary_large_image');
+  meta('name', 'twitter:title', `${titleFor(product)} · Kaayko`);
+  meta('name', 'twitter:description', summary);
+  if (imageUrl) meta('name', 'twitter:image', imageUrl);
 
   let canonical = head.querySelector('link[rel="canonical"]');
   if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; head.appendChild(canonical); }
@@ -77,7 +89,16 @@ function describe(product, image) {
     sku: product.id,
     description: text || undefined,
     image: (product.previewSrc || product.imgSrc || []).slice(0, 3).map((u) => new URL(u, location.href).href),
+    url,
     brand: { '@type': 'Brand', name: product.byMaker && product.storeName ? product.storeName : 'Kaayko' },
+    // The API sends a rating only once it is fair to show (lessons: 5 verified ratings).
+    aggregateRating: product.rating && product.rating.count > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: Number(product.rating.average).toFixed(1),
+      ratingCount: product.rating.count,
+      bestRating: 5,
+      worstRating: 1
+    } : undefined,
     offers: Number.isFinite(cents) && cents > 0 ? {
       '@type': 'Offer',
       url,

@@ -91,6 +91,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pathSegs = location.pathname.split("/").filter(Boolean);
   const pathSlug = (pathSegs[0] === "s" || pathSegs[0] === "kreator") && pathSegs[1] ? decodeURIComponent(pathSegs[1]).toLowerCase() : "";
   const storeSlug = params.get("store") || pathSlug;
+  // kaay.store rewrites every path to this page, so a dead link (an old product
+  // address, a typo) renders the store with a 200. Google indexed one as a page
+  // of its own. Such a path is not the store's canonical address: keep it out.
+  if (pathSegs.length && !pathSlug && !(pathSegs.length === 1 && pathSegs[0] === "store")) {
+    const robots = document.querySelector('meta[name="robots"]');
+    if (robots) robots.setAttribute("content", "noindex, follow");
+  }
   // A maker's card can carry her friends' rate: kaay.store/s/<slug>?promo=CODE.
   // The server says what the code is worth; this only holds it for the bag.
   const promoHeld = await holdPromo(params.get("promo"));

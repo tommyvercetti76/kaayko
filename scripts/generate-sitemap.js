@@ -19,9 +19,14 @@ const routes = [
   { loc: '/paddlingout/methodology', source: 'src/paddlingout/methodology.html', changefreq: 'monthly', priority: '0.8' },
   { loc: '/paddlingout/scouts', source: 'src/paddlingout/scouts.html', changefreq: 'monthly', priority: '0.7' },
   { loc: '/paddlingout/scouts/rules', source: 'src/paddlingout/scouts/rules.html', changefreq: 'monthly', priority: '0.4' },
-  // NOTE: /store is intentionally absent — it is invite-only and marked noindex.
-  // Re-add here (and drop the noindex in src/store.html) only when the storefront
-  // serves real, crawlable product content.
+  // The store opened to everyone in Oct 2026 (102 products, no invite gate), so it
+  // is listed again; every product has its own entry in sitemap-products.xml.
+  { loc: '/store', source: 'src/store.html', changefreq: 'daily', priority: '0.9' },
+  { loc: '/store/about', source: 'src/store-about.html', changefreq: 'monthly', priority: '0.4' },
+  { loc: '/store/privacy', source: 'src/store-privacy.html', changefreq: 'yearly', priority: '0.2' },
+  { loc: '/legal/terms', source: 'src/legal/terms.html', changefreq: 'yearly', priority: '0.2' },
+  { loc: '/legal/returns', source: 'src/legal/returns.html', changefreq: 'yearly', priority: '0.2' },
+  { loc: '/legal/shipping', source: 'src/legal/shipping.html', changefreq: 'yearly', priority: '0.2' },
   { loc: '/about', source: 'src/about.html', changefreq: 'monthly', priority: '0.8' },
   { loc: '/stories', source: 'src/stories.html', changefreq: 'weekly', priority: '0.8' },
   { loc: '/stories/never-give-up', source: 'src/stories/never-give-up.html', changefreq: 'monthly', priority: '0.8' },
