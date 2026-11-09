@@ -44,8 +44,11 @@ function renderError(root, msg) {
 /* ── What search engines read ────────────────────────────────────
    Every product page used to carry the same description, no canonical
    address (kaayko.com and kaay.store serve the same page twice) and no
-   product data. Google runs this script; a social preview does not, so
-   share cards stay the store's own until pages are rendered server-side. */
+   product data. Since 9 Nov 2026 the server writes these same tags first
+   (kaayko-api api/products/productPage.js, behind the /store/p/** rewrite),
+   so a share card shows the product; this is the refresh with live data,
+   and the whole of the head when that server read failed. Keep the two in
+   step: a tag added here is a tag added there. */
 const CANONICAL_ORIGIN = 'https://kaayko.com';
 
 function describe(product, image) {

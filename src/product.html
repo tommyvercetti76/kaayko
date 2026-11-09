@@ -24,6 +24,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
+  <!-- the generic head. Hosting sends /store/p/<id> (and kaay.store/p/<id>) through the
+       api function, which serves this file with the title, description, canonical, og:,
+       twitter: and Product JSON-LD lines below swapped for the product's own
+       (kaayko-api api/products/productPage.js), so a share card shows the product before
+       any script runs; js/product.js describe() then updates the same tags in place.
+       This file is what a shopper gets if that read fails, and what /product?id= serves. -->
   <title>Kaayko · Printed to order</title>
   <meta name="description" content="A Kaayko original, printed to order. Five things to a bag, guest checkout, no tricks." />
   <meta property="og:title" content="Kaayko Store">

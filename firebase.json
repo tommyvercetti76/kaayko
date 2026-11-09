@@ -63,6 +63,15 @@
           ]
         },
         {
+          "source": "/store/p/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=300, s-maxage=3600"
+            }
+          ]
+        },
+        {
           "source": "/fonts/**",
           "headers": [
             {
@@ -589,7 +598,7 @@
         },
         {
           "source": "/store/p/**",
-          "destination": "/product.html"
+          "function": "api"
         },
         {
           "source": "/store/about",
@@ -682,6 +691,24 @@
             {
               "key": "X-Robots-Tag",
               "value": "noindex, nofollow, noarchive"
+            }
+          ]
+        },
+        {
+          "source": "/store/p/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=300, s-maxage=3600"
+            }
+          ]
+        },
+        {
+          "source": "/p/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=300, s-maxage=3600"
             }
           ]
         },
@@ -944,11 +971,11 @@
         },
         {
           "source": "/p/**",
-          "destination": "/product.html"
+          "function": "api"
         },
         {
           "source": "/store/p/**",
-          "destination": "/product.html"
+          "function": "api"
         },
         {
           "source": "/store/about",

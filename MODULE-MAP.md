@@ -150,7 +150,7 @@ GET  /api/docs                                 → API spec (spec.yaml / spec.js
 | URL | File | Module |
 |-----|------|--------|
 | `/store` (kaay.store `/`) | `kaayko/src/store.html` | `js/pages/store.js` |
-| `/store/p/:id` (kaay.store `/p/:id`) | `kaayko/src/product.html` (`data-pdp="product"`) | `js/pages/pdp.js` → `js/product.js` |
+| `/store/p/:id` (kaay.store `/p/:id`) | `kaayko/src/product.html` (`data-pdp="product"`), served by the `api` function with the product's own `<head>` (`kaayko-api/functions/api/products/productPage.js`, 9 Nov 2026) | `js/pages/pdp.js` → `js/product.js` |
 | `/animals/:slug` | `kaayko/src/animal.html` (`data-pdp="animal"`) | `js/pages/pdp.js` → `js/animal.js` → `location.replace('/store/p/<id>')` — forwards only, nothing rendered |
 | `/cart` | `kaayko/src/cart.html` | `js/pages/cart.js` |
 | `/order-success` | `kaayko/src/order-success.html` | `js/pages/order-success.js` |
