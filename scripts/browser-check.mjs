@@ -209,14 +209,16 @@ async function main() {
       }, { probe: HOME_PROBE, skip: far });
 
       // ── 3. the HUD list (29 Oct 2026; at /paddlingout/list since 3 Nov): every lake once, paused ones apart,
-      //    half-point ratings only, a card opens in place and hands off to the forecast heatmap
-      await checkPage(b.port, 'paddlingout list', `${BASE}/paddlingout/list`, view, async (ev) => {
+      //    half-point ratings only, a card opens in place and hands off to the forecast heatmap.
+      //    Since 6 Nov po-view.js sends a visitor with no remembered layout (this fresh profile) from the bare
+      //    URL to the grid; `?view=list` is the deliberate visit that is never bounced. The bounce itself is 3c.
+      await checkPage(b.port, 'paddlingout list', `${BASE}/paddlingout/list?view=list`, view, async (ev) => {
         const r = await ev(`new Promise((done) => { const t0 = Date.now(); (function wait() {
           if (document.querySelector('#pn-list .pn-h') && !document.querySelector('#pn-list .pn-skel') || Date.now() - t0 > 20000) {
             return fetch('${API}/paddlingOut').then(x => x.json()).then(api => done({ api,
               live: [...document.querySelectorAll('#pn-list .pn-h')].map(c => ({ id: c.dataset.spotId, r: ((c.querySelector('.pn-h-tap .pn-vd span') || {}).textContent || '').replace('/5', '') })),
               paused: [...document.querySelectorAll('#pn-paused .pn-h')].map(c => c.dataset.spotId),
-              wide: document.documentElement.scrollWidth - innerWidth }));
+              path: location.pathname, wide: document.documentElement.scrollWidth - innerWidth }));
           }
           setTimeout(wait, 250);
         })(); })`);
@@ -238,8 +240,36 @@ async function main() {
         if (!o.href.includes('id=' + encodeURIComponent(o.id)) || !o.href.endsWith('#heatmapContainer')) p.push(`${o.id} forecast link is "${o.href}"`);
         if (o.wide > 1) p.push(`opened card makes the page ${o.wide}px wider than the screen`);
         p.push(...sameEverywhere('list|' + r.api.map((x) => x.id + '=' + expectFor(x).text).join(','), view.name, r.live.map((c) => c.id + '=' + c.r)));
+        if (r.path !== '/paddlingout/list') p.push(`the deliberate visit was sent to ${r.path}`);
         return p;
       });
+
+      // ── 3c. the layout choice routes (6 Nov 2026, Rohan: "actions I take in settings DO NOT apply"):
+      //    nothing remembered → the bare list URL lands on the grid; `hud` remembered → /paddlingout lands on the list.
+      //    The grid is what a visitor gets, so it must also have rendered.
+      const landed = (ev) => ev(`new Promise((done) => { const t0 = Date.now(); (function wait() {
+        const grid = document.querySelectorAll('#cardsContainer .pcard--minimal, #cardsContainer .card').length;
+        const hud = document.querySelectorAll('#pn-list .pn-h').length;
+        if (grid || hud && !document.querySelector('#pn-list .pn-skel') || Date.now() - t0 > 20000) return done({ path: location.pathname, grid, hud, pref: (() => { try { return localStorage.getItem('kaayko_po_view'); } catch (e) { return 'blocked'; } })() });
+        setTimeout(wait, 250);
+      })(); })`);
+      await checkPage(b.port, 'paddlingout list routing (nothing remembered)', `${BASE}/paddlingout/list`, view, async (ev) => {
+        const r = await landed(ev);
+        const p = [];
+        if (r.pref) p.push(`the check profile already remembers "${r.pref}"`);
+        if (r.path !== '/paddlingout') p.push(`landed on ${r.path}, the grid is the default`);
+        if (!r.grid) p.push('the grid rendered no cards');
+        return p;
+      });
+      await checkPage(b.port, 'paddlingout list routing (hud remembered)', `${BASE}/paddlingout`, view, async (ev) => {
+        try {
+          const r = await landed(ev);
+          const p = [];
+          if (r.path !== '/paddlingout/list') p.push(`landed on ${r.path} with the list remembered`);
+          if (!r.hud) p.push('the list rendered no cards');
+          return p;
+        } finally { await ev(`(() => { try { localStorage.removeItem('kaayko_po_view'); } catch (e) {} })()`); }
+      }, { probe: `try { localStorage.setItem('kaayko_po_view', 'hud'); } catch (e) {}` });
 
       // ── 3a. /paddlingout, the photo grid (the default again since 3 Nov 2026)
       await checkPage(b.port, 'paddlingout', `${BASE}/paddlingout`, view, async (ev) => {
