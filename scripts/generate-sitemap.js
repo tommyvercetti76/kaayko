@@ -32,7 +32,8 @@ const routes = [
   { loc: '/stories/never-give-up', source: 'src/stories/never-give-up.html', changefreq: 'monthly', priority: '0.8' },
   // /testimonials is out of the sitemap until it actually has testimonials in it.
   // It is marked noindex for the same reason.
-  { loc: '/privacy', source: 'src/privacy.html', changefreq: 'yearly', priority: '0.3' },
+  // /privacy is out since 9 Nov 2026 and marked noindex,follow: it was taking a
+  // sitelink slot under the kaayko.com result. /store/privacy stays listed.
   { loc: '/forge', source: 'src/forge.html', changefreq: 'monthly', priority: '0.5' },
   { loc: '/forge-gallery', source: 'src/forge-gallery.html', changefreq: 'monthly', priority: '0.6' },
   { loc: '/kreator', source: 'src/kreator/index.html', changefreq: 'monthly', priority: '0.6' },
