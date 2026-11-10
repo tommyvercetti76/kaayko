@@ -10,6 +10,40 @@ checked, and how to undo it.
 
 ---
 
+## 2026-11-09 · The search listing says what Kaayko does; Privacy is noindex
+
+- **Commits:** `6024d44` (the change), the commit carrying this entry (sitemap, 36 URLs)
+- **Live:** yes, kaayko.com and kaay.store, 9 Nov 2026
+- **Why:** Rohan called the Google result unimaginative. The title was six internal
+  names ("Paddling Out, Stories, Forge, Kortex, Store & School") and the description
+  described the page layout ("Six things Kaayko runs, one card each"). Privacy Policy
+  held one of the six sitelink slots ahead of Paddling Out and the Store.
+- **What:** `<head>` only, nothing visible on the page. Title "Kaayko — Paddle
+  forecasts, art printed to order, smart QR links". Description, `og:` and `twitter:`
+  copies: "Know if the water is worth it before you drive. Forecasts for lakes
+  paddlers pick, stories from the water, art printed to order, QR codes you can change
+  after printing, and alumni software for schools." Rohan picked this wording (option A
+  of two). The WebSite node gains `alternateName` ["Kaayko Paddling", "kaayko.com"].
+- **Privacy:** `src/privacy.html` is `noindex, follow` and out of
+  `scripts/generate-sitemap.js`. There is no sitelink demotion tool any more; noindex
+  is the only way to free the slot. `/store/privacy` is a different page and unchanged.
+- **Known limit:** the description is 201 characters and Google cuts at roughly 155,
+  so the listing ends near "QR codes you can change after…". The alumni clause is the
+  part that gets cut.
+- **Not ours to change:** two of the six sitelinks were alumni.kaayko.com pages, which
+  301 to kaay.school since the same day and drop out on recrawl. Store, Kortex and
+  School cannot be kaayko.com sitelinks while the home card links them to kaay.store,
+  kaay.link and kaay.school: sitelinks only come from the same host.
+- **Checked:** `npm run verify` (190 tests); `verify-seo.js` shows only the standing
+  "generated spot pages are stale" finding, which is deliberate. Live with curl: new
+  title, description and alternateName on kaayko.com/, `noindex, follow` on /privacy,
+  36 sitemap URLs with no /privacy; 200 on eight kaayko.com pages, four kaay.store
+  pages and kaay.link. `npm run browser-check` on production: 61/61, phone and desktop.
+- **Undo:** `git revert --no-edit 6024d44`, commit, `node scripts/generate-sitemap.js`,
+  commit, then `firebase deploy --only hosting:kaaykostore,hosting:kaay-store`.
+
+---
+
 ## 2026-10-22 · Follow-up: the card is centred; contact moves to About and Privacy
 
 - **Commits:** `a61f106` (the change), `983de6b` (module stamp)
