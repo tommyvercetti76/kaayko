@@ -211,7 +211,8 @@
       align-items: start;
     }
     .co-details { grid-area: details; min-width: 0; }
-    .co-details .co-label { margin-top: 30px; }
+    /* The same hairline the bag's label stands on, so every section reads as a row. */
+    .co-details .co-label { margin-top: 30px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
     .co-details .co-label:first-child { margin-top: 0; }
 
     /* ── Section label (house style: gold serif small caps) ────────── */
@@ -533,8 +534,12 @@
       color: var(--muted);
     }
     .co-gate button {
-      padding: 0;
+      display: block;
+      width: 100%;
+      padding: 14px 0 0;
       border: 0;
+      border-top: 1px solid var(--line);
+      text-align: left;
       background: none;
       color: var(--gold);
       font-family: var(--co-sans-med);

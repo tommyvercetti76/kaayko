@@ -38,3 +38,11 @@ not drawn at all (nothing can go in them), the panel is a hairline card in the p
 lock, serif lead, muted sans line, a gold underlined text link to the field), and Pay (and the
 phone's sticky Pay) wears `is-gated`: outlined and muted until a code applies. Checked at 375 and
 1280 in both themes on the local no-store server, then on kaay.store.
+
+**Legal pages brought up to date the same day** (Rohan: "ensure that all legal and privacy etc is
+up to date"): Terms of Sale (the thank-you code's terms; picks ended 6 Nov 2026; the temporary
+code-only checkout, marked as a line to remove), Returns (a spent one-use code is not reissued on
+a refund), Shipping (picks dated; code orders ship like any other), Store Privacy (the code on an
+order holds no personal data; picks dated), the site Privacy policy ("monthly picks" → the
+thank-you code; dated 12 Nov) and the Kortex terms (kaay.link/m line). Checkout also gained the
+bag label's hairline under every section label and above the gate card's link.
