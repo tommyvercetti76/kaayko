@@ -4,6 +4,25 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
 
 ---
 
+## 2026-11-12 · Scouts launch check: the thank-you code is readable after the email
+
+- **Why:** Rohan: "Can we THOROUGHLY test Scouts feature? … today I want to publish that it's LIVE."
+  The survey found the code lived in one email and nowhere a person could read it back: not on
+  kaay.link/m, not on the Kortex card (the admin shape carried `scoutCode`, nothing drew it).
+  The rules tour says "Lost it? Write to help@kaayko.com", which meant a hand search in Firestore.
+- **Fix:** `services/mapmakers.js` row() carries `scoutCode` for an approved new spot; kaay.link/m
+  prints it under the spot with the deal (`api/kortex/mapmakerPages.js`, `.sc-code`, select-all);
+  Kortex → Submissions shows "Thank-you code" on an approved card, or "none" with why
+  (`src/admin/views/submissions/submissions.js`, `.sub-code`). Test in `mapmaker-finder.test.js`.
+- **Checked:** API suite 96/96 before the deploy; production browser-check 61/61 before any change;
+  a labelled test entry sent through `POST /paddlingOut/submitEntry` + the details step
+  (`community-lady-bird-lake-scout-test-12-nov-austin-texas-5821d41b`, name "Rohan Test") and left
+  in review for Rohan to Approve from Kortex, so the mint, the live email and the code at checkout
+  are exercised on production, not on mocks. Store checkout is on Stripe TEST keys (pk_test in
+  `js/prod-config.js`): a code can be checked at the cart but not spent for real until the keys are live.
+
+---
+
 ## 2026-11-06 · The rules tour's pictures are vectors
 
 - **Why:** Rohan, on the HD webp set: "Can these be any better?" The answer was yes in three ways
