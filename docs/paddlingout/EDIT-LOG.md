@@ -20,6 +20,14 @@ Newest first. What changed, why, the commit, whether it is live, and how it was 
   in review for Rohan to Approve from Kortex, so the mint, the live email and the code at checkout
   are exercised on production, not on mocks. Store checkout is on Stripe TEST keys (pk_test in
   `js/prod-config.js`): a code can be checked at the cart but not spent for real until the keys are live.
+- **Outcome (12 Nov 2026, 15:35 UTC):** Rohan approved it from Kortex. The submission went
+  `validated`, `scoutCode` SCOUT-ECZ9SX5F minted in the same second, `arcade_rewards/<code>` =
+  20% · cart · maxUses 1 · uses 0 · expires 11 May 2027 (180 days); the live email left through
+  `mail/paddling_validated_<id>` with delivery SUCCESS in 2 s, body carrying the code, kaay.store,
+  the forecast link and kaay.link/m; the spot page shows "Added by Rohan Test · Scouts" at 375;
+  GET /api/promo/<code> says valid; at kaay.store/cart the code took $11.99 off a $59.98 bag
+  (total $47.99), not paid. One thing to know: GET /api/paddlingOut/<id> is edge-cached for
+  600 s, so a URL fetched while the spot was pending keeps answering 404 for up to ten minutes.
 
 ---
 
