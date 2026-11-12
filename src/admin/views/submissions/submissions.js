@@ -564,7 +564,12 @@ function mapmakerLines(sub, id, status) {
   const shown = status === 'validated' && sub.creditName
     ? `<div class="sub-field"><span class="sub-field-label">On the lake</span><span class="sub-field-val">Added by ${escapeHtml(sub.creditName)}</span></div>`
     : '';
-  return shown + picks + (status === 'validated' ? pickControl(sub, id) : '');
+  // The Scout thank-you code (6 Nov 2026) is minted on Approve and sent in the live email;
+  // it is shown here so a lost one can be re-sent by hand (12 Nov 2026).
+  const code = status === 'validated' && sub.scoutCode
+    ? `<div class="sub-field"><span class="sub-field-label">Thank-you code &middot; sent in the live email, 20% once at the store</span><span class="sub-field-val sub-code">${escapeHtml(sub.scoutCode)}</span></div>`
+    : (status === 'validated' && sub.contactEmail && !sub.scoutCode ? '<div class="sub-field"><span class="sub-field-label">Thank-you code</span><span class="sub-field-val">none (approved before 6 Nov 2026, or the mint failed; see the function log)</span></div>' : '');
+  return shown + code + picks + (status === 'validated' ? pickControl(sub, id) : '');
 }
 
 const PICK_STATUS = { issued: 'link sent, choosing', claiming: 'at checkout', claimed: 'claimed, to ship', held: 'held, needs you', shipped: 'shipped', expired: 'expired', revoked: 'withdrawn' };

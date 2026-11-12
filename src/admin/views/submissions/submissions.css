@@ -472,3 +472,6 @@
 .picks-row--held { background: rgba(229, 165, 115, 0.06); }
 .picks-row--revoked, .picks-row--expired { opacity: 0.6; }
 @media (max-width: 640px) { .picks-row { grid-template-columns: 44px 1fr; } .picks-acts { grid-column: 1 / -1; justify-content: flex-start; } }
+
+/* The Scout thank-you code on an approved card (12 Nov 2026): monospace, one click selects it. */
+.sub-code { font-family: Menlo, Consolas, monospace; letter-spacing: .06em; user-select: all; }
