@@ -277,9 +277,9 @@ function render() {
       <h1>Checkout</h1>
       <p>${summary}</p>
     </div>
-    <div class="co-layout">
+    <div class="co-layout${codeGate() ? ' is-gated' : ''}">
       <section class="co-details" aria-label="Your details">
-        <h2 class="co-label">Contact</h2>
+        ${codeGate() ? '' : `<h2 class="co-label">Contact</h2>
         <!-- Stripe's Link email field: it labels and checks itself, the payment
              form's "save my info" box reuses it instead of asking again, and a
              returning Link shopper gets address + card filled. -->
@@ -288,7 +288,7 @@ function render() {
         <h2 class="co-label">${lessonsOnly ? 'Your address' : 'Delivery'}</h2>
         <p class="co-note">${lessonsOnly ? 'For your receipt and sales tax. Lessons are not shipped; the time and place are emailed to you.' : 'We deliver within the United States.'}</p>
         <div id="co-address-element"></div>
-
+`}
         <h2 class="co-label">Payment</h2>
         <p class="co-note" data-fx-india hidden>Paying with a card issued in India? Switch on international online payments in your bank’s app first: many come with them off.</p>
         <div id="co-payment-element">
@@ -602,7 +602,8 @@ function showCodeGate() {
   host.innerHTML = `
     <div class="co-gate" role="status">
       <span class="material-icons" aria-hidden="true">lock</span>
-      <p>Checkout opens with a code for now. Kaayko Scouts get one when their spot goes live; type it under the total.</p>
+      <p class="co-gate-lead">Checkout opens with a code for now.</p>
+      <p class="co-gate-sub">Kaayko Scouts get one when their spot goes live. Type it under the total.</p>
       <button type="button" id="co-gate-code">Enter my code</button>
     </div>`;
   document.getElementById('co-gate-code')?.addEventListener('click', () => {
@@ -758,6 +759,7 @@ function refreshReady() {
   for (const b of [document.getElementById('co-primary'), document.getElementById('co-sticky-btn')]) {
     if (!b) continue;
     b.classList.toggle('is-waiting', !ready);
+    b.classList.toggle('is-gated', codeGate());
     b.disabled = state.paying;
   }
 

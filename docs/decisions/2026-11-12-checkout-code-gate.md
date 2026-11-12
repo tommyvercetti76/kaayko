@@ -30,3 +30,11 @@ code applies: Scouts can see their 20% land; everyone else sees why checkout is 
 real Scout code applied → 20% off and the payment form requested; Remove → gate back. API suite
 98/98 (1535 tests). Production after the deploy: kaay.store/cart at phone width, both sites' home
 and store pages, browser-check.
+
+**Redrawn the same afternoon** (Rohan: "Is this aesthetic? … ensure mobile form factor is also
+graceful"). The first cut was a dashed box in a system sans under an empty Contact/Delivery
+column, with a Pay button that looked live. Now: while gated the Contact and Delivery blocks are
+not drawn at all (nothing can go in them), the panel is a hairline card in the page's voice (gold
+lock, serif lead, muted sans line, a gold underlined text link to the field), and Pay (and the
+phone's sticky Pay) wears `is-gated`: outlined and muted until a code applies. Checked at 375 and
+1280 in both themes on the local no-store server, then on kaay.store.

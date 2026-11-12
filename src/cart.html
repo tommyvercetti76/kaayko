@@ -506,16 +506,53 @@
       color: var(--muted);
     }
 
-    /* TEMPORARY (12 Nov 2026): checkout opens with a code; the payment form's place says so. */
+    /* TEMPORARY (12 Nov 2026): checkout opens with a code. The payment form's place
+       says so in the page's own voice: a hairline panel, the serif for the sentence,
+       the sans for the rest, a text link to the field. Pay wears is-gated: outlined
+       and quiet, so a shut button never reads as a live one. */
     .co-gate {
-      display: grid; justify-items: center; gap: 10px; text-align: center;
-      padding: 22px 16px; border: 1px dashed var(--co-input-border); border-radius: 10px;
+      padding: 22px 22px 20px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface-2);
     }
-    .co-gate .material-icons { font-size: 30px; color: var(--gold, #b5935a); }
-    .co-gate p { margin: 0; max-width: 34ch; font-size: 14px; line-height: 1.5; color: inherit; }
+    .co-gate .material-icons { display: block; font-size: 22px; color: var(--gold); margin-bottom: 10px; }
+    .co-gate-lead {
+      margin: 0 0 6px;
+      font-family: var(--co-serif);
+      font-size: 19px;
+      line-height: 1.35;
+      color: var(--fg);
+    }
+    .co-gate-sub {
+      margin: 0 0 14px;
+      max-width: 44ch;
+      font-family: var(--co-sans);
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
     .co-gate button {
-      font: inherit; font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
-      padding: 10px 16px; border: 1px solid currentColor; border-radius: 6px; background: none; color: inherit; cursor: pointer;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--gold);
+      font-family: var(--co-sans-med);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      cursor: pointer;
+    }
+    .co-gate button:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 2px; }
+    .co-btn.is-gated,
+    .co-btn.is-gated:hover:not(:disabled) {
+      background: none;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      box-shadow: none;
+      filter: none;
     }
     .co-failure {
       padding: 22px 18px;

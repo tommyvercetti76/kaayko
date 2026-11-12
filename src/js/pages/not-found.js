@@ -16,9 +16,9 @@
  * a reader without scripts, or with a network that drops the module, still
  * gets out.
  */
-import { front, back, SCREEN } from '/js/cards/render.js?v=2dee1c8';
-import { artUrl } from '/js/cards/art.js?v=2dee1c8';
-import { esc, apiBase } from '/js/kit.js?v=2dee1c8';
+import { front, back, SCREEN } from '/js/cards/render.js?v=38d078f';
+import { artUrl } from '/js/cards/art.js?v=38d078f';
+import { esc, apiBase } from '/js/kit.js?v=38d078f';
 
 const hand = document.getElementById('hand');
 const pathEl = document.getElementById('nf-path');
