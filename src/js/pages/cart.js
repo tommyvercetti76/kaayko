@@ -123,7 +123,7 @@ const PROMO_REFUSALS = {
 
 function promoFieldMarkup() {
   const r = state.promo;
-  if (!r && !state.promoOpen && !state.promoNote) {
+  if (!r && !state.promoOpen && !state.promoNote && !codeGate()) {   // the gate keeps the field open
     return `<div class="co-promo" id="co-promo">
       <button type="button" class="co-promo-toggle" id="co-promo-toggle" aria-expanded="false">Have a discount code?</button>
     </div>`;
@@ -350,6 +350,7 @@ function render() {
   watchPay(primary);
 
   if (state.pi) mountStripe();
+  else if (codeGate()) showCodeGate();
   else if (state.prepError) showPrepFailure();
   else prepare();
   refreshReady();
@@ -586,6 +587,32 @@ async function prepare() {
   }
 }
 
+/* ── TEMPORARY: checkout opens with a code (12 Nov 2026) ──────────
+   Until the store's Stripe keys are live, Pay stays shut until a code is
+   applied (site-features.js `checkoutNeedsCode`; the API refuses without
+   one too, CODE_REQUIRED). No payment form is asked for before then. */
+function codeGate() {
+  const fx = window.KaaykoFeatures;
+  return !!(fx && fx.isOn('checkoutNeedsCode')) && !state.promo;
+}
+
+function showCodeGate() {
+  const host = document.getElementById('co-payment-element');
+  if (!host) return;
+  host.innerHTML = `
+    <div class="co-gate" role="status">
+      <span class="material-icons" aria-hidden="true">lock</span>
+      <p>Checkout opens with a code for now. Kaayko Scouts get one when their spot goes live; type it under the total.</p>
+      <button type="button" id="co-gate-code">Enter my code</button>
+    </div>`;
+  document.getElementById('co-gate-code')?.addEventListener('click', () => {
+    const input = document.getElementById('co-promo-input');
+    if (!input) { document.getElementById('co-promo-toggle')?.click(); }
+    (document.getElementById('co-promo-input') || document.getElementById('co-promo-toggle'))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('co-promo-input')?.focus();
+  });
+}
+
 function showPrepFailure() {
   const host = document.getElementById('co-payment-element');
   if (!host) return;
@@ -741,7 +768,8 @@ function refreshReady() {
   const words = { email: 'your email', address: lessonsOnly ? 'your address' : 'a delivery address', payment: 'card details' };
   const m = missing().map(k => words[k]);
   let text = '';
-  if (!state.elements) text = state.prepError ? '' : 'Getting secure payment ready…';
+  if (codeGate()) text = 'Enter your code to pay.';
+  else if (!state.elements) text = state.prepError ? '' : 'Getting secure payment ready…';
   else if (m.length) text = `Add ${m.join(', ').replace(/, ([^,]*)$/, ' and $1')} to pay.`;
   else if (state.taxState === 'pending') text = 'Working out sales tax…';
   else if (state.taxState === 'error') text = 'Sales tax could not be worked out for that address.';
@@ -750,6 +778,7 @@ function refreshReady() {
 
 async function pay() {
   if (state.paying) return;
+  if (codeGate()) { document.getElementById('co-gate-code')?.click(); return; }
   if (isReady()) return submitPayment();
   // A piece in the bag can no longer be bought: Pay leads to it, and its Remove button.
   if (state.unavailableId) {

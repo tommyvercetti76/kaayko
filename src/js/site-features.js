@@ -19,7 +19,11 @@ window.KAAYKO_FEATURES = {
   paddlingout: true,
   forge: true,
   youtube: true,
-  store: false
+  store: false,
+  // TEMPORARY (12 Nov 2026): the checkout opens only with a discount code until the
+  // store's Stripe keys go live. Flip to false to open Pay to everyone; the API has
+  // the same switch in kaayko-api/functions/config/checkoutGate.js — flip both.
+  checkoutNeedsCode: true
 };
 
 (function () {
