@@ -16,20 +16,35 @@ import { esc } from './kit.js';
   const icon = (id, name) => { const u = $(id).querySelector('use'); if (u) u.setAttribute('href', `#${name}`); };
   const KEY = 'kaayko_gtavi_rsvp';
   const remembered = (() => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } })();
-  const ADDRESS = { line: '5205 Tuskegee Trail', town: 'McKinney, Texas 75070' };
-  const MAPS = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${ADDRESS.line}, ${ADDRESS.town}`)}`;
-  function showMsg(choice, name, quiet) {
+  /* What follows an answer comes from the link itself (Kortex `ask.reveal`,
+     `ask.showCount`): the page holds no address and no numbers. */
+  const yesKey = () => (form.dataset.yes || 'in');
+  function countLine(state, choice) {
+    const n = state && state.counts ? state.counts[choice] : null;
+    if (n == null || choice !== yesKey()) return '';
+    return n <= 1 ? ' First one in.' : ` <b>${n}</b> in so far.`;
+  }
+  function revealHtml(reveal) {
+    if (!reveal) return '';
+    const title = reveal.title ? `<strong>${esc(reveal.title)}</strong>` : '';
+    const link = reveal.url ? ` · <u>${/maps/i.test(reveal.url) ? 'Open in Maps' : 'Open'}</u>` : '';
+    const line = reveal.text || reveal.url ? `<span class="label">${esc(reveal.text || '')}${link}</span>` : '';
+    return reveal.url
+      ? `<a class="rsvp__addr" href="${esc(reveal.url)}" target="_blank" rel="noopener">${title}${line}</a>`
+      : `<div class="rsvp__addr">${title}${line}</div>`;
+  }
+  function showMsg(choice, name, state, quiet) {
     msgEl.hidden = false;
     msgEl.className = 'rsvp__reply';
     const who = name ? `, ${esc(name)}` : '';
-    msgEl.innerHTML = choice === 'in'
-      ? `<p>You're in${who}.</p><a class="rsvp__addr" href="${MAPS}" target="_blank" rel="noopener"><strong>${ADDRESS.line}</strong><span class="label">${ADDRESS.town} · <u>Open in Maps</u></span></a>`
+    msgEl.innerHTML = choice === yesKey()
+      ? `<p>You're in${who}.${countLine(state, choice)}</p>${revealHtml(state && state.reveal)}`
       : `<p>Noted${who}. Door's open all four days if that changes.</p>`;
     if (!quiet) msgEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
   async function answer(choice) {
     const name = nameEl.value.trim();
-    if (choice === 'in' && !name) { nameEl.focus(); nameEl.placeholder = 'Name first'; return; }
+    if (choice === yesKey() && !name) { nameEl.focus(); nameEl.placeholder = 'Name first'; return; }
     const btn = $('rsvp-in'); btn.disabled = true;
     try {
       const r = await fetch(`/api/kortex/links/${CODE}/answer`, {
@@ -38,8 +53,9 @@ import { esc } from './kit.js';
       });
       const data = await r.json().catch(() => ({}));
       if (!r.ok || !data.success) throw new Error(data.error || 'failed');
-      try { localStorage.setItem(KEY, JSON.stringify({ choice, name: data.name || name })); } catch {}
-      showMsg(choice, data.name || name, false);
+      const state = { counts: data.counts, reveal: data.reveal };
+      try { localStorage.setItem(KEY, JSON.stringify({ choice, name: data.name || name, state })); } catch {}
+      showMsg(choice, data.name || name, state, false);
     } catch (e) {
       msgEl.hidden = false; msgEl.className = 'rsvp__reply is-error';
       msgEl.innerHTML = '<p>Didn\'t send. Try again.</p>';
@@ -47,9 +63,15 @@ import { esc } from './kit.js';
   }
   form.addEventListener('submit', (e) => { e.preventDefault(); answer('in'); });
   $('rsvp-out').addEventListener('click', () => answer('out'));
-  // A returning guest sees their answer (and the address) without asking again.
+  // A returning guest sees their answer, and what follows it, without asking
+  // again: first from this phone's memory, then refreshed from the link.
   if (remembered && remembered.name) nameEl.value = remembered.name;
-  if (remembered && remembered.choice) showMsg(remembered.choice, remembered.name, true);
+  if (remembered && remembered.choice) showMsg(remembered.choice, remembered.name, remembered.state, true);
+  fetch(`/api/kortex/links/${CODE}/answer`).then(r => r.ok ? r.json() : null).then((d) => {
+    if (!d || !d.success || !d.mine) return;
+    if (d.mine.name && !nameEl.value) nameEl.value = d.mine.name;
+    showMsg(d.mine.choice, d.mine.name || nameEl.value.trim(), { counts: d.counts, reveal: d.reveal }, true);
+  }).catch(() => {});
 
   /* ── Radio ────────────────────────────────────────────────────────── */
   // Full-broadcast uploads, checked 13 Nov 2026. `len` = seconds, so we can tune in mid-show.
@@ -160,7 +182,7 @@ import { esc } from './kit.js';
       return;
     }
     const img = t.querySelector('img'); if (!img || typeof box.showModal !== 'function') return;
-    boxImg.src = img.src; boxImg.alt = img.alt; box.showModal();
+    boxImg.src = t.dataset.full || img.src; boxImg.alt = img.alt; box.showModal();
   });
   $('lightbox-close').addEventListener('click', () => box.close());
   box.addEventListener('click', (e) => { if (e.target === box || e.target === boxImg) box.close(); });
