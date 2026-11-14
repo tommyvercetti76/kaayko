@@ -15,6 +15,20 @@ import { esc } from './kit.js';
   const form = $('rsvp-form'), nameEl = $('rsvp-name'), msgEl = $('rsvp-msg');
   const icon = (id, name) => { const u = $(id).querySelector('use'); if (u) u.setAttribute('href', `#${name}`); };
   const KEY = 'kaayko_gtavi_rsvp';
+  // This phone's token: the link keys one answer per token, so a guest who
+  // answers again (from any network) replaces their answer instead of adding one.
+  const VKEY = 'kaayko_visitor';
+  const visitor = (() => {
+    try {
+      let v = localStorage.getItem(VKEY);
+      if (!v || !/^[A-Za-z0-9_-]{16,64}$/.test(v)) {
+        const b = crypto.getRandomValues(new Uint8Array(18));
+        v = btoa(String.fromCharCode(...b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        localStorage.setItem(VKEY, v);
+      }
+      return v;
+    } catch { return null; }
+  })();
   const remembered = (() => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } })();
   /* What follows an answer comes from the link itself (Kortex `ask.reveal`,
      `ask.showCount`): the page holds no address and no numbers. */
@@ -49,7 +63,7 @@ import { esc } from './kit.js';
     try {
       const r = await fetch(`/api/kortex/links/${CODE}/answer`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ choice, name })
+        body: JSON.stringify({ choice, name, visitor })
       });
       const data = await r.json().catch(() => ({}));
       if (!r.ok || !data.success) throw new Error(data.error || 'failed');
@@ -67,7 +81,7 @@ import { esc } from './kit.js';
   // again: first from this phone's memory, then refreshed from the link.
   if (remembered && remembered.name) nameEl.value = remembered.name;
   if (remembered && remembered.choice) showMsg(remembered.choice, remembered.name, remembered.state, true);
-  fetch(`/api/kortex/links/${CODE}/answer`).then(r => r.ok ? r.json() : null).then((d) => {
+  fetch(`/api/kortex/links/${CODE}/answer${visitor ? `?visitor=${encodeURIComponent(visitor)}` : ''}`).then(r => r.ok ? r.json() : null).then((d) => {
     if (!d || !d.success || !d.mine) return;
     if (d.mine.name && !nameEl.value) nameEl.value = d.mine.name;
     showMsg(d.mine.choice, d.mine.name || nameEl.value.trim(), { counts: d.counts, reveal: d.reveal }, true);
