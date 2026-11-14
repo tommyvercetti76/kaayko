@@ -8,7 +8,7 @@
   <meta name="description" content="GTA VI launch party in Texas. Four days, come and go. Are you in?">
   <meta property="og:type" content="website">
   <meta property="og:title" content="GTA VI. Four days. We finish it.">
-  <meta property="og:description" content="Nov 19–22 · Texas · come and go. Are you in?">
+  <meta property="og:description" content="Nov 19–22 · McKinney, Texas · come and go. Are you in?">
   <meta property="og:image" content="https://kaayko.com/assets/gtavi/og.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -36,14 +36,17 @@
 <header class="hero">
   <img class="hero__bg" src="assets/gtavi/vice_city_15.webp" alt="" fetchpriority="high">
   <div class="hero__copy">
-    <p class="label">November 19 – 22 · Texas</p>
+    <p class="label">November 19 – 22 · McKinney, Texas</p>
     <h1>GTA VI.<br>Four days.<br>We finish it.</h1>
     <p class="hero__line">Come and go. Day or night.</p>
     <form id="rsvp-form" class="rsvp" autocomplete="name" novalidate>
-      <input id="rsvp-name" name="name" type="text" maxlength="40" placeholder="Your name" aria-label="Your name" required>
-      <button type="submit" class="btn" id="rsvp-in">I'm in</button>
-      <p class="rsvp__foot">Address by text once you're in. <button type="button" class="textlink" id="rsvp-out">Can't make it</button></p>
-      <p class="rsvp__msg" id="rsvp-msg" role="status" aria-live="polite" hidden></p>
+      <label class="label" for="rsvp-name">Who's coming</label>
+      <input id="rsvp-name" class="rsvp__name" name="name" type="text" maxlength="40" placeholder="Name" required>
+      <div class="rsvp__acts">
+        <button type="submit" class="btn" id="rsvp-in">I'm in</button>
+        <button type="button" class="btn btn--ghost" id="rsvp-out">Can't make it</button>
+      </div>
+      <div class="rsvp__reply" id="rsvp-msg" role="status" aria-live="polite" hidden></div>
     </form>
   </div>
 </header>
@@ -74,8 +77,7 @@
 
   <section class="media" id="media">
     <div class="sec-head">
-      <h2>Leonida</h2>
-      <p class="label">Four films, nine stills</p>
+      <h2>Watch</h2>
     </div>
     <div class="strip" id="strip">
       <button type="button" class="tile tile--film" data-yt="rz1B4B2yBZY"><img src="https://i.ytimg.com/vi/rz1B4B2yBZY/hqdefault.jpg" alt="" loading="lazy"><span class="tile__cap">Launch trailer</span></button>
@@ -96,7 +98,7 @@
 </main>
 
 <footer class="foot">
-  <p>Private party. Screenshots and trailers © Rockstar Games, radio via YouTube. Not affiliated.</p>
+  <p>Private party. Game footage © Rockstar Games. Radio via YouTube.</p>
   <p>kaay.link/gtavi</p>
 </footer>
 
@@ -111,6 +113,6 @@
   <img id="lightbox-img" alt="">
 </dialog>
 
-<script src="js/gtavi.js" defer></script>
+<script type="module" src="js/gtavi.js"></script>
 </body>
 </html>
