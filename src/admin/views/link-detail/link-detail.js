@@ -391,7 +391,7 @@ function renderAnswers(answers) {
     <div class="ld-card-head"><h4>${esc(answers.question)}</h4><span class="ld-h5-note">${esc(note)}</span></div>
     ${answers.answered ? `<div class="ld-ans-grid">${opts}</div>` : '<p class="ld-none">No answers yet.</p>'}
     <p class="ld-ans-host"><button type="button" class="ld-back" data-ld-host>Open the host page</button>
-      <span class="ld-h5-note">The full list: let people in, remove an answer, close it, download. Opening it makes a new host link; any older one stops working.</span></p>
+      <span class="ld-h5-note">The full list: let people in, remove an answer, close it, download.</span></p>
   </section>`;
 }
 
@@ -546,12 +546,13 @@ function bindBack(container) {
     else router.navigate('links', null, { replace: true });
   });
 }
-/* A link that asks has a host page on kaay.link. The console mints a fresh host link and opens it. */
+/* A link that asks has a host page on kaay.link. The console opens it for the signed-in owner. */
 async function openHostPage(code, button) {
   button.disabled = true;
   const tab = window.open('', '_blank');   // opened in the click itself, so no popup blocker; pointed once the link exists
   try {
-    const response = await apiFetch(linkPath(code, '/host-key'), { method: 'POST', body: '{}' });
+    // A two-minute way in for the signed-in owner. The host key is NOT replaced, so a host link already shared keeps working.
+    const response = await apiFetch(linkPath(code, '/host-session'), { method: 'POST', body: '{}' });
     const data = await readJson(response, 'Could not open the host page');
     if (tab && data.hostUrl) { tab.opener = null; tab.location.replace(data.hostUrl); }
     else if (tab) tab.close();

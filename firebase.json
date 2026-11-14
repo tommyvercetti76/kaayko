@@ -1171,6 +1171,57 @@
               "value": "max-age=63072000; includeSubDomains; preload"
             }
           ]
+        },
+        {
+          "source": "/*/host",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "private, no-store"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, nofollow"
+            }
+          ]
+        },
+        {
+          "source": "/*/host/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "private, no-store"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, nofollow"
+            }
+          ]
+        },
+        {
+          "source": "/*/rsvp",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "private, no-store"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, nofollow"
+            }
+          ]
         }
       ],
       "rewrites": [

@@ -62,11 +62,15 @@
 
   /* What a yes unlocks: an address gets a map link, a web address becomes the link itself. */
   function revealOf(text) {
-    const t = text.trim();
+    const t = text.trim().replace(/\s+/g, ' ');
     if (!t) return undefined;
     if (/^https:\/\/\S+$/i.test(t)) { let host = t; try { host = new URL(t).hostname.replace(/^www\./, ''); } catch { /* shown as typed */ } return { title: host.slice(0, 80), url: t }; }
-    const address = /\d/.test(t) && /[a-z]{3,}/i.test(t) && t.length >= 8;
-    return { title: t.slice(0, 80), url: address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t)}` : undefined };
+    // A street address (a number, a street, then a comma or a postcode) gets a map link.
+    // Anything else, a door code or a note, is shown as written and sent nowhere.
+    const address = /^\d+[a-z]?\s+\S+/i.test(t) && (/,/.test(t) || /\b\d{5}\b/.test(t));
+    let title = t, rest = '';
+    if (t.length > 80) { const cut = Math.max(t.lastIndexOf(',', 80), t.lastIndexOf(' ', 80)); title = t.slice(0, cut > 20 ? cut : 80).replace(/[,\s]+$/, ''); rest = t.slice(title.length).replace(/^[,\s]+/, ''); }
+    return { title, text: rest || undefined, url: address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t)}` : undefined };
   }
 
   form.addEventListener('submit', async (e) => {
@@ -79,13 +83,13 @@
     if (Number.isNaN(end.getTime()) || end <= start) { setAlert('iv-alert', 'error', 'It has to end after it starts.'); return $('iv-end').focus(); }
     const access = $('iv-access').value;
     const passcode = $('iv-pass').value.trim();
-    if (access === 'code' && passcode.length < 4) { setAlert('iv-alert', 'error', 'Give it an invite code of at least 4 characters.'); return $('iv-pass').focus(); }
+    if (access === 'code' && passcode.length < 6) { setAlert('iv-alert', 'error', 'Give it an invite code of at least 6 characters.'); return $('iv-pass').focus(); }
     const theme = (form.querySelector('input[name="iv-theme"]:checked') || {}).value || 'night';
     const btn = $('iv-submit'); btn.disabled = true; btn.textContent = 'Creating…';
     const { ok, data } = await guestApi('/links', {
       method: 'POST',
       body: {
-        code: nameEl.value.trim() || undefined,
+        code: (nameTouched || nameOk) ? (nameEl.value.trim() || undefined) : undefined,
         website: $('iv-website').value || undefined,
         invite: {
           title, startsAt: start.toISOString(), endsAt: end.toISOString(),
@@ -114,6 +118,31 @@
     form.reset(); nameTouched = false; say('Leave empty for a random one.', '');
     $('iv-start').value = local(sat); $('iv-end').value = local(new Date(sat.getTime() + 4 * 3600000)); $('iv-pass-field').hidden = true;
   });
+
+  /* The workspace: a link that asks gets a way to its guest list. It opens a session
+     for the owner; the host link given at creation is not replaced. */
+  const baseOpen = window.openDetail;
+  if (typeof baseOpen === 'function') {
+    window.openDetail = async function (code) {
+      const out = await baseOpen(code);
+      const link = (typeof wsLinks !== 'undefined' && Array.isArray(wsLinks)) ? wsLinks.find((l) => l.code === code) : null;
+      const slot = $('dt-actions');
+      if (link && link.ask && slot && !$('dt-host')) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'action-link'; b.id = 'dt-host'; b.textContent = link.invite ? 'Open the guest list' : 'Open the answers';
+        b.addEventListener('click', async () => {
+          const tab = window.open('', '_blank');   // in the click, so no popup blocker
+          b.disabled = true;
+          const { ok, data } = await guestApi(`/links/${encodeURIComponent(code)}/host-session`, { method: 'POST', body: {} });
+          b.disabled = false;
+          if (ok && data.hostUrl && tab) { tab.opener = null; tab.location.replace(data.hostUrl); }
+          else { if (tab) tab.close(); setAlert('mg-alert', 'error', friendly(data, 'Could not open the guest list. Try again.')); }
+        });
+        slot.prepend(b);
+      }
+      return out;
+    };
+  }
 
   /* Plans, samples and team sign-in sit folded below; a link to one of them opens the fold. */
   const more = $('more');

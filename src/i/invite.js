@@ -81,8 +81,12 @@
       try {
         const { ok, d } = await call('POST', { choice, name, days, guests, passcode, visitor });
         if (!ok) return fail(d.error || "Didn't send. Try again.");
+        // One phone holds one answer: say so when a second name takes the first one's place.
+        const was = remembered && remembered.name && d.replaced && remembered.name !== (d.name || name) ? remembered.name : null;
         store.set(KEY, JSON.stringify({ name: d.name || name }));
+        if (remembered) remembered.name = d.name || name;
         show(d, false);
+        if (was) msg.append(el('p', { className: 'label', textContent: `This replaced ${was}'s answer from this phone. Answering for someone else? Use their phone.` }));
       } catch { fail("Didn't send. Try again."); } finally { inBtn.disabled = false; }
     }
     async function remove() {
@@ -103,6 +107,7 @@
       if (d.mine) {
         if (d.mine.name && !nameEl.value) nameEl.value = d.mine.name;
         if (Array.isArray(d.mine.days) && d.mine.days.length) form.querySelectorAll('input[name="days"]').forEach(i => { i.checked = d.mine.days.includes(i.value); });
+        if ($('rsvp-guests') && d.mine.guests) $('rsvp-guests').value = d.mine.guests;   // or a re-send would shrink the party to one
         show(d, true);
       } else if (d.full) { inBtn.textContent = "It's full"; }
     }).catch(() => {});
