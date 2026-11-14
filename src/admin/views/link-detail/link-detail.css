@@ -149,3 +149,13 @@
 .ld-insights .ki { border-radius: var(--radius-lg); background: var(--bg-card); border-color: var(--border-subtle); box-shadow: var(--shadow-card); }
 .ld-insights .ki h5 { font-style: normal; font-family: inherit; letter-spacing: .1em; font-weight: 600; color: var(--text-secondary); }
 .ld-insights .ki p { font-style: normal; font-family: inherit; font-size: 13px; }
+
+/* What people answered (a code that asks a question) */
+.ld-ans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+.ld-ans-opt { padding: 12px 14px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--surface-sunken); }
+.ld-ans-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.ld-ans-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.ld-ans-count { font-family: var(--mono); font-size: 22px; color: var(--gold-primary); font-variant-numeric: tabular-nums; }
+.ld-ans-count small { font-size: 11px; color: var(--text-muted); font-family: inherit; }
+.ld-ans-names { list-style: none; margin: 10px 0 0; padding: 10px 0 0; border-top: 1px solid var(--border-subtle); display: flex; flex-wrap: wrap; gap: 6px; }
+.ld-ans-names li { font-size: 13px; color: var(--text-secondary); padding: 3px 9px; border-radius: var(--radius-full); background: rgba(255,255,255,0.05); }

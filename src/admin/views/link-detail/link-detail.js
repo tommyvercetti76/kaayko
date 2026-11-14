@@ -377,6 +377,22 @@ function renderMeta(link, analytics) {
   </section>`;
 }
 
+/* ── What people answered (a code that asks): counts per answer, names when asked ── */
+function renderAnswers(answers) {
+  if (!answers) return '';
+  const opts = (answers.options || []).map(o => `<div class="ld-ans-opt">
+      <div class="ld-ans-head"><span class="ld-ans-label">${esc(o.label)}</span><span class="ld-ans-count">${esc(o.count)}${answers.guestsAsked ? ` <small>· ${esc(o.guests)} heads</small>` : ''}</span></div>
+      ${o.names && o.names.length ? `<ul class="ld-ans-names">${o.names.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+    </div>`).join('');
+  const note = [`${answers.answered} answered`,
+    answers.namesAsked ? `${answers.named ?? 0} by name` : '',
+    answers.changed ? `${answers.changed} changed their mind` : ''].filter(Boolean).join(', ');
+  return `<section class="ld-card ld-card-hero ld-answers">
+    <div class="ld-card-head"><h4>${esc(answers.question)}</h4><span class="ld-h5-note">${esc(note)}</span></div>
+    ${answers.answered ? `<div class="ld-ans-grid">${opts}</div>` : '<p class="ld-none">No answers yet.</p>'}
+  </section>`;
+}
+
 function viewsCard(a) {
   if (!window.KortexViews) return '';
   return `<section class="ld-card ld-views">
@@ -403,6 +419,7 @@ function render(payload) {
       : `<section class="ld-card"><p class="ld-none">No scans recorded within the ${esc(a.window?.retentionDays || 30)}-day retention window.</p></section>`;
   return `<div class="ld-root">
     ${renderHeader(link, a)}
+    ${renderAnswers(payload.answers)}
     <div class="ld-insights" id="ld-insights"></div>
     ${evidence}
     ${renderMeta(link, a)}
