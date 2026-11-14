@@ -22,6 +22,7 @@ const FILES = [
   'js/kortex-utm.js',
   'js/kortex-views.js',
   'js/kortex-app.js',
+  'js/kaaylink-invite.js',
   'js/kortex-sky.js',
   'js/kortex-meteors.js',
   'css/kortex-views.css',
@@ -41,6 +42,18 @@ for (const rel of FILES) {
   fs.copyFileSync(from, to);
   copied++;
 }
+// Invitations: the page's stylesheet, script, share cards and house images live
+// under /i/ (a reserved, one-letter path no link can be named).
+function copyDir(rel) {
+  for (const entry of fs.readdirSync(path.join(src, rel), { withFileTypes: true })) {
+    const r = path.join(rel, entry.name);
+    if (entry.isDirectory()) { copyDir(r); continue; }
+    fs.mkdirSync(path.dirname(path.join(out, r)), { recursive: true });
+    fs.copyFileSync(path.join(src, r), path.join(out, r));
+    copied++;
+  }
+}
+copyDir('i');
 for (const must of ['index.html', 'robots.txt']) {
   if (!fs.existsSync(path.join(out, must))) { console.error(`build-link-site: link-site/${must} is missing`); process.exit(1); }
 }

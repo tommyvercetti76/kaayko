@@ -390,6 +390,8 @@ function renderAnswers(answers) {
   return `<section class="ld-card ld-card-hero ld-answers">
     <div class="ld-card-head"><h4>${esc(answers.question)}</h4><span class="ld-h5-note">${esc(note)}</span></div>
     ${answers.answered ? `<div class="ld-ans-grid">${opts}</div>` : '<p class="ld-none">No answers yet.</p>'}
+    <p class="ld-ans-host"><button type="button" class="ld-back" data-ld-host>Open the host page</button>
+      <span class="ld-h5-note">The full list: let people in, remove an answer, close it, download. Opening it makes a new host link; any older one stops working.</span></p>
   </section>`;
 }
 
@@ -544,7 +546,24 @@ function bindBack(container) {
     else router.navigate('links', null, { replace: true });
   });
 }
+/* A link that asks has a host page on kaay.link. The console mints a fresh host link and opens it. */
+async function openHostPage(code, button) {
+  button.disabled = true;
+  const tab = window.open('', '_blank');   // opened in the click itself, so no popup blocker; pointed once the link exists
+  try {
+    const response = await apiFetch(linkPath(code, '/host-key'), { method: 'POST', body: '{}' });
+    const data = await readJson(response, 'Could not open the host page');
+    if (tab && data.hostUrl) { tab.opener = null; tab.location.replace(data.hostUrl); }
+    else if (tab) tab.close();
+  } catch (e) {
+    if (tab) tab.close();
+    utils.showToast(e.message || 'Could not open the host page', 'error', 4000);
+  } finally { button.disabled = false; }
+}
+
 function bindToolbar(container, code) {
+  const hostBtn = container.querySelector('[data-ld-host]');
+  if (hostBtn) hostBtn.addEventListener('click', () => openHostPage(code, hostBtn));
   bindBack(container);
   const csv = container.querySelector('[data-ld-csv]');
   if (csv) csv.addEventListener('click', () => downloadCsv(code, csv));

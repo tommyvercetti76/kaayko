@@ -231,17 +231,6 @@
           ]
         },
         {
-          "source": "/gtavi",
-          "headers": [
-            { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
-            { "key": "Cache-Control", "value": "no-cache" },
-            {
-              "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
-            }
-          ]
-        },
-        {
           "source": "/karma/schools/somalwar/**",
           "headers": [
             {
@@ -387,6 +376,11 @@
         }
       ],
       "redirects": [
+        {
+          "source": "/gtavi",
+          "destination": "https://kaay.link/gtavi",
+          "type": 302
+        },
         {
           "source": "/card",
           "destination": "/",
@@ -865,17 +859,6 @@
           ]
         },
         {
-          "source": "/gtavi",
-          "headers": [
-            { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
-            { "key": "Cache-Control", "value": "no-cache" },
-            {
-              "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://i.ytimg.com; connect-src 'self'; frame-src https://www.youtube-nocookie.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
-            }
-          ]
-        },
-        {
           "source": "/karma/schools/somalwar/**",
           "headers": [
             {
@@ -1025,6 +1008,11 @@
         }
       ],
       "redirects": [
+        {
+          "source": "/gtavi",
+          "destination": "https://kaay.link/gtavi",
+          "type": 302
+        },
         {
           "source": "/card",
           "destination": "https://kaayko.com/",
