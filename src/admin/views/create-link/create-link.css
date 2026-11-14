@@ -761,3 +761,9 @@
   outline: 2px solid var(--gold-primary);
   outline-offset: 2px;
 }
+
+/* Invitation fields */
+.invite-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500; margin-bottom: 6px; }
+.invite-toggle input { width: 18px; height: 18px; accent-color: var(--gold-primary); }
+.invite-section { margin: 4px 0 20px; padding: 20px; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--surface-sunken); }
+#invite-section[hidden], #inv-pass-group[hidden] { display: none; }

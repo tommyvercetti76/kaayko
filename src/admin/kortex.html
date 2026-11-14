@@ -307,6 +307,88 @@
               <textarea id="description" class="form-input form-textarea" rows="2" placeholder="Optional notes about this link..."></textarea>
             </div>
 
+            <!-- Invitation: the link is its own page on kaay.link (same fields the kaay.link maker sends) -->
+            <div class="form-group">
+              <label class="invite-toggle" for="is-invite">
+                <input type="checkbox" id="is-invite">
+                <span>This is an invitation</span>
+              </label>
+              <span class="form-hint">kaay.link shows the page itself and collects who is coming. No destination needed.</span>
+            </div>
+            <div id="invite-section" class="invite-section" hidden>
+              <div class="form-group">
+                <label for="inv-line">One line under the title</label>
+                <input type="text" id="inv-line" class="form-input" maxlength="140" placeholder="Bring a chair.">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="inv-start">Starts <span class="required">*</span></label>
+                  <input type="datetime-local" id="inv-start" class="form-input">
+                  <span class="field-error" id="err-inv-start"></span>
+                </div>
+                <div class="form-group">
+                  <label for="inv-end">Ends <span class="required">*</span></label>
+                  <input type="datetime-local" id="inv-end" class="form-input">
+                  <span class="field-error" id="err-inv-end"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="inv-area">Where, for everyone</label>
+                <input type="text" id="inv-area" class="form-input" maxlength="80" placeholder="Austin, Texas">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="inv-reveal-title">Only for people who say yes</label>
+                  <input type="text" id="inv-reveal-title" class="form-input" maxlength="80" placeholder="The address, a door code">
+                </div>
+                <div class="form-group">
+                  <label for="inv-reveal-text">Second line</label>
+                  <input type="text" id="inv-reveal-text" class="form-input" maxlength="160" placeholder="City and postcode, or a note">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="inv-reveal-url">Link for it</label>
+                <input type="url" id="inv-reveal-url" class="form-input" placeholder="https://… (a map link; left empty for an address, one is made)">
+                <span class="field-error" id="err-inv-reveal-url"></span>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="inv-theme">Look</label>
+                  <select id="inv-theme" class="form-input">
+                    <option value="night">Night</option>
+                    <option value="vice">Neon</option>
+                    <option value="sun">Sun</option>
+                    <option value="paper">Paper</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="inv-access">Who can say yes</label>
+                  <select id="inv-access" class="form-input">
+                    <option value="open">Anyone with the link</option>
+                    <option value="approve">I let each one in</option>
+                    <option value="code">Needs an invite code</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group" id="inv-pass-group" hidden>
+                <label for="inv-pass">Invite code</label>
+                <input type="text" id="inv-pass" class="form-input" maxlength="32" autocomplete="off" placeholder="6 or more characters">
+                <span class="field-error" id="err-inv-pass"></span>
+                <span class="form-hint" id="inv-pass-hint"></span>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="inv-capacity">Room for (people)</label>
+                  <input type="number" id="inv-capacity" class="form-input" min="1" max="5000" step="1" inputmode="numeric" placeholder="250">
+                </div>
+                <div class="form-group">
+                  <label class="invite-toggle" for="inv-plus"><input type="checkbox" id="inv-plus"><span>Guests may bring others</span></label>
+                  <label class="invite-toggle" for="inv-count"><input type="checkbox" id="inv-count" checked><span>Show guests how many are in</span></label>
+                </div>
+              </div>
+              <span class="form-hint">The guest list: open this link in Links, then Open the host page.</span>
+            </div>
+
             <!-- Destination Picker -->
             <div class="form-group" id="destination-picker-group">
               <label>

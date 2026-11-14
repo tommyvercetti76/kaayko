@@ -49,8 +49,9 @@
     const seq = ++checkSeq;
     try {
       const r = await fetch(`${CONFIG.API_BASE}/kortex/names/${encodeURIComponent(name)}?free=1`);
-      const d = await r.json();
+      const d = await r.json().catch(() => null);
       if (seq !== checkSeq) return;
+      if (!r.ok || !d || d.success !== true) return say('Could not check the name. It is checked again when you create.', '');
       if (d.available) { nameOk = true; return say(`kaay.link/${d.name} is yours if you take it now.`, 'ok'); }
       say(`${d.message || 'Not available.'}${d.suggestions && d.suggestions.length ? ` Try ${d.suggestions.join(', ')}.` : ''}`, 'bad');
     } catch { if (seq === checkSeq) say('Could not check the name. It is checked again when you create.', ''); }
@@ -96,7 +97,9 @@
           tz: (Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC',
           area: $('iv-area').value.trim() || undefined,
           theme, reveal: revealOf($('iv-reveal').value),
-          access, passcode: access === 'code' ? passcode : undefined
+          access, passcode: access === 'code' ? passcode : undefined,
+          capacity: parseInt($('iv-capacity').value, 10) || undefined,
+          plusOnes: $('iv-plus').checked
         }
       }
     });

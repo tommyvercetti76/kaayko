@@ -686,6 +686,10 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
             </div>
             <div class="field" id="iv-pass-field" hidden><label class="field-label" for="iv-pass">Invite code</label><input class="field-input" type="text" id="iv-pass" maxlength="32" autocomplete="off" placeholder="6 or more characters"></div>
           </div>
+          <div class="field-row">
+            <div class="field"><label class="field-label" for="iv-capacity">Room for (optional)</label><input class="field-input" type="number" id="iv-capacity" min="1" max="5000" step="1" inputmode="numeric" placeholder="250"></div>
+            <div class="field"><label class="check"><input type="checkbox" id="iv-plus"> Guests may bring others</label></div>
+          </div>
           <input type="text" id="iv-website" name="website" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
           <div class="alert" id="iv-alert" role="alert"></div>
           <button type="submit" class="btn-submit wide" id="iv-submit">Create invitation</button>
@@ -998,7 +1002,7 @@ details.options details.options { margin:var(--sp-4) 0 0; padding-top:var(--sp-2
 <script src="/js/kortex-utm.js"></script>
 <script src="/js/kortex-views.js?v=20260916g"></script>
 <script src="/js/kortex-app.js?v=20260916g"></script>
-<script src="/js/kaaylink-invite.js?v=20261114b"></script>
+<script src="/js/kaaylink-invite.js?v=20261115a"></script>
 <script>
 /* Page-only: the poster's changing destination, this week's sample numbers, the bar, reveals. */
 (function () {

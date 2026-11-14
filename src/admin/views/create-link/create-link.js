@@ -520,6 +520,101 @@ function isValidUrl(str) {
 }
 
 /** Validate form fields before submit. Returns array of error messages (empty = valid). */
+
+// ============================================================================
+// INVITATION (the link is its own page on kaay.link)
+// The same `invite` object the kaay.link maker sends; the server derives the
+// question from it (linkFields.normalizeInvite), so both makers store one shape.
+// ============================================================================
+const $id = (id) => document.getElementById(id);
+const isInvite = () => !!$id('is-invite')?.checked;
+const pad2 = (n) => String(n).padStart(2, '0');
+function toLocalInput(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || Number.isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+function applyInviteMode() {
+  const on = isInvite();
+  const section = $id('invite-section'); if (section) section.hidden = !on;
+  const picker = $id('destination-picker-group'); if (picker) picker.style.display = on ? 'none' : '';
+  const pass = $id('inv-pass-group'); if (pass) pass.hidden = !(on && $id('inv-access')?.value === 'code');
+  if (on && !$id('inv-start').value) {
+    const sat = new Date(); sat.setDate(sat.getDate() + ((6 - sat.getDay() + 7) % 7 || 7)); sat.setHours(19, 0, 0, 0);
+    $id('inv-start').value = toLocalInput(sat); $id('inv-end').value = toLocalInput(new Date(sat.getTime() + 4 * 3600000));
+  }
+}
+function initInviteFields() {
+  $id('is-invite')?.addEventListener('change', applyInviteMode);
+  $id('inv-access')?.addEventListener('change', applyInviteMode);
+  $id('inv-start')?.addEventListener('change', () => {
+    const s = new Date($id('inv-start').value), e = new Date($id('inv-end').value);
+    if (!Number.isNaN(s.getTime()) && (Number.isNaN(e.getTime()) || e <= s)) $id('inv-end').value = toLocalInput(new Date(s.getTime() + 4 * 3600000));
+  });
+}
+/** Errors for the invitation fields; empty when they are fine. */
+function validateInvite(isEditing) {
+  const errors = [];
+  const s = new Date($id('inv-start').value), e = new Date($id('inv-end').value);
+  if (Number.isNaN(s.getTime())) { showFieldError('inv-start', 'err-inv-start', 'Say when it starts'); errors.push('inv-start'); }
+  if (Number.isNaN(e.getTime()) || (!Number.isNaN(s.getTime()) && e <= s)) { showFieldError('inv-end', 'err-inv-end', 'It has to end after it starts'); errors.push('inv-end'); }
+  const url = $id('inv-reveal-url').value.trim();
+  if (url && !/^https:\/\/\S+$/i.test(url)) { showFieldError('inv-reveal-url', 'err-inv-reveal-url', 'A link starting with https://'); errors.push('inv-reveal-url'); }
+  if ($id('inv-access').value === 'code') {
+    const pass = $id('inv-pass').value.trim();
+    const kept = isEditing && CURRENT_EDIT_LINK?.ask?.access === 'code' && !pass;   // an edit may keep the code it has
+    if (!kept && pass.length < 6) { showFieldError('inv-pass', 'err-inv-pass', 'At least 6 characters'); errors.push('inv-pass'); }
+  }
+  return errors;
+}
+/** The `invite` the server takes. On an edit only what the form holds is sent; the server keeps the rest. */
+function inviteFromForm() {
+  const title = $id('inv-reveal-title').value.trim(), text = $id('inv-reveal-text').value.trim();
+  let url = $id('inv-reveal-url').value.trim();
+  const whole = [title, text].filter(Boolean).join(', ');
+  // A street address (a number, a street, then a comma or a postcode) gets a map link when none was given.
+  if (!url && /^\d+[a-z]?\s+\S+/i.test(whole) && (/,/.test(whole) || /\b\d{5}\b/.test(whole))) url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(whole)}`;
+  const access = $id('inv-access').value;
+  const cap = parseInt($id('inv-capacity').value, 10);
+  return {
+    title: $id('title').value.trim(),
+    line: $id('inv-line').value.trim() || null,
+    startsAt: new Date($id('inv-start').value).toISOString(),
+    endsAt: new Date($id('inv-end').value).toISOString(),
+    tz: CURRENT_EDIT_LINK?.invite?.tz || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    area: $id('inv-area').value.trim() || null,
+    theme: $id('inv-theme').value,
+    reveal: title || text ? { title: title || text, text: title ? (text || undefined) : undefined, url: url || undefined } : null,
+    access,
+    passcode: access === 'code' ? ($id('inv-pass').value.trim() || undefined) : undefined,
+    capacity: Number.isFinite(cap) ? cap : undefined,
+    plusOnes: !!$id('inv-plus').checked,
+    showCount: !!$id('inv-count').checked
+  };
+}
+/** Fill the invitation fields from a stored link (edit). */
+function setInviteFields(link) {
+  const inv = link?.invite, ask = link?.ask || {};
+  setChecked('is-invite', !!inv);
+  $id('is-invite').disabled = !!link;            // a link does not become an invitation, nor the reverse
+  if (inv) {
+    setField('inv-line', inv.line || ''); setField('inv-start', toLocalInput(inv.startsAt)); setField('inv-end', toLocalInput(inv.endsAt));
+    setField('inv-area', inv.area || ''); setField('inv-theme', inv.theme || 'night');
+    setField('inv-reveal-title', ask.reveal?.title || ''); setField('inv-reveal-text', ask.reveal?.text || ''); setField('inv-reveal-url', ask.reveal?.url || '');
+    setField('inv-access', ask.access || 'open'); setField('inv-pass', '');
+    setField('inv-capacity', ask.capacity || ''); setChecked('inv-plus', ask.guests === true); setChecked('inv-count', ask.showCount === true);
+    const hint = $id('inv-pass-hint'); if (hint) hint.textContent = ask.access === 'code' ? 'Leave empty to keep the code it has.' : '';
+  }
+  applyInviteMode();
+}
+function resetInviteFields() {
+  const box = $id('is-invite'); if (box) { box.checked = false; box.disabled = false; }
+  ['inv-line', 'inv-start', 'inv-end', 'inv-area', 'inv-reveal-title', 'inv-reveal-text', 'inv-reveal-url', 'inv-pass', 'inv-capacity'].forEach(id => setField(id, ''));
+  setField('inv-theme', 'night'); setField('inv-access', 'open'); setChecked('inv-plus', false); setChecked('inv-count', true);
+  const hint = $id('inv-pass-hint'); if (hint) hint.textContent = '';
+  applyInviteMode();
+}
+
 function validateForm(isEditing) {
   clearAllErrors();
   const errors = [];
@@ -548,6 +643,9 @@ function validateForm(isEditing) {
       errors.push('shortcode');
     }
   }
+
+  // An invitation is its own page: its fields are checked instead of a destination.
+  if (isInvite()) return errors.concat(validateInvite(isEditing));
 
   // Destination URL
   const webDest = document.getElementById('webDestination')?.value?.trim();
@@ -612,6 +710,7 @@ function showUtmHint() {
 }
 
 function initCreateForm() {
+  initInviteFields();
   const form = document.getElementById('create-form');
   if (!form) return;
 
@@ -675,6 +774,12 @@ async function handleCreateLink(e) {
     }
 
     const formData = isEditing ? extractUpdatePayload() : extractCreatePayload();
+    // An invitation carries `invite` and no destination; its address is its own.
+    if (isInvite()) {
+      formData.invite = inviteFromForm();
+      // No destination, and no expiry of its own: the link goes 30 days after the invitation ends, wherever the end moves.
+      for (const k of ['webDestination', 'iosDestination', 'androidDestination', 'destinations', 'destinationCategory', 'destinationTemplate', 'namespace', 'expiresAt']) delete formData[k];
+    }
 
     const code = STATE.editingCode || formData.code;
     const endpoint = isEditing
@@ -1226,9 +1331,10 @@ async function loadLinkForEditing(code) {
     setField('webDestination', webDest);
     setField('iosDestination', iosDest);
     setField('androidDestination', androidDest);
+    setInviteFields(link);
 
-    // Restore destination picker state from URL
-    if (webDest) restorePickerFromUrl(webDest);
+    // Restore destination picker state from URL (an invitation has none: its address is its own)
+    if (webDest && !link.invite) restorePickerFromUrl(webDest);
 
     // V2 intent fields
     setField('destinationType', link.destinationType || metadata.destinationType || 'external_url');
@@ -1319,6 +1425,7 @@ function resetCreateForm() {
   clearAllErrors();
 
   // Re-apply defaults that form.reset() doesn't handle
+  resetInviteFields();
   setChecked('enabled', true);
   document.getElementById('short-code').readOnly = false;
   setChecked('isAdminLink', false);

@@ -334,7 +334,11 @@ GET/POST/PUT/DELETE /api/billing/subscriptions
 - `campaign_memberships` — campaign role-based access
 - `link_analytics` — analytics events
 - `click_events` — click records
-- `link_answers` — one answer per person to a link's question at the scan (`{code}_{visitor}`; choice, guests; no names)
+- `link_answers` — one answer per person per code that asks (`{code}_{visitor}`): choice, guests, `name` when the code asks for names, `days`, `approved` (true let in · false waiting · null nothing gated it), `expiresAt` = 30 days after the code's end (TTL policy on)
+- `link_answer_stats` — `{code}` → counts per answer, waiting, heads, heads per day, `rev`; what a page may show without reading every answer; moved in the answer's transaction
+- `link_answer_nets` — `{code}_{network}` → answers and wrong invite codes from one network (12 answers; 5 wrong codes per 15 min)
+- `retired_link_names` — a deleted link's name, held a year so it cannot be pointed at a stranger's page
+- Invitations (14 Nov 2026): a link with `invite` is its own page at kaay.link/<name> (API `invitePage.js`; static files `src/i/`), answered through kaay.link/<name>/rsvp, hosted at kaay.link/<name>/host. Made on kaay.link (`js/kaaylink-invite.js`) or in the console's Create form ("This is an invitation")
 - `install_events` — app install tracking
 - `custom_events` — custom event logging
 - `ctx_tokens` — attribution context tokens (legacy cookie/ctx resolution)
@@ -568,7 +572,10 @@ POST /api/presets                      → create preset (auth required)
 | `security_alerts` | kortex | Bot/abuse detection alerts |
 | `link_analytics` | kortex | Analytics events |
 | `click_events` | kortex | Click records |
-| `link_answers` | kortex | Answers to a code's question at the scan (RSVP), one per person |
+| `link_answers` | kortex | Answers to a code's question (RSVP), one per person; a name when the code asks for one; deleted 30 days after the code ends |
+| `link_answer_stats` | kortex | Totals per code (counts, waiting, heads, per day) |
+| `link_answer_nets` | kortex | Per-network answer and wrong-code counts per code |
+| `retired_link_names` | kortex | Names of deleted links, held a year |
 | `kortex_rollups` | kortex | Counts-only daily totals per link (outlive the 30-day event TTL; paid history reads them) |
 | `kortex_status` | kortex | `probe`: what the 15-minute redirect probe saw; read by GET /kortex/guest/status |
 | `install_events` | kortex | App install tracking |
