@@ -31,3 +31,8 @@ html.dark-theme footer {
   background: #222;
   color: #ccc;
 }
+
+/* Smooth scrolling is motion; anyone who asked for less gets a jump. */
+@media (prefers-reduced-motion: reduce) {
+  html, body { scroll-behavior: auto; }
+}

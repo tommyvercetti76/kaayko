@@ -130,6 +130,29 @@
 .pcard--minimal.is-fav .pcard-fav { opacity: 1; transform: scale(1); }
 @media (hover: none) { .pcard-fav { opacity: 0.7; } }   /* touch: quietly present so save is discoverable */
 
+/* Touch: the control is 44px for a thumb; the chamfered chip it shows stays the
+   size it was, drawn by ::before. clip-path clips hit-testing too, which is why
+   the chip moves off the element instead of the element simply growing. A miss
+   used to land on the card and open the forecast (16 Nov 2026). */
+@media (pointer: coarse) {
+  .pcard-caret, .pcard-fav {
+    width: 44px; height: 44px; clip-path: none; background: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  .pcard-caret.prev { left: 1px; }
+  .pcard-caret.next { right: 1px; }
+  .pcard-fav { top: 2px; right: 2px; transform: none; }
+  .pcard-caret::before, .pcard-fav::before {
+    content: ""; position: absolute; z-index: -1; left: 50%; top: 50%;
+    clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
+      calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
+    background: rgba(12, 11, 9, 0.42);
+    -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  }
+  .pcard-caret::before { width: 30px; height: 34px; margin: -17px 0 0 -15px; }
+  .pcard-fav::before { width: 32px; height: 32px; margin: -16px 0 0 -16px; }
+}
+
 /* ── long-press charging heart — grows over the 500ms hold ── */
 .pcard-charge {
   position: absolute; left: 50%; top: 50%; z-index: 5;
@@ -202,7 +225,7 @@
 
 .pcard-stat-label {
   color: rgba(217, 189, 123, 0.9);
-  font-size: 0.62rem;
+  font-size: 0.75rem;   /* the verdict: 12px, was 9.9 (16 Nov 2026) */
   font-style: italic;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -318,7 +341,7 @@
   display: inline-block;
   padding: 4px 8px 3px;
   font-family: 'Josefin Sans', Arial, sans-serif;
-  font-size: 0.56rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
   color: #f2e6c4;
   background: rgba(12, 11, 9, 0.55);
   -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);

@@ -63,6 +63,16 @@ html.dark-theme, .pn { background: var(--bg); }
 .pn-chip[aria-pressed="true"] { background: var(--gold-bright); color: var(--gold-ink); }
 .pn-chip:focus-visible, .pn-sort select:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: -3px; }
 .pn-chip[aria-pressed="true"]:focus-visible { outline-color: var(--gold-ink); }
+/* Phones: 44px for a thumb, and a 16px select, because under 16px iOS Safari
+   zooms the page on focus. Wide screens keep the 34px bar the CLS note above
+   is measured for (16 Nov 2026). */
+@media (max-width: 759px) {
+  .pn-chip, .pn-sort select { height: 44px; }
+  .pn-sort select { font: 500 16px var(--font-sans); letter-spacing: 0; text-transform: none; }
+  .pn-chip { font-size: 0.6875rem; }
+  .pn-paused-t { min-height: 44px; }
+  .pn-brand { min-height: 44px; justify-content: center; }
+}
 
 /* ── Shared bits ─────────────────────────────────────────────────────────── */
 .pn-list { margin: 0; padding: 0; list-style: none; }

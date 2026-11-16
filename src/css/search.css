@@ -86,7 +86,7 @@
       border-radius: 12px;
       color: var(--fg);
       font-family: var(--font-sans);
-      font-size: 15px;
+      font-size: 16px;   /* under 16px iOS Safari zooms the page on focus */
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }

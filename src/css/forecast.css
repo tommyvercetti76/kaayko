@@ -233,6 +233,7 @@ main.forecast-main {
   position: relative;
   z-index: 2;
 }
+.forecast-page-title h1,
 .forecast-page-title h2 {
   margin: 0 0 0.2rem;
   font-family: var(--font-sans);

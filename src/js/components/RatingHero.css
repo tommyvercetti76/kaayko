@@ -1645,3 +1645,9 @@ html:not(.dark-theme) .reading-source { color: #1a1a1a; }
    that mounts it. */
 .weather-value.wt-none { color: rgba(237,232,223,0.45); font-size: 0.95rem; }
 .wt-measured { color: rgba(126,169,140,0.85); letter-spacing: 0.08em; }
+
+/* A danger state says so in colour and words; it does not also have to pulse
+   at someone who asked for less motion (16 Nov 2026). */
+@media (prefers-reduced-motion: reduce) {
+  .condition-item.dangerous-condition, .paddler-briefing.verdict-danger { animation: none; }
+}

@@ -625,3 +625,11 @@ html, body {
   color: var(--muted);
   letter-spacing: 0.04em;
 }
+
+/* Reduced motion: no fades on the thank-you or the onboarding sheet. The
+   spinner keeps turning, because it is the only sign of work in progress
+   (16 Nov 2026). */
+@media (prefers-reduced-motion: reduce) {
+  .thank-you { animation: none; opacity: 1; transform: none; }
+  .onboard-overlay, .onboard-overlay.hiding { animation: none; }
+}

@@ -89,6 +89,12 @@ html, body { background: var(--bg) !important; color: var(--fg); margin: 0; min-
 .meth-wrap > * { min-width: 0; max-width: 100%; }
 .score-table { width: 100%; table-layout: fixed; }
 .score-table th, .score-table td { overflow-wrap: anywhere; }
+/* At 375 a column is 82px; with 0.8rem of padding and 0.15em tracking "VERDICT"
+   and "MEANING" did not fit and broke mid-word (16 Nov 2026). */
+@media (max-width: 600px) {
+  table.score-table th, table.score-table td { padding-left: 0.35rem; padding-right: 0.35rem; }
+  table.score-table th { letter-spacing: 0.04em; font-size: 0.6875rem; }
+}
 #heatmapContainer, #heatmapContainer .khm-wrap, #heatmapContainer .khm-bar { min-width: 0; max-width: 100%; }
 
 .meth-back {

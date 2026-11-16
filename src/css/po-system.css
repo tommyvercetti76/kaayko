@@ -202,3 +202,38 @@ body .search-here-btn:hover { --kc-bg: linear-gradient(135deg, #e6cd8e, var(--go
   text-transform: uppercase;
   color: var(--gold);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHONE FLOORS (16 Nov 2026 audit, phase 1).
+   On a phone nothing a paddler has to read is under 11px and nothing they have
+   to hit is under 44px. Each rule below names one thing the audit measured
+   under that at 375px; the desktop sizes are untouched.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* forecast */
+  body .night-next-label, body .night-next-scale, body .reading-source,
+  body .weather-label, body .kbg-title, body .card-eyebrow, body .loc-label,
+  body .forecast-api-status,
+  body .khm-eyebrow, body .khm-source, body .khm-day-label > span, body .khm-tick,
+  /* rate */
+  body .rate-card-label, body .wx-lbl, body .rate-label,
+  /* grid */
+  body .pcard-paused-toggle,
+  /* search */
+  body .map-legend, body .results-hint, body .search-suggest-item .tag,
+  body .search-map-hint { font-size: 0.6875rem; }
+  /* these two are set under an id on the forecast page, so they need one here */
+  #ratingHeroContainer .weather-label, #ratingHeroContainer .reading-source { font-size: 0.6875rem !important; }   /* forecast.css pins the label with !important */
+  body .khm-now span { font-size: 0.5625rem; }
+
+  /* tap targets */
+  body .feedback-btn { min-width: 44px; min-height: 44px; padding: 4px 12px; }
+  body .help-btn { width: 44px; height: 44px; }
+  body .pcard-paused-toggle, body .spr-open { min-height: 44px; }
+  body .forecast-fav-slot .kaayko-fav-btn { width: 44px; height: 44px; }
+  body .potour-help { width: 44px; height: 44px; }
+  body .kw-skip, body .kw-next { min-height: 44px; font-size: 0.6875rem; }
+  body .kw-skip { padding: 0 0.6rem; }
+  body .po-brand { min-height: 44px; justify-content: center; }
+  body .loc-coords-link, body .loc-yt-link { padding-block: 12px; margin-block: -12px; }
+}

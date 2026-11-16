@@ -340,3 +340,9 @@
   text-transform: uppercase;
   margin-bottom: 6px;
 }
+
+/* The warning stays; its four endless pulses stop for anyone who asked for
+   less motion (16 Nov 2026). */
+@media (prefers-reduced-motion: reduce) {
+  .warning-pulse-ring, .warning-core, .warning-count-badge, .warning-card-icon { animation: none; }
+}

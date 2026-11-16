@@ -873,21 +873,3 @@ document.addEventListener('click', function (e) {
 
 // Boot
 loadForecast();
-
-// ── Header scroll hide/show ─────────────────────────────────────────────
-(function () {
-  const header = document.querySelector('.header');
-  if (!header) return;
-  let lastY = 0, ticking = false;
-  window.addEventListener('scroll', function () {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(function () {
-      const y = window.scrollY;
-      if (y > 90 && y > lastY) header.classList.add('header-hidden');
-      else header.classList.remove('header-hidden');
-      lastY = y;
-      ticking = false;
-    });
-  }, { passive: true });
-})();
