@@ -17,7 +17,6 @@ window.KAAYKO_API_BASE = window.FORCE_PRODUCTION_MODE
       ? location.origin + "/api"
       : window.PRODUCTION_API_BASE);
 
-console.log("🚀 PRODUCTION MODE FORCED - Using:", window.PRODUCTION_API_BASE);
 
 /**
  * Stripe publishable key — safe to expose, it is client-side by design.

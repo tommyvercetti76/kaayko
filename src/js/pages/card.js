@@ -2,15 +2,15 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=6fb0e4d';
-import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=6fb0e4d';
-import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=6fb0e4d';
-import { readFace, warmArt } from '/js/cards/relief.js?v=6fb0e4d';
-import { rest, step, clamp } from '/js/cards/attitude.js?v=6fb0e4d';
-import { lightFace, v } from '/js/cards/lamp.js?v=6fb0e4d';
-import { dustMorph } from '/js/cards/morph.js?v=6fb0e4d';
-import { esc, apiBase } from '/js/kit.js?v=6fb0e4d';
-import { artUrl } from '/js/cards/art.js?v=6fb0e4d';
+import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=8195ed8';
+import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=8195ed8';
+import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=8195ed8';
+import { readFace, warmArt } from '/js/cards/relief.js?v=8195ed8';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=8195ed8';
+import { lightFace, v } from '/js/cards/lamp.js?v=8195ed8';
+import { dustMorph } from '/js/cards/morph.js?v=8195ed8';
+import { esc, apiBase } from '/js/kit.js?v=8195ed8';
+import { artUrl } from '/js/cards/art.js?v=8195ed8';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
@@ -71,12 +71,26 @@ const EYE_CARDS = 4;
 const lampEl = document.getElementById('lamp');
 
 let eye = v(0, 0, EYE_CARDS), cardW = 600, cardBox = null, roomBox = null;
+/* ── the loop sleeps ───────────────────────────────────────────────────────
+   It used to ask for a frame forever: 120 callbacks a second on a phone whose
+   card was lying still, each one solving the lamp and building a dozen strings
+   to write nothing (measured 16 Nov 2026: 240 calls in two idle seconds). Now
+   it stops three frames after the card has reached its rest and nothing is in
+   flight, and wake() starts it again. Anything that moves the card, changes
+   its size, or lays a layer the lamp has to light calls wake().             */
+let loopOn = false, idle = 0;
+function wake() {
+  if (!loopOn || stopped) return;
+  idle = 0;
+  if (!raf) { lastT = 0; raf = requestAnimationFrame(loop); }
+}
 /** The card's real width, and the perspective set from it. */
 function measure() {
   cardBox = cardWrap.getBoundingClientRect();
   roomBox = room.getBoundingClientRect();
   cardW = cardBox.width || 600;
   cardWrap.style.perspective = `${Math.round(cardW * EYE_CARDS)}px`;   // runs before write() exists
+  wake();                                     // the glint is placed in card widths
 }
 measure();
 on(window, 'resize', measure);
@@ -205,7 +219,11 @@ function loop(t) {
   if (typeRamp) { typeGain = smooth((t - typeRamp) / 350); if (typeGain >= 1) typeRamp = 0; }
   lit(att.rx, att.ry);
   write(card, 'transform', `rotateX(${att.rx.toFixed(2)}deg) rotateY(${att.ry.toFixed(2)}deg)`);
-  raf = requestAnimationFrame(loop);
+  const moving = grab.on || inspecting || switching || typeRamp
+    || Math.abs(att.rx - att.tx) > 0.01 || Math.abs(att.ry - att.ty) > 0.01
+    || Math.abs(att.vx.v) > 0.05 || Math.abs(att.vy.v) > 0.05;
+  idle = moving ? 0 : idle + 1;
+  raf = idle > 3 ? 0 : requestAnimationFrame(loop);
 }
 
 /* ── inspect ─────────────────────────────────────────────────────────────────
@@ -272,6 +290,7 @@ function setInspect(on) {
     foldTurn(); att.tx = 0; att.ty = 0;
   }
   if (!live) { live = true; card.classList.add('is-live'); }
+  wake();
 }
 
 function grabStart(e) {
@@ -400,6 +419,7 @@ function aim(e) {
   att.tx = (0.5 - target.y) * 2 * TILT;
   att.ty = (target.x - 0.5) * 2 * TILT;
   if (!live) { live = true; card.classList.add('is-live'); }
+  wake();
 }
 
 /* ── the handset's tilt is gone ──────────────────────────────────────────
@@ -411,6 +431,14 @@ function aim(e) {
 
 const fine = matchMedia('(pointer: fine)').matches;
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// The QR is only drawn for a fine pointer (frontOpts), so only that page
+// fetches the library. It was a blocking <script> on every phone.
+const qrReady = !fine || typeof qrcode !== 'undefined' ? Promise.resolve() : new Promise((ok) => {
+  const s = document.createElement('script');
+  s.src = '/js/vendor/qrcode-generator.js?v=8195ed8';
+  s.onload = s.onerror = () => ok();
+  document.head.appendChild(s);
+});
 
 // Decoration, and fenced off as such. The series below is the page; the lamp and
 // the tilt are polish. A single bad line in here once took the whole module down
@@ -418,16 +446,35 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // polish now costs the polish and nothing else.
 try {
 if (!still) {
+  loopOn = true;
   raf = requestAnimationFrame(loop);
   if (fine) {
     on(window, 'pointermove', aim, { passive: true });
-    on(window, 'pointerleave', () => { target = { x: .5, y: .35 }; });
+    // The cursor has left the page: the card lies flat again. This used to
+    // reset `target`, which nothing reads, so the card stayed leaned toward
+    // wherever the cursor went out.
+    on(document.documentElement, 'pointerleave', () => { if (!inspecting) { att.tx = 0; att.ty = 0; wake(); } });
   }
 }
 } catch (err) { console.warn('card: lighting off —', err); }
 
 /* ── turning it over ─────────────────────────────────────────────────────── */
 const flip = () => card.classList.toggle('is-flipped');
+
+/* ── what a finger can do, said once ────────────────────────────────────────
+   A phone showed a card and nothing else: no sign it turns over, and the swipe
+   that deals the next one only works in the space AROUND the card, which is
+   exactly where this line sits. It goes at the first touch and does not come
+   back. Absolutely placed in the zone, so it never moves the card.          */
+const HINT_KEY = 'kaayko.card.hinted';
+const hintEl = document.getElementById('hint');
+const hinted = () => { try { return localStorage.getItem(HINT_KEY) === '1'; } catch (_) { return false; } };
+function dropHint() {
+  if (!hintEl || hintEl.hidden) return;
+  hintEl.classList.remove('is-on');
+  later(() => { hintEl.hidden = true; }, 500);
+  try { localStorage.setItem(HINT_KEY, '1'); } catch (_) {}
+}
 // A swipe that changed the card must not also turn it over, and neither must
 // letting go of a card you were inspecting.
 on(card, 'click', (e) => { if (!inspecting && !card.dataset.held && !card.dataset.swiped && gestureMoved < 8) flip(); });
@@ -479,7 +526,10 @@ function setSkin(on, { save = true } = {}) {
   skinBtn.setAttribute('aria-pressed', String(engraved));
   // The control is the picture. A skull is the set in colour; press it and the
   // set goes engraved, and the rose is how you know.
-  skinBtn.setAttribute('aria-label', engraved ? 'Back to colour' : 'American Psycho');
+  // One name, and aria-pressed says which state it is in. It read "American
+  // Psycho" / "Back to colour": a joke for the eye, and nothing a screen reader
+  // could act on.
+  skinBtn.setAttribute('aria-label', 'Engraved card set');
   // The skull becomes the rose as dust. Only when a person presses it: on
   // load the icon is simply in its state.
   skinBtn.dataset.mode = engraved ? 'rose' : 'skull';
@@ -726,6 +776,7 @@ function layTint(f, c, e, params) {
   el.style.opacity = String(k * Math.max(RELIEF_FLOOR, reliefGain));
   f.tint = { el, k };
   f.relief.appendChild(el);
+  wake();
 }
 
 /** Phase two: the four lit stills of the animal, and of the type. */
@@ -766,6 +817,7 @@ function layStills(f, c, e, params, part = 'all') {
   }
   if (tw && reliefParts !== 'nogloss') layGloss(f, texts, tw, wrap);
   if (fresh) f.relief.appendChild(wrap);
+  wake();                                     // new layers sit at the floor until the lamp is solved again
 }
 
 /* ── the ink's gloss ─────────────────────────────────────────────────────────
@@ -825,6 +877,7 @@ function layGloss(f, texts, tw, wrap) {
     f.glossUrl = url;
     for (const p of ['maskImage', 'webkitMaskImage']) win.style[p] = `url(${url})`;
     f.gloss = g;
+    wake();
   }).catch((err) => console.warn('card: gloss —', err));
 }
 
@@ -900,6 +953,7 @@ function layTypeLater(c, e, params) {
   typeGain = 0;
   for (const f of layersOf()) layStills(f, c, e, params, 'type');
   typeRamp = performance.now();
+  wake();
 }
 
 function switchSkin() {
@@ -946,6 +1000,7 @@ function switchSkin() {
     }).catch((err) => console.warn('card: relief —', err));
   }
   switching = { t0: performance.now(), toEngraved: engraved, incoming, c, emboss: engraved ? embossOf(artUrl(c), embossParams(c)) : null };
+  wake();
   if (still) finishSwitch();
 }
 
@@ -1019,7 +1074,9 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // The card prints its own name in 50pt caps directly above this; repeating it
   // here was the page reading itself out loud. Only the link is not on the card
   // already — because the one on the card is ink, and this one is a link.
-  nowEl.innerHTML = `<i><a class="to-product" href="${esc(c.url)}">${esc(c.url.replace('https://', ''))}</a></i>`;
+  // The <a> is 44px tall for a thumb (it was a bare 18px line of type, and the
+  // only way into a product on a phone); the underline is on the span inside.
+  nowEl.innerHTML = `<i><a class="to-product" href="${esc(c.url)}"><span>${esc(c.url.replace('https://', ''))}</span></a></i>`;
   [...marks.children].forEach((b, j) => {
     b.setAttribute('aria-checked', String(j === at));
     b.tabIndex = j === at ? 0 : -1;
@@ -1039,28 +1096,56 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // is arriving rather than reading the one on its way out.
   if (fade) later(() => { if (series[at] === c) attachReaders(c); }, fade + 60);
   else attachReaders(c);
-  measure();                                      // the caption under the card can change height
+  measure();                                      // the caption under the card can change height (and wakes the loop)
 }
 
+/* ── where the words come from ───────────────────────────────────────────────
+   The card used to wait for GET /cards before it drew anything, with no
+   timeout: a cold API was seconds of blank paper, and a hung one was a blank
+   card for good (the static copy was only tried on a rejection). Now both are
+   asked at once and the card is drawn from whichever answers first — in
+   practice the static index, which ships with the page. When the live copy
+   arrives and says something different (someone edited a card), the deck is
+   redrawn with it; when it says the same thing, nothing happens at all.     */
+const getJson = (url, signal) => fetch(url, { cache: 'no-cache', signal })
+  .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); });
+const said = (cards, b) => JSON.stringify([
+  cards.map((c) => [c.slug, c.name, c.hook, c.host, c.url, c.accent, c.art, c.line, c.facts]),
+  (b && b.label) || '', (b && b.contact) || '',
+]);
+
 (async () => {
-  try {
-    // Live copy first. The static index is the fallback, so the cards still
-    // render if the API is unreachable — with whatever words it was last built
-    // with, which is better than a blank card.
-    const r = await fetch(`${API}/cards`, { cache: 'no-cache', signal: life.signal });
-    if (!r.ok) throw new Error(r.status);
-    const idx = await r.json();
-    series = idx.cards || [];
-    brand = idx.brand || {};
-  } catch (_) {
-    try {
-      const r = await fetch('/assets/cards/index.json', { cache: 'no-cache', signal: life.signal });
-      const idx = await r.json();
-      series = (idx.cards || []).map((c) => ({ ...c, art: c.slug }));
-      brand = FALLBACK_BRAND;
-    } catch (__) { series = []; }
-  }
-  if (stopped || !series.length) return;   // stopped while the catalog was loading
+  const liveCtl = new AbortController();
+  life.signal.addEventListener('abort', () => liveCtl.abort());
+  const liveTimer = later(() => liveCtl.abort(), 6000);
+  const liveP = getJson(`${API}/cards`, liveCtl.signal)
+    .then((idx) => ({ cards: idx.cards || [], brand: idx.brand || {}, live: true }));
+  const staticP = getJson('/assets/cards/index.json', life.signal)
+    .then((idx) => ({ cards: (idx.cards || []).map((c) => ({ ...c, art: c.slug })), brand: FALLBACK_BRAND }));
+  // Promise.any by hand: the first to ANSWER, and only a failure if both fail.
+  const firstOf = (ps) => new Promise((ok, no) => {
+    let left = ps.length;
+    ps.forEach((p) => p.then((r) => { if (r.cards.length) ok(r); else if (!--left) no(); }, () => { if (!--left) no(); }));
+  });
+  let first;
+  try { first = await firstOf([staticP, liveP]); } catch (_) { return; }
+  await qrReady;
+  if (stopped) return;   // stopped while the catalog was loading
+  series = first.cards; brand = first.brand;
+
+  // The live copy, when it was not the first to answer and says something else.
+  const takeLive = (got) => {
+    if (stopped || !got.cards.length || said(got.cards, got.brand) === said(series, brand)) return;
+    // Never under a hand, and never in the middle of a change of stock.
+    if (inspecting || switching || grab.on || hold) { later(() => takeLive(got), 900); return; }
+    const slug = series[at] && series[at].slug, wasFlipped = card.classList.contains('is-flipped');
+    series = got.cards; brand = got.brand;
+    paintMarks();
+    show(Math.max(0, series.findIndex((c) => c.slug === slug)));
+    if (wasFlipped) setFaceQuietly(true);
+  };
+  if (!first.live) liveP.then((got) => { cancelLater(liveTimer); takeLive(got); }).catch(() => {});
+  else cancelLater(liveTimer);
 
   paintMarks();
   // The other cards' art, fetched while nothing is happening, so a swipe to
@@ -1071,7 +1156,7 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
     const b = e.target.closest('.mark');
     // The card already up is not dealt again: that turned a card you were
     // reading the back of over to its front.
-    if (b && Number(b.dataset.i) !== at) show(Number(b.dataset.i));
+    if (b && Number(b.dataset.i) !== at) { dropHint(); show(Number(b.dataset.i)); }
   });
   on(marks, 'keydown', (e) => {
     const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
@@ -1087,7 +1172,7 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // exactly the swipe it always had.
   // How far a press on the card travelled, so a turn is never also a tap.
   let gx = null, gy = 0;
-  on(card, 'pointerdown', (e) => { gx = e.clientX; gy = e.clientY; gestureMoved = 0; });
+  on(card, 'pointerdown', (e) => { gx = e.clientX; gy = e.clientY; gestureMoved = 0; dropHint(); });
   on(card, 'pointermove', (e) => {
     if (gx === null) return;
     gestureMoved = Math.max(gestureMoved, Math.hypot(e.clientX - gx, e.clientY - gy));
@@ -1096,7 +1181,7 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // on the card turns it), or from the strip under it.
   const zone = cardWrap.parentElement;
   let x0 = null, y0 = 0;
-  on(zone, 'pointerdown', (e) => { x0 = card.contains(e.target) ? null : e.clientX; y0 = e.clientY; });
+  on(zone, 'pointerdown', (e) => { x0 = card.contains(e.target) ? null : e.clientX; y0 = e.clientY; dropHint(); });
   on(zone, 'pointerup', (e) => {
     if (x0 === null) return;
     const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
@@ -1109,10 +1194,11 @@ function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
   // remembers to change. It read "Bone" on every cold load for three deploys
   // after the module had stopped saying it.
   setSkin(remembered(), { save: false });
+  if (hintEl && touchy && !hinted()) { hintEl.hidden = false; frame(() => frame(() => hintEl.classList.add('is-on'))); }
   // A rig for measuring the page on a real engine, only when the URL asks
   // for it. Never fetched otherwise. See cards/probe.js.
   const probe = new URLSearchParams(location.search).get('probe');
-  if (probe) import('/js/cards/probe.js?v=6fb0e4d').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
+  if (probe) import('/js/cards/probe.js?v=8195ed8').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
 })();
 
 return function stopCard() {

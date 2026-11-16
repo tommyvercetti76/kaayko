@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" class="card-page">
 <head>
-<script src="/js/prod-config.js?v=6fb0e4d"></script>
+<script src="/js/prod-config.js?v=8195ed8"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- The home page since 22 Oct 2026; it was /card, and /card now redirects
@@ -170,6 +170,22 @@
 <!-- The first card's art, fetched with the page instead of after the card
      catalogue answers. Written by scripts/card-art-webp.py. -->
 <link rel="preload" as="image" type="image/webp" fetchpriority="high" href="/assets/cards/art/paddlingout.webp?v=d429d6e4f8">
+<!-- The card's modules, fetched with the page. card.js imports nine files and
+     kit.js two more; without these the browser only learns of each level when
+     the one above it has arrived (three round trips, measured 16 Nov 2026).
+     scripts/stamp-version.js stamps these like every other /js/ reference. -->
+<link rel="modulepreload" href="/js/pages/card.js?v=8195ed8">
+<link rel="modulepreload" href="/js/cards/render.js?v=8195ed8">
+<link rel="modulepreload" href="/js/cards/skins/engraved.js?v=8195ed8">
+<link rel="modulepreload" href="/js/cards/emboss.js?v=8195ed8">
+<link rel="modulepreload" href="/js/cards/relief.js?v=8195ed8">
+<link rel="modulepreload" href="/js/cards/attitude.js?v=8195ed8">
+<link rel="modulepreload" href="/js/cards/lamp.js?v=8195ed8">
+<link rel="modulepreload" href="/js/cards/morph.js?v=8195ed8">
+<link rel="modulepreload" href="/js/cards/art.js?v=8195ed8">
+<link rel="modulepreload" href="/js/kit.js?v=8195ed8">
+<link rel="modulepreload" href="/js/util.js?v=8195ed8">
+<link rel="modulepreload" href="/js/priceMap.js?v=8195ed8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet">
@@ -219,7 +235,7 @@ html, body { margin: 0; background: var(--ink); color: var(--paper); overflow-x:
    (MORPH_MS in pages/card.js). One-time transitions of colour on a few
    elements; nothing here runs while the card turns. */
 html, body { transition: background-color .9s ease, color .9s ease; }
-.eyebrow h1 em, .cap, .now i, .now .to-product, .colophon a { transition: color .9s ease, border-color .9s ease; }
+.eyebrow h1 em, .cap, .now i, .now .to-product, .now .to-product span, .colophon a { transition: color .9s ease, border-color .9s ease; }
 /* The arriving face, during a timed switch: over the old one, on its own layer. */
 #face-front, #face-back { position: relative; }
 .face .incoming { position: absolute; inset: 0; will-change: opacity, filter; }
@@ -482,8 +498,22 @@ a { color: inherit; text-decoration: none; }
 .now { margin: 0; text-align: center; display: grid; gap: 3px; min-height: 24px; }
 .now b { font-weight: 400; font-size: clamp(17px, 2.6vw, 21px); }
 .now i { color: var(--dim); font-size: 14px; font-style: normal; max-width: 56ch; display: inline-block; }
-.now .to-product { color: var(--gold-lit); border-bottom: 1px solid rgba(240,217,160,.35); }
-.now .to-product:hover { border-bottom-color: var(--gold-lit); }
+/* The way into the product. 44px tall for a thumb, as the strip above it and
+   the footer below it are; the type and its underline are what they were. */
+.now .to-product { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; color: var(--gold-lit); }
+.now .to-product span { border-bottom: 1px solid rgba(240,217,160,.35); }
+.now .to-product:hover span { border-bottom-color: var(--gold-lit); }
+.now .to-product:focus-visible { outline: 2px solid var(--gold); outline-offset: -4px; border-radius: 8px; }
+
+/* What a finger can do, said once (pages/card.js dropHint). In the band under
+   the card, where the swipe it names works. Out of flow: it never moves the card. */
+.zone { position: relative; }
+.hint {
+  position: absolute; left: 0; right: 0; bottom: 6px; margin: 0; text-align: center;
+  pointer-events: none; opacity: 0; transition: opacity .5s ease;
+}
+.hint.is-on { opacity: 1; }
+@media (max-height: 560px) { .hint { display: none; } }   /* no band to sit in */
 
 /* ── the mode control ───────────────────────────────────────────────── */
 .mode {
@@ -554,7 +584,7 @@ a { color: inherit; text-decoration: none; }
 .colophon a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
-  html, body, .card, .face, .relief, .relief .stills, .eyebrow h1 em, .cap, .now i, .now .to-product, .colophon a { transition: none; }
+  html, body, .card, .face, .relief, .relief .stills, .eyebrow h1 em, .cap, .now i, .now .to-product, .now .to-product span, .colophon a, .hint { transition: none; }
   .relief, .relief .stills { opacity: 1; }
   .relief .gloss-win { display: none; }
   .sheen, .wash, .foil, .shade { display: none; }
@@ -695,7 +725,7 @@ a { color: inherit; text-decoration: none; }
        the set goes engraved, and a rose says so. Anyone who recognises either
        does not need a label, and the aria-label tells everyone else. It lives
        in the corner, out of the column, so it never moves the card. -->
-  <button type="button" class="mode" id="skin" aria-pressed="false" aria-label="American Psycho" data-mode="skull">
+  <button type="button" class="mode" id="skin" aria-pressed="false" aria-label="Engraved card set" data-mode="skull">
     <span class="mode-stage" id="skin-stage" aria-hidden="true">
       <img class="mode-skull" id="mode-skull" src="/assets/card/skull.webp" alt="" width="30" height="42" decoding="async">
       <img class="mode-rose"  id="mode-rose"  src="/assets/card/rose.webp" alt="" width="30" height="42" decoding="async">
@@ -729,6 +759,7 @@ a { color: inherit; text-decoration: none; }
       </div></div>
     </div>
   </div>
+  <p class="cap hint" id="hint" hidden>Tap to turn &middot; swipe here for the next</p>
   </div>
 
   <div class="below">
@@ -776,7 +807,8 @@ a { color: inherit; text-decoration: none; }
      control still said "Bone" on a device the server had already been sending
      "American Psycho" to for an hour. The query changes when the build does,
      so a stale module cannot be reached. -->
-<script src="/js/vendor/qrcode-generator.js?v=6fb0e4d"></script>
-<script type="module" src="/js/pages/card.js?v=6fb0e4d"></script>
+<!-- The QR library is fetched by card.js, and only where a QR is drawn (a fine
+     pointer). It was a blocking script here on every phone. -->
+<script type="module" src="/js/pages/card.js?v=8195ed8"></script>
 </body>
 </html>
