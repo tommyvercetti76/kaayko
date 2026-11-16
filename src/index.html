@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" class="card-page">
 <head>
-<script src="/js/prod-config.js?v=964f136"></script>
+<script src="/js/prod-config.js?v=8155556"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- The home page since 22 Oct 2026; it was /card, and /card now redirects
@@ -174,18 +174,18 @@
      kit.js two more; without these the browser only learns of each level when
      the one above it has arrived (three round trips, measured 16 Nov 2026).
      scripts/stamp-version.js stamps these like every other /js/ reference. -->
-<link rel="modulepreload" href="/js/pages/card.js?v=964f136">
-<link rel="modulepreload" href="/js/cards/render.js?v=964f136">
-<link rel="modulepreload" href="/js/cards/skins/engraved.js?v=964f136">
-<link rel="modulepreload" href="/js/cards/emboss.js?v=964f136">
-<link rel="modulepreload" href="/js/cards/relief.js?v=964f136">
-<link rel="modulepreload" href="/js/cards/attitude.js?v=964f136">
-<link rel="modulepreload" href="/js/cards/lamp.js?v=964f136">
-<link rel="modulepreload" href="/js/cards/morph.js?v=964f136">
-<link rel="modulepreload" href="/js/cards/art.js?v=964f136">
-<link rel="modulepreload" href="/js/kit.js?v=964f136">
-<link rel="modulepreload" href="/js/util.js?v=964f136">
-<link rel="modulepreload" href="/js/priceMap.js?v=964f136">
+<link rel="modulepreload" href="/js/pages/card.js?v=8155556">
+<link rel="modulepreload" href="/js/cards/render.js?v=8155556">
+<link rel="modulepreload" href="/js/cards/skins/engraved.js?v=8155556">
+<link rel="modulepreload" href="/js/cards/emboss.js?v=8155556">
+<link rel="modulepreload" href="/js/cards/relief.js?v=8155556">
+<link rel="modulepreload" href="/js/cards/attitude.js?v=8155556">
+<link rel="modulepreload" href="/js/cards/lamp.js?v=8155556">
+<link rel="modulepreload" href="/js/cards/morph.js?v=8155556">
+<link rel="modulepreload" href="/js/cards/art.js?v=8155556">
+<link rel="modulepreload" href="/js/kit.js?v=8155556">
+<link rel="modulepreload" href="/js/util.js?v=8155556">
+<link rel="modulepreload" href="/js/priceMap.js?v=8155556">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet">
@@ -230,11 +230,22 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--ink); color: var(--paper); overflow-x: clip; }
+/* The page's own colour never changes. It used to be var(--ink) with a .9s
+   transition, so changing the set repainted every pixel of the screen on every
+   frame of the change — 3.2 million pixels a frame on a phone, under the dust.
+   The engraved room is now one fixed layer over this (.room::before) whose
+   OPACITY changes, which the compositor does without painting anything. */
+html, body { margin: 0; background: #0B0A08; color: var(--paper); overflow-x: clip; }
 /* The page changes colour on the same clock as the skull becomes the rose
    (MORPH_MS in pages/card.js). One-time transitions of colour on a few
    elements; nothing here runs while the card turns. */
-html, body { transition: background-color .9s ease, color .9s ease; }
+html, body { transition: color .9s ease; }
+.room::before {
+  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background: #141619;                  /* the engraved set's --ink */
+  opacity: 0; transition: opacity .9s ease; will-change: opacity;
+}
+:root[data-skin="engraved"] .room::before { opacity: 1; }
 .eyebrow h1 em, .cap, .now i, .now .to-product, .now .to-product span, .colophon a { transition: color .9s ease, border-color .9s ease; }
 /* The arriving face, during a timed switch: over the old one, on its own layer. */
 #face-front, #face-back { position: relative; }
@@ -523,6 +534,9 @@ a { color: inherit; text-decoration: none; }
   -webkit-tap-highlight-color: transparent;
   opacity: .72; transition: opacity .25s, transform .25s;
 }
+/* Two quick presses are two presses, not Safari's double-tap zoom: without this
+   pressing the skull twice zoomed the whole page in (seen 16 Nov 2026). */
+.mode, .mark, .to-product, .colophon a { touch-action: manipulation; }
 .mode:hover, .mode:focus-visible { opacity: 1; transform: translateY(-1px); }
 .mode:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 8px; }
 /* Gold linework on nothing — the page supplies the black. The files are built
@@ -584,7 +598,7 @@ a { color: inherit; text-decoration: none; }
 .colophon a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
-  html, body, .card, .face, .relief, .relief .stills, .eyebrow h1 em, .cap, .now i, .now .to-product, .now .to-product span, .colophon a, .hint { transition: none; }
+  html, body, .room::before, .card, .face, .relief, .relief .stills, .eyebrow h1 em, .cap, .now i, .now .to-product, .now .to-product span, .colophon a, .hint { transition: none; }
   .relief, .relief .stills { opacity: 1; }
   .relief .gloss-win { display: none; }
   .sheen, .wash, .foil, .shade { display: none; }
@@ -809,6 +823,6 @@ a { color: inherit; text-decoration: none; }
      so a stale module cannot be reached. -->
 <!-- The QR library is fetched by card.js, and only where a QR is drawn (a fine
      pointer). It was a blocking script here on every phone. -->
-<script type="module" src="/js/pages/card.js?v=964f136"></script>
+<script type="module" src="/js/pages/card.js?v=8155556"></script>
 </body>
 </html>

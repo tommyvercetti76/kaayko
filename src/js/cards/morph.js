@@ -97,7 +97,7 @@ function inkOf(img, count, w = 112, h = 156) {
  *   count    grains
  *   scale    how many stage-widths across the canvas is
  *   colour   [r, g, b] of the dust
- * @returns {{ play(dir: 'to'|'back'): Promise<void>, busy(): boolean }}
+ * @returns {{ play(dir: 'to'|'back'): Promise<void>, busy(): boolean, cancel(): void, warm(): boolean }}
  */
 export function dustMorph({ stage, canvas, from, to, count = 720, scale = 3, colour = [214, 183, 120], duration = 1150 }) {
   let A = null, B = null, raf = 0, running = false;
@@ -135,6 +135,12 @@ export function dustMorph({ stage, canvas, from, to, count = 720, scale = 3, col
     // drawn this way fuse into one white blob, which is what the first
     // version was: a cloud with no grain in it.
     ctx.globalCompositeOperation = 'lighter';
+    // One fill colour for the whole cloud; a grain's brightness is globalAlpha
+    // (a number) and a grain is a rect. It was a new rgba() string, a path and
+    // an arc per grain — 720 of each a frame — for dots two or three device
+    // pixels across, where a square and a circle are the same mark. The side
+    // is 1.77r so a grain covers what its circle did.
+    ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
     const dot = 0.42 * (sw / 26) * dpr;
     for (let i = 0; i < count; i++) {
       const j = i * 2;
@@ -158,11 +164,11 @@ export function dustMorph({ stage, canvas, from, to, count = 720, scale = 3, col
       const air = Math.sin(Math.PI * s);
       const a = 0.34 + 0.30 * air;
       const r = dot * (0.75 + 0.5 * hash(i, 3)) * (1 + 0.5 * air);
-      ctx.fillStyle = `rgba(${cr},${cg},${cb},${a.toFixed(3)})`;
-      ctx.beginPath();
-      ctx.arc(cx + x * dpr, cy + y * dpr, r, 0, 6.2832);
-      ctx.fill();
+      const side = r * 1.77;
+      ctx.globalAlpha = a;
+      ctx.fillRect(cx + x * dpr - side / 2, cy + y * dpr - side / 2, side, side);
     }
+    ctx.globalAlpha = 1;
   }
 
   function play(dir) {
@@ -206,5 +212,6 @@ export function dustMorph({ stage, canvas, from, to, count = 720, scale = 3, col
     if (settle) { const s = settle; settle = null; s(); }
   }
 
-  return { play, busy: () => running, cancel };
+  // warm(): read the ink off both drawings now, so the first press does not.
+  return { play, busy: () => running, cancel, warm: prepare };
 }

@@ -2,15 +2,15 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=964f136';
-import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=964f136';
-import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=964f136';
-import { readFace, warmArt } from '/js/cards/relief.js?v=964f136';
-import { rest, step, clamp } from '/js/cards/attitude.js?v=964f136';
-import { lightFace, v } from '/js/cards/lamp.js?v=964f136';
-import { dustMorph } from '/js/cards/morph.js?v=964f136';
-import { esc, apiBase } from '/js/kit.js?v=964f136';
-import { artUrl } from '/js/cards/art.js?v=964f136';
+import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=8155556';
+import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=8155556';
+import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=8155556';
+import { readFace, warmArt } from '/js/cards/relief.js?v=8155556';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=8155556';
+import { lightFace, v } from '/js/cards/lamp.js?v=8155556';
+import { dustMorph } from '/js/cards/morph.js?v=8155556';
+import { esc, apiBase } from '/js/kit.js?v=8155556';
+import { artUrl } from '/js/cards/art.js?v=8155556';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
@@ -78,7 +78,7 @@ let eye = v(0, 0, EYE_CARDS), cardW = 600, cardBox = null, roomBox = null;
    it stops three frames after the card has reached its rest and nothing is in
    flight, and wake() starts it again. Anything that moves the card, changes
    its size, or lays a layer the lamp has to light calls wake().             */
-let loopOn = false, idle = 0;
+let loopOn = false, idle = 0, rampUntil = 0;
 function wake() {
   if (!loopOn || stopped) return;
   idle = 0;
@@ -169,6 +169,7 @@ function lit(rx, ry) {
   // The relief: how much of each still shows is how far the lamp is on that side.
   const still = (wt) => Math.max(RELIEF_FLOOR, Math.min(1, wt * 1.7)).toFixed(3);
   const stills = { xp: still(o.weights.xp), xn: still(o.weights.xn), yp: still(o.weights.yp), yn: still(o.weights.yn) };
+  const nowT = performance.now();
   for (const f of layersOf()) {
     write(f.sheen, 'transform', glint); write(f.sheen, 'opacity', spec);
     write(f.wash, 'transform', wash); write(f.wash, 'opacity', washO);
@@ -176,7 +177,13 @@ function lit(rx, ry) {
     write(f.foil, 'transform', foil); write(f.foil, 'opacity', foilO);
     write(f.rim, 'opacity', rim);
     if (f.gloss) { write(f.gloss, 'transform', gloss); write(f.gloss, 'opacity', Math.max(RELIEF_FLOOR, glossO * reliefGain * typeGain).toFixed(3)); }
-    for (const dir in f.stills) for (const st of f.stills[dir]) write(st.el, 'opacity', (Math.max(RELIEF_FLOOR, stills[dir] * reliefGain * (st.type ? typeGain : 1)) * st.k).toFixed(3));
+    for (const dir in f.stills) for (const st of f.stills[dir]) {
+      // A still laid after the fact (st.born) comes up over 350ms on its own
+      // opacity — never as a fade over the group, which WebKit repaints.
+      let age = 1;
+      if (st.born) { age = smooth((nowT - st.born) / 350); if (age >= 1) st.born = 0; }
+      write(st.el, 'opacity', Math.max(RELIEF_FLOOR, stills[dir] * reliefGain * (st.type ? typeGain : 1) * st.k * age).toFixed(3));
+    }
     if (f.tint) write(f.tint.el, 'opacity', (f.tint.k * Math.max(RELIEF_FLOOR, reliefGain)).toFixed(3));
   }
   // The glow on the wall: the lamp itself, seen from the eye, on the desk's plane.
@@ -219,7 +226,7 @@ function loop(t) {
   if (typeRamp) { typeGain = smooth((t - typeRamp) / 350); if (typeGain >= 1) typeRamp = 0; }
   lit(att.rx, att.ry);
   write(card, 'transform', `rotateX(${att.rx.toFixed(2)}deg) rotateY(${att.ry.toFixed(2)}deg)`);
-  const moving = grab.on || inspecting || switching || typeRamp
+  const moving = grab.on || inspecting || switching || typeRamp || t < rampUntil
     || Math.abs(att.rx - att.tx) > 0.01 || Math.abs(att.ry - att.ty) > 0.01
     || Math.abs(att.vx.v) > 0.05 || Math.abs(att.vy.v) > 0.05;
   idle = moving ? 0 : idle + 1;
@@ -436,7 +443,7 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // fetches the library. It was a blocking <script> on every phone.
 const qrReady = !fine || typeof qrcode !== 'undefined' ? Promise.resolve() : new Promise((ok) => {
   const s = document.createElement('script');
-  s.src = '/js/vendor/qrcode-generator.js?v=964f136';
+  s.src = '/js/vendor/qrcode-generator.js?v=8155556';
   s.onload = s.onerror = () => ok();
   document.head.appendChild(s);
 });
@@ -499,24 +506,42 @@ let engraved = false;
 // The skull comes apart into gold dust and settles as the rose. Built on the
 // first press, from the two drawings already on the page.
 let morph = null;
+const theMorph = () => (morph ??= dustMorph({
+  stage: skinStage,
+  canvas: document.getElementById('mode-dust'),
+  from: document.getElementById('mode-skull'),
+  to: document.getElementById('mode-rose'),
+  duration: MORPH_MS,
+}));
 function morphNow(dir) {
   if (still) return;
-  try {
-    morph ??= dustMorph({
-      stage: skinStage,
-      canvas: document.getElementById('mode-dust'),
-      from: document.getElementById('mode-skull'),
-      to: document.getElementById('mode-rose'),
-      duration: MORPH_MS,
-    });
-    morph.play(dir).then(pressAgain);
-  } catch (err) { console.warn('card: morph off —', err); }
+  try { theMorph().play(dir).then(pressAgain); }
+  catch (err) { console.warn('card: morph off —', err); }
+}
+/** Sampling the two drawings into dust was the first press's own 40ms on a slow phone; it is done while idle. */
+function warmMorph() {
+  if (still || stopped) return;
+  try { if (!theMorph().warm()) later(warmMorph, 1500); } catch (_) {}   // the drawings may not have decoded yet
 }
 
 // localStorage throws outright in Safari's private mode, so every touch of it
 // is fenced. A preference we cannot read is simply a preference that is off.
 const remember = (v) => { try { localStorage.setItem(KEY, v ? 'engraved' : 'print'); } catch (_) {} };
 const remembered = () => { try { return localStorage.getItem(KEY) === 'engraved'; } catch (_) { return false; } };
+
+/**
+ * The page's own background, under the room's fading layer (.room::before).
+ * Nothing on the page shows it — that layer covers the screen — but a phone
+ * browser tints its status bar and overscroll from it. It is written ONCE per
+ * change, at the halfway point (stepSwitch), when the room is an even mix of
+ * the two colours and the strip is never more than half a step from it.
+ * Animating it instead repainted the whole screen every frame of the change.
+ */
+function roomInk(eng) {
+  const ink = eng ? '#141619' : '';
+  document.documentElement.style.backgroundColor = ink;
+  document.body.style.backgroundColor = ink;
+}
 
 function setSkin(on, { save = true } = {}) {
   // A card in the hand is put down first, on whichever face it is nearest.
@@ -546,6 +571,7 @@ function setSkin(on, { save = true } = {}) {
   // for the new faces — and the relief, which is the expensive raster,
   // rises into the paper only after the dust has settled.
   const timed = save && !still;
+  if (!(timed && series.length)) roomInk(engraved);
   if (series.length) {
     paintMarks();
     if (timed) switchSkin();
@@ -818,12 +844,15 @@ function layTint(f, c, e, params) {
 }
 
 /** Phase two: the four lit stills of the animal, and of the type. */
-function layStills(f, c, e, params, part = 'all', { dirs = Object.keys(DIRS), gloss = true } = {}) {
+function layStills(f, c, e, params, part = 'all', { dirs = Object.keys(DIRS), gloss = true, born = 0, append = false } = {}) {
+  if (born) rampUntil = Math.max(rampUntil, born + 400);
   const face = f.host === backEl ? 'b' : 'f';
   const ghost = face === 'b' ? params.ghost : 1;
   // 'art' lays the animal's stills in a new wrap; 'type' adds the lettering's
   // stills and gloss to the wrap already there; 'all' does both at once.
-  let wrap = part === 'type' ? f.relief.querySelector('.stills') : null;
+  // `append` adds to the wrap already there, as 'type' does: a face's stills
+  // can then be laid one direction at a time (see "owed work").
+  let wrap = part === 'type' || append ? f.relief.querySelector('.stills') : null;
   const fresh = !wrap;
   if (fresh) { wrap = document.createElement('div'); wrap.className = 'stills'; }
   const type = reliefParts === 'art' || part === 'art' ? null : reliefType(c, face);
@@ -832,14 +861,14 @@ function layStills(f, c, e, params, part = 'all', { dirs = Object.keys(DIRS), gl
   const texts = svg ? [...svg.querySelectorAll('text')] : [];
   const tw = type && texts.length ? typeWindow(texts) : null;
   const flat = reliefParts === 'flat' ? (html) => html.replace(/ filter="url\(#[^"]+\)"/g, '') : (html) => html;
-  if (part !== 'type') f.stills = {};
+  if (part !== 'type' && !append) f.stills = {};
   for (const dir of dirs) {
     f.stills[dir] ??= [];
     if (part !== 'type') {
       const a = artLayer(face, c, e[face === 'b' && backArt(c, SCREEN).mirror ? MIRRORED[dir] : dir], 'art');
       a.dataset.dir = dir;
       a.style.opacity = String(RELIEF_FLOOR);
-      wrap.appendChild(a); f.stills[dir].push({ el: a, k: ghost });
+      wrap.appendChild(a); f.stills[dir].push({ el: a, k: ghost, born });
     }
     if (!tw) continue;
     // The lettering is the face's own <text>, cloned: it is never set twice,
@@ -999,12 +1028,16 @@ function layTypeLater(c, e, params) {
   typeGain = 0;
   chores.length = 0;
   for (const f of upFirst()) {
-    chores.push(() => {
-      if (!ok() || f.relief.querySelector('.stills')) return;
-      layStills(f, c, e, params, 'art');
+    // A face still owed its animal's stills gets them one direction a turn.
+    let owes = false;
+    dirs.forEach((dir, i) => chores.push(() => {
+      if (!ok()) return;
+      if (i === 0) owes = !f.relief.querySelector('.stills');
+      if (!owes) return;
+      layStills(f, c, e, params, 'art', { dirs: [dir], born: performance.now(), append: i > 0 });
       const st = f.relief.querySelector('.stills');
       if (st) st.classList.add('is-set');
-    });
+    }));
     dirs.forEach((dir, i) => chores.push(() => {
       if (ok()) layStills(f, c, e, params, 'type', { dirs: [dir], gloss: i === dirs.length - 1 });
     }));
@@ -1054,7 +1087,10 @@ function switchSkin() {
       for (const f of layersOf()) {
         f.relief.style.transition = 'none';
         layTint(f, c, e, params);
-        if (f === up) layStills(f, c, e, params, 'art');
+        // And on a phone not even those: four 512x768 textures uploaded in
+        // the frame of the tap is the tap's whole cost there. The impression
+        // rises with the switch; its lit stills come up straight after it.
+        if (f === up && !touchy) layStills(f, c, e, params, 'art');
         f.relief.classList.add('is-set');
         const st = f.relief.querySelector('.stills');
         if (st) { st.style.transition = 'none'; st.classList.add('is-set'); }
@@ -1086,6 +1122,7 @@ function stepSwitch(now) {
     }
   }
   reliefGain = s.toEngraved ? smooth((p - 0.45) / 0.55) : 1 - smooth(p / 0.5);
+  if (!s.inked && p >= 0.5) { s.inked = true; roomInk(s.toEngraved); }
   if (p >= 1) finishSwitch();
 }
 
@@ -1113,6 +1150,7 @@ function finishSwitch() {
     // the lettering's one raster falls in a frame where nothing is moving.
     s.emboss.then((e) => later(() => layTypeLater(s.c, e, params), 200)).catch(() => {});
   }
+  roomInk(s.toEngraved);
   measure();
   pressAgain();
 }
@@ -1258,11 +1296,12 @@ const said = (cards, b) => JSON.stringify([
   // remembers to change. It read "Bone" on every cold load for three deploys
   // after the module had stopped saying it.
   setSkin(remembered(), { save: false });
+  if ('requestIdleCallback' in window) requestIdleCallback(warmMorph, { timeout: 2500 }); else later(warmMorph, 900);
   if (hintEl && touchy && !hinted()) { hintEl.hidden = false; frame(() => frame(() => hintEl.classList.add('is-on'))); }
   // A rig for measuring the page on a real engine, only when the URL asks
   // for it. Never fetched otherwise. See cards/probe.js.
   const probe = new URLSearchParams(location.search).get('probe');
-  if (probe) import('/js/cards/probe.js?v=964f136').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
+  if (probe) import('/js/cards/probe.js?v=8155556').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
 })();
 
 return function stopCard() {
