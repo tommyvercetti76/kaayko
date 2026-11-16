@@ -93,16 +93,16 @@
   color: #f2e6c4;
   clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
     calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
-  background: rgba(12, 11, 9, 0.4);   /* subtle chamfered chip + blur — no black glow */
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
+  /* A solid chip, no backdrop blur: 24 cards x 3 controls was 72 blurred layers
+     scrolling over photos (16 Nov 2026). Slightly more opaque to stand in for it. */
+  background: rgba(12, 11, 9, 0.58);
   opacity: 0;
   transition: opacity 0.2s ease, background 0.2s ease;
 }
 .pcard-caret.prev { left: 8px; }
 .pcard-caret.next { right: 8px; }
 .pcard-caret svg { width: 16px; height: 16px; }
-.pcard-caret:hover { background: rgba(26, 21, 15, 0.6); color: #fff1d2; }
+.pcard-caret:hover { background: rgba(26, 21, 15, 0.78); color: #fff1d2; }
 .pcard-caret:focus-visible { outline: none; opacity: 1; box-shadow: 0 0 0 2px rgba(217, 189, 123, 0.85); }
 .pcard--minimal:hover .pcard-caret,
 .pcard--minimal:focus-within .pcard-caret { opacity: 1; }
@@ -116,13 +116,12 @@
   cursor: pointer; color: #f2e6c4;
   clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
     calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
-  background: rgba(12, 11, 9, 0.42);
-  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  background: rgba(12, 11, 9, 0.58);
   opacity: 0; transform: scale(0.9);
   transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 .pcard-fav svg { width: 17px; height: 17px; display: block; }
-.pcard-fav:hover { background: rgba(26, 21, 15, 0.62); color: #fff1d2; }
+.pcard-fav:hover { background: rgba(26, 21, 15, 0.78); color: #fff1d2; }
 .pcard-fav:focus-visible { outline: none; opacity: 1; transform: scale(1); box-shadow: 0 0 0 2px rgba(217, 189, 123, 0.85); }
 .pcard-fav.is-on { color: #e9d29a; }
 .pcard--minimal:hover .pcard-fav,
@@ -137,17 +136,17 @@
 @media (pointer: coarse) {
   .pcard-caret, .pcard-fav {
     width: 44px; height: 44px; clip-path: none; background: none;
-    -webkit-backdrop-filter: none; backdrop-filter: none;
   }
   .pcard-caret.prev { left: 1px; }
   .pcard-caret.next { right: 1px; }
   .pcard-fav { top: 2px; right: 2px; transform: none; }
+  /* hover sticks after a tap on touch, and the element is now an unclipped 44px square */
+  .pcard-caret:hover, .pcard-fav:hover { background: none; }
   .pcard-caret::before, .pcard-fav::before {
     content: ""; position: absolute; z-index: -1; left: 50%; top: 50%;
     clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
       calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
-    background: rgba(12, 11, 9, 0.42);
-    -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+    background: rgba(12, 11, 9, 0.58);
   }
   .pcard-caret::before { width: 30px; height: 34px; margin: -17px 0 0 -15px; }
   .pcard-fav::before { width: 32px; height: 32px; margin: -16px 0 0 -16px; }
@@ -343,8 +342,7 @@
   font-family: 'Josefin Sans', Arial, sans-serif;
   font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
   color: #f2e6c4;
-  background: rgba(12, 11, 9, 0.55);
-  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  background: rgba(12, 11, 9, 0.68);
   border: 1px solid rgba(217, 189, 123, 0.35);
   clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
     calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));

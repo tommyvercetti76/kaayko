@@ -237,6 +237,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="dns-prefetch" href="https://api-vwcc5j4qda-uc.a.run.app">
   <link rel="preconnect" href="https://api-vwcc5j4qda-uc.a.run.app" crossorigin>
+  <!-- the card photos come from here; the first one is the page's largest paint -->
+  <link rel="preconnect" href="https://firebasestorage.googleapis.com">
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -384,30 +386,6 @@
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("year").textContent = new Date().getFullYear();
     });
-  </script>
-
-  <!-- Header hide-on-scroll-down, show-on-scroll-up -->
-  <script>
-    (function () {
-      const header = document.querySelector('.header');
-      if (!header) return;
-      let lastY = 0;
-      let ticking = false;
-      window.addEventListener('scroll', function () {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(function () {
-          const y = window.scrollY;
-          if (y > 90 && y > lastY) {
-            header.classList.add('header-hidden');
-          } else {
-            header.classList.remove('header-hidden');
-          }
-          lastY = y;
-          ticking = false;
-        });
-      }, { passive: true });
-    })();
   </script>
 
   <!-- ── First-launch INTERACTIVE walkthrough (spotlight coach-marks) ─────── -->

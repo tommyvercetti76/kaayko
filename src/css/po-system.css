@@ -237,3 +237,22 @@ body .search-here-btn:hover { --kc-bg: linear-gradient(135deg, #e6cd8e, var(--go
   body .po-brand { min-height: 44px; justify-content: center; }
   body .loc-coords-link, body .loc-yt-link { padding-block: 12px; margin-block: -12px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE DOCUMENT SCROLLS (16 Nov 2026 audit, phase 2).
+   base.css gives html AND body height:100% + overflow-x:hidden, which makes
+   <body> the scroll container: the document itself was 812px tall on a phone
+   while body scrolled 11,570px inside it. With that, window.scrollY is always
+   0, the browser cannot restore scroll on back, and a phone browser's toolbar
+   has no page scroll to collapse on. The store shares base.css and is built
+   around it, so the escape is here, on the Paddling Out pages only (the same
+   move legal.css makes). html is overflow:visible so that body's overflow is the
+   one the browser hands to the viewport: sideways overflow stays hidden, body
+   itself is not a scroll container, and the two scroll locks that set
+   overflow:hidden on body (the Scouts walk-through, the image modal) still
+   lock the page.
+   overscroll-behavior goes back to the browser's default, so pull-to-refresh
+   works on a forecast page.
+   ══════════════════════════════════════════════════════════════════════════ */
+html { height: auto; min-height: 100%; overflow: visible; overscroll-behavior: auto; }
+body { height: auto; min-height: 100vh; min-height: 100svh; overflow-x: hidden; overscroll-behavior: auto; }
