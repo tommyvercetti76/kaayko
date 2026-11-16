@@ -36,9 +36,12 @@ export async function run({ label, setSkin, setInspect, att, grab, quiet, parts 
   // The dust's flight: every frame for the next 1.3 seconds.
   const flight = [];
   let f0 = await frame();
-  while (f0 - t0 < 1300) { const f1 = await frame(); flight.push(f1 - f0); f0 = f1; }
+  // Where the long ones fall, too: [ms after the switch, how long]. A stall at
+  // 0 is the tap's own work; one mid-flight is a layer being rastered late.
+  const slow = [];
+  while (f0 - t0 < 1300) { const f1 = await frame(); flight.push(f1 - f0); if (f1 - f0 > 25) slow.push([Math.round(f0 - t0), Math.round(f1 - f0)]); f0 = f1; }
   const fs = [...flight].sort((a, b) => a - b);
-  const morph = { p50: +fs[Math.floor(fs.length / 2)].toFixed(1), p95: +fs[Math.min(fs.length - 1, Math.floor(fs.length * 0.95))].toFixed(1), worst: +fs[fs.length - 1].toFixed(1) };
+  const morph = { p50: +fs[Math.floor(fs.length / 2)].toFixed(1), p95: +fs[Math.min(fs.length - 1, Math.floor(fs.length * 0.95))].toFixed(1), worst: +fs[fs.length - 1].toFixed(1), slow };
   // Then the relief's arrival, and the longest frame on the way to it: the
   // raster of its stills, which is the one stall the switch still has.
   let reliefMs = null, reliefStall = null;

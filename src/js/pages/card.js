@@ -2,15 +2,15 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=8195ed8';
-import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=8195ed8';
-import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=8195ed8';
-import { readFace, warmArt } from '/js/cards/relief.js?v=8195ed8';
-import { rest, step, clamp } from '/js/cards/attitude.js?v=8195ed8';
-import { lightFace, v } from '/js/cards/lamp.js?v=8195ed8';
-import { dustMorph } from '/js/cards/morph.js?v=8195ed8';
-import { esc, apiBase } from '/js/kit.js?v=8195ed8';
-import { artUrl } from '/js/cards/art.js?v=8195ed8';
+import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=964f136';
+import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=964f136';
+import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=964f136';
+import { readFace, warmArt } from '/js/cards/relief.js?v=964f136';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=964f136';
+import { lightFace, v } from '/js/cards/lamp.js?v=964f136';
+import { dustMorph } from '/js/cards/morph.js?v=964f136';
+import { esc, apiBase } from '/js/kit.js?v=964f136';
+import { artUrl } from '/js/cards/art.js?v=964f136';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
@@ -275,6 +275,7 @@ function setFaceQuietly(flipped) {
 }
 
 function setInspect(on) {
+  if (on) flushChores();                       // a card in the hand shows both faces
   inspecting = !!on;
   card.classList.toggle('is-inspecting', inspecting);
   cardWrap.classList.toggle('is-inspecting', inspecting);
@@ -435,7 +436,7 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // fetches the library. It was a blocking <script> on every phone.
 const qrReady = !fine || typeof qrcode !== 'undefined' ? Promise.resolve() : new Promise((ok) => {
   const s = document.createElement('script');
-  s.src = '/js/vendor/qrcode-generator.js?v=8195ed8';
+  s.src = '/js/vendor/qrcode-generator.js?v=964f136';
   s.onload = s.onerror = () => ok();
   document.head.appendChild(s);
 });
@@ -459,7 +460,7 @@ if (!still) {
 } catch (err) { console.warn('card: lighting off —', err); }
 
 /* ── turning it over ─────────────────────────────────────────────────────── */
-const flip = () => card.classList.toggle('is-flipped');
+const flip = () => { flushChores(); card.classList.toggle('is-flipped'); };
 
 /* ── what a finger can do, said once ────────────────────────────────────────
    A phone showed a card and nothing else: no sign it turns over, and the swipe
@@ -508,7 +509,7 @@ function morphNow(dir) {
       to: document.getElementById('mode-rose'),
       duration: MORPH_MS,
     });
-    morph.play(dir);
+    morph.play(dir).then(pressAgain);
   } catch (err) { console.warn('card: morph off —', err); }
 }
 
@@ -553,9 +554,18 @@ function setSkin(on, { save = true } = {}) {
   if (save) frame(() => morphNow(engraved ? 'to' : 'back'));
 }
 
+// A press while the dust is in the air used to be thrown away, so the control
+// felt dead for a second. It is remembered now and played when the dust lands;
+// two presses cancel out.
+let pressQueued = false;
+function pressAgain() {
+  if (!pressQueued || switching || (morph && morph.busy())) return;
+  pressQueued = false;
+  later(() => { if (!switching && !(morph && morph.busy())) setSkin(!engraved); }, 0);
+}
 on(skinBtn, 'click', (e) => {
   e.stopPropagation();
-  if ((morph && morph.busy()) || switching) return;       // let the dust land
+  if ((morph && morph.busy()) || switching) { pressQueued = !pressQueued; return; }
   setSkin(!engraved);
 });
 
@@ -667,6 +677,33 @@ function paintMarks() {
    this only lays them over the face.                                        */
 let reliefTimer = 0, reliefSeq = 0;
 
+/* ── owed work ───────────────────────────────────────────────────────────────
+   Laying a relief layer is a raster, and eight of them in one task was a
+   single 90–115ms frame a second after every switch (measured 16 Nov 2026 in
+   Safari and the iOS Simulator on an M5; several times that on a phone). The
+   layers are now laid one at a time, every other frame, the face that is UP
+   first: the lamp only has to light what can be seen, and the other face has
+   until someone turns the card. Turning it (or picking it up) pays whatever
+   is still owed at once, so a face never arrives half laid.                 */
+const chores = [];
+let choring = false;
+function runChores() {
+  if (choring) return;
+  choring = true;
+  const next = () => {
+    const fn = chores.shift();
+    if (!fn || stopped) { choring = false; return; }
+    try { fn(); } catch (err) { console.warn('card: relief —', err); }
+    frame(() => frame(next));
+  };
+  frame(next);
+}
+function flushChores() {
+  while (chores.length) { const fn = chores.shift(); try { fn(); } catch (err) { console.warn('card: relief —', err); } }
+}
+/** The face toward the viewer first, then the other. */
+const upFirst = () => { const ls = layersOf(); return card.classList.contains('is-flipped') ? [ls[1], ls[0]] : [ls[0], ls[1]]; };
+
 /**
  * Take the relief off both faces now, and lay it again in two phases: the
  * impression's tint at once — the base face has no animal of its own, so
@@ -678,6 +715,7 @@ let reliefTimer = 0, reliefSeq = 0;
 function scheduleRelief(c, delayMs, fade = 0) {
   cancelLater(reliefTimer);
   const seq = ++reliefSeq;
+  chores.length = 0;
   for (const f of layersOf()) {
     f.stills = {};
     f.tint = null;
@@ -780,7 +818,7 @@ function layTint(f, c, e, params) {
 }
 
 /** Phase two: the four lit stills of the animal, and of the type. */
-function layStills(f, c, e, params, part = 'all') {
+function layStills(f, c, e, params, part = 'all', { dirs = Object.keys(DIRS), gloss = true } = {}) {
   const face = f.host === backEl ? 'b' : 'f';
   const ghost = face === 'b' ? params.ghost : 1;
   // 'art' lays the animal's stills in a new wrap; 'type' adds the lettering's
@@ -795,7 +833,7 @@ function layStills(f, c, e, params, part = 'all') {
   const tw = type && texts.length ? typeWindow(texts) : null;
   const flat = reliefParts === 'flat' ? (html) => html.replace(/ filter="url\(#[^"]+\)"/g, '') : (html) => html;
   if (part !== 'type') f.stills = {};
-  for (const dir of Object.keys(DIRS)) {
+  for (const dir of dirs) {
     f.stills[dir] ??= [];
     if (part !== 'type') {
       const a = artLayer(face, c, e[face === 'b' && backArt(c, SCREEN).mirror ? MIRRORED[dir] : dir], 'art');
@@ -815,7 +853,7 @@ function layStills(f, c, e, params, part = 'all') {
     t.style.opacity = String(RELIEF_FLOOR);
     wrap.appendChild(t); f.stills[dir].push({ el: t, k: 1, type: true });
   }
-  if (tw && reliefParts !== 'nogloss') layGloss(f, texts, tw, wrap);
+  if (tw && gloss && reliefParts !== 'nogloss') layGloss(f, texts, tw, wrap);
   if (fresh) f.relief.appendChild(wrap);
   wake();                                     // new layers sit at the floor until the lamp is solved again
 }
@@ -947,13 +985,32 @@ function attachReaders(c) {
 let switching = null;
 const smooth = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 
-/** The lettering's relief and gloss, laid when nothing is moving and faded in. */
+/**
+ * The lettering's relief and gloss — and any animal stills a face is still
+ * owed — laid a piece at a time (see "owed work"), the face that is up first.
+ * The lettering fades in once the visible face has all of its own.
+ */
 function layTypeLater(c, e, params) {
   if (!engraved || series[at] !== c) return;
+  const seq = reliefSeq;
+  const ok = () => engraved && series[at] === c && seq === reliefSeq;
+  const dirs = Object.keys(DIRS);
+  const [up] = upFirst();
   typeGain = 0;
-  for (const f of layersOf()) layStills(f, c, e, params, 'type');
-  typeRamp = performance.now();
-  wake();
+  chores.length = 0;
+  for (const f of upFirst()) {
+    chores.push(() => {
+      if (!ok() || f.relief.querySelector('.stills')) return;
+      layStills(f, c, e, params, 'art');
+      const st = f.relief.querySelector('.stills');
+      if (st) st.classList.add('is-set');
+    });
+    dirs.forEach((dir, i) => chores.push(() => {
+      if (ok()) layStills(f, c, e, params, 'type', { dirs: [dir], gloss: i === dirs.length - 1 });
+    }));
+    if (f === up) chores.push(() => { if (ok()) { typeRamp = performance.now(); wake(); } });
+  }
+  runChores();
 }
 
 function switchSkin() {
@@ -985,14 +1042,19 @@ function switchSkin() {
     reliefGain = 0;
     cancelLater(reliefTimer);
     const seq = ++reliefSeq;
+    chores.length = 0;
     for (const f of layersOf()) { f.stills = {}; f.tint = null; dropGloss(f); f.relief.innerHTML = ''; f.relief.classList.remove('is-set'); }
     const params = embossParams(c);
     embossOf(artUrl(c), params).then((e) => {
       if (seq !== reliefSeq || !engraved || series[at] !== c) return;
+      // The tap pays for the face that is up and nothing else: both
+      // impressions (cheap, and they ARE the animal), but only the visible
+      // face's four lit stills. The other face's are owed (layTypeLater).
+      const [up] = upFirst();
       for (const f of layersOf()) {
         f.relief.style.transition = 'none';
         layTint(f, c, e, params);
-        layStills(f, c, e, params, 'art');
+        if (f === up) layStills(f, c, e, params, 'art');
         f.relief.classList.add('is-set');
         const st = f.relief.querySelector('.stills');
         if (st) { st.style.transition = 'none'; st.classList.add('is-set'); }
@@ -1042,6 +1104,7 @@ function finishSwitch() {
     if (st) st.style.transition = '';
     if (!s.toEngraved) { f.stills = {}; f.tint = null; dropGloss(f); f.relief.innerHTML = ''; f.relief.classList.remove('is-set'); }
   }
+  if (!s.toEngraved) chores.length = 0;
   reliefGain = 1;
   if (s.toEngraved && series[at] === s.c) {
     attachReaders(s.c);
@@ -1051,6 +1114,7 @@ function finishSwitch() {
     s.emboss.then((e) => later(() => layTypeLater(s.c, e, params), 200)).catch(() => {});
   }
   measure();
+  pressAgain();
 }
 
 function show(i, { focus = false, relief = 'soon', fade = 0 } = {}) {
@@ -1198,7 +1262,7 @@ const said = (cards, b) => JSON.stringify([
   // A rig for measuring the page on a real engine, only when the URL asks
   // for it. Never fetched otherwise. See cards/probe.js.
   const probe = new URLSearchParams(location.search).get('probe');
-  if (probe) import('/js/cards/probe.js?v=8195ed8').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
+  if (probe) import('/js/cards/probe.js?v=964f136').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
 })();
 
 return function stopCard() {
