@@ -23,7 +23,7 @@ import { cartManager } from "/js/cartManager.js";
 import { esc, linkify, yourTime } from "/js/kit.js";
 import { labelForType } from "/js/productTypes.js";
 import { pickSuggestions } from "/js/suggest.js";
-import { mountProductGrid } from "/js/kaayko_ui.js";
+import { mountProductGrid, createLikeButton } from "/js/kaayko_ui.js";
 import { show as showToast } from "/js/components/Toast.js";
 
 /** A web address in already-escaped story text becomes a link; it used to print as
@@ -273,6 +273,10 @@ function renderProduct(product, openModalFn) {
   });
 
   const main = document.getElementById('pg-main');
+  // The piece can be loved on its own page. The heart was only on the cards, so
+  // someone who opened a piece to look at it had to go back to the store to say so.
+  const loveStage = root.querySelector('.pdp-stage');
+  if (loveStage) loveStage.append(createLikeButton(product));
   let swiped = false;
   main.addEventListener('click', () => { if (swiped) { swiped = false; return; } openModalFn(product); });
   main.addEventListener('keydown', (e) => {

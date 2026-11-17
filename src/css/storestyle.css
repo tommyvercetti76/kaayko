@@ -1183,6 +1183,13 @@ body.store-v2 {
   background: currentColor;
   opacity: 0.38;
 }
+/* "Add to bag" is the buy control on every card and was a 13px-tall line of
+   11px type: 44px for a thumb (the hit area only; the line looks as it did, a
+   point larger), like the heart above it (17 Nov 2026). */
+/* The room is padding the button owns, pulled back with a matching negative margin
+   so nothing around it moves; none on the right, where the card's edge is. */
+.store-v2 .cart-link { font-size: 12px; padding: 15px 0 15px 14px; margin: -15px 0 -15px -14px; }
+.store-v2 .cart-link::after { left: 14px; right: 0; bottom: 13px; }
 
 .store-v2 .cart-link {
   cursor: pointer;
@@ -2083,3 +2090,12 @@ html.dark-theme .store-v2 .browse-search::placeholder { color: rgba(212, 182, 13
   font-size: 13px;
   color: var(--muted, var(--fg));
 }
+
+/* Header controls: the glyphs stay their size, the hit area is 44px (17 Nov 2026:
+   the bag, the Kreator door, the filter and the theme switch measured 32-36px). */
+.store-v2 .kreator-nav-button, .store-v2 .cart-nav-button, .store-v2 #filter-togglebutton, .store-v2 .theme-toggle-icon { position: relative; }
+.store-v2 .kreator-nav-button::after, .store-v2 .cart-nav-button::after, .store-v2 #filter-togglebutton::after, .store-v2 .theme-toggle-icon::after {
+  content: ""; position: absolute; inset: -6px;
+}
+/* The heart on a piece's own page sits on its photograph, as on a card. */
+.product-v2 .pdp-stage > .heart-button { top: 12px; right: 12px; }

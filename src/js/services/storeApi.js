@@ -115,6 +115,19 @@ function keep(catalogue) {
   try { localStorage.setItem(KEEP, JSON.stringify(kept)); } catch (_) { /* full or private: the network still works */ }
 }
 
+/**
+ * A love changed a count: say so in the kept copy too. The store redraws from that
+ * copy first, so without this a reload inside the minute showed the old number
+ * beside a heart this browser remembered as loved (found 17 Nov 2026).
+ */
+export function noteVotes(productId, votes) {
+  const k = keptCatalogue();
+  const p = k && k.products.find((x) => x && x.id === productId);
+  if (!p || !Number.isFinite(votes)) return;
+  p.votes = Math.max(0, votes);
+  try { localStorage.setItem(KEEP, JSON.stringify(k)); } catch (_) { /* full or private */ }
+}
+
 /** The kept catalogue, or null when there is none (or it is a day old). */
 export function keptCatalogue() {
   if (kept === undefined) {

@@ -9,7 +9,8 @@
  * Updated: now skips any item where `isAvailable !== true`
  */
 
-import { voteOnProduct } from "/js/services/storeApi.js";
+import { voteOnProduct, noteVotes, friendlyMessage } from "/js/services/storeApi.js";
+import { show as showToast } from "/js/components/Toast.js";
 import { cartManager, carryBag } from "/js/cartManager.js";
 import { attachExpandingPicker, needsPicker, isSoldOut, soldOutText } from "/js/fitPicker.js";
 
@@ -1208,7 +1209,7 @@ function rememberLove(id, on) {
   } catch (_) { /* private browsing: the heart still works, it just forgets */ }
 }
 
-function createLikeButton(item) {
+export function createLikeButton(item) {
   const btn = document.createElement("button");
   btn.className = "heart-button image-overlay-control";
   btn.type = "button";
@@ -1221,10 +1222,23 @@ function createLikeButton(item) {
   count.setAttribute("aria-hidden", "true");  // said in the label instead
   btn.append(icon, count);
 
-  let liked = lovedSet().has(item.id);
-  let votes = Math.max(0, Number(item.votes) || 0);
+  // What the server last said (or the page's best knowledge before it has), and
+  // what the visitor now wants. The heart shows the wish; the server is asked one
+  // request at a time until it agrees.
+  //
+  // It used to send every tap as it came. Two quick taps sent +1 and −1 together;
+  // the −1 could land first, find nothing to remove and do nothing, and the +1
+  // then stood: a visitor who tapped twice to change their mind had loved the
+  // piece (measured on the live store, 17 Nov 2026). And a refusal (the network's
+  // five loves used, too many taps a minute, the store unreachable) put the heart
+  // back without a word.
+  let known = { liked: lovedSet().has(item.id), votes: Math.max(0, Number(item.votes) || 0) };
+  let want = known.liked;
+  let busy = false;
 
   function refresh() {
+    const liked = want;
+    const votes = Math.max(0, known.votes + (want === known.liked ? 0 : (want ? 1 : -1)));
     btn.classList.toggle("liked", liked);
     btn.classList.toggle("has-count", votes > 0);
     btn.setAttribute("aria-pressed", String(liked));
@@ -1236,28 +1250,43 @@ function createLikeButton(item) {
   }
   refresh();
 
-  btn.addEventListener("click", async (e) => {
-    e.stopPropagation();
-    const delta = liked ? -1 : 1;
-    liked = !liked;
-    votes = Math.max(0, votes + delta);
-    rememberLove(item.id, liked);
-    refresh();
+  async function settle() {
+    if (busy) return;
+    busy = true;
     try {
-      const r = await voteOnProduct(item.id, delta, visitorId());
-      // The server's word wins: it knows loves this browser forgot.
-      if (r && typeof r.votes === "number") {
-        votes = Math.max(0, r.votes);
-        if (typeof r.voted === "boolean") { liked = r.voted; rememberLove(item.id, liked); }
-        refresh();
+      while (want !== known.liked) {
+        const asked = want;
+        const r = await voteOnProduct(item.id, asked ? 1 : -1, visitorId());
+        // The server's word wins: it knows loves this browser forgot.
+        known = {
+          liked: typeof r?.voted === "boolean" ? r.voted : asked,
+          votes: typeof r?.votes === "number" ? Math.max(0, r.votes) : known.votes
+        };
+        item.votes = known.votes;
+        rememberLove(item.id, known.liked);
+        noteVotes(item.id, known.votes);
+        if (known.liked !== asked) { want = known.liked; break; }   // it said otherwise; believe it
       }
     } catch (err) {
       console.error("Vote error:", err);
-      liked = !liked;
-      votes = Math.max(0, votes - delta);
-      rememberLove(item.id, liked);
+      // A refusal can carry the true count (the per-network limit does).
+      const said = Number(err?.data?.votes);
+      if (Number.isFinite(said)) known.votes = Math.max(0, said);
+      want = known.liked;
+      rememberLove(item.id, known.liked);
+      showToast(friendlyMessage(err, "That love did not save. Please try again."), { kind: "error" });
+    } finally {
+      busy = false;
       refresh();
     }
+  }
+
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    want = !want;
+    refresh();
+    settle();
   });
 
   return btn;
