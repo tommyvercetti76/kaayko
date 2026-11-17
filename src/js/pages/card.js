@@ -2,15 +2,15 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=3ab3ada';
-import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=3ab3ada';
-import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=3ab3ada';
-import { readFace, warmArt } from '/js/cards/relief.js?v=3ab3ada';
-import { rest, step, clamp } from '/js/cards/attitude.js?v=3ab3ada';
-import { lightFace, v } from '/js/cards/lamp.js?v=3ab3ada';
-import { dustMorph } from '/js/cards/morph.js?v=3ab3ada';
-import { esc, apiBase } from '/js/kit.js?v=3ab3ada';
-import { artUrl } from '/js/cards/art.js?v=3ab3ada';
+import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=92997d7';
+import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=92997d7';
+import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=92997d7';
+import { readFace, warmArt } from '/js/cards/relief.js?v=92997d7';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=92997d7';
+import { lightFace, v } from '/js/cards/lamp.js?v=92997d7';
+import { dustMorph } from '/js/cards/morph.js?v=92997d7';
+import { esc, apiBase } from '/js/kit.js?v=92997d7';
+import { artUrl } from '/js/cards/art.js?v=92997d7';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
@@ -215,7 +215,7 @@ function loop(t) {
     // spring under a hand is what makes an object feel like it is on a string.
     att.rx = att.tx; att.ry = att.ty;
   } else {
-    step(att, dt, { smoothTime: inspecting ? (flipping ? FLIP_SETTLE : INSPECT_SETTLE) : 0.12 });
+    step(att, dt, { smoothTime: inspecting ? (flipping ? FLIP_SETTLE : INSPECT_SETTLE) : entering ? ENTER_SETTLE : 0.12 });
     if (inspecting) { settleInspect(); putDownWhenStill(); }
   }
   // Lit from the true attitude, every frame, in both skins, whether it is
@@ -230,6 +230,7 @@ function loop(t) {
     || Math.abs(att.rx - att.tx) > 0.01 || Math.abs(att.ry - att.ty) > 0.01
     || Math.abs(att.vx.v) > 0.05 || Math.abs(att.vy.v) > 0.05;
   idle = moving ? 0 : idle + 1;
+  if (!moving) entering = false;
   raf = idle > 3 ? 0 : requestAnimationFrame(loop);
 }
 
@@ -250,6 +251,35 @@ function loop(t) {
 const INSPECT_MAX_RX = 48;     // degrees of pitch before it stops following
 const INSPECT_SETTLE = 0.46;   // seconds — long enough to feel the coast
 const INSPECT_GAIN = 0.42;     // degrees per pixel of drag
+/* ── the entrance ────────────────────────────────────────────────────────────
+   On a phone the card lay perfectly still until someone touched it, so nothing
+   said it was an object under a lamp rather than a picture. It now arrives a
+   little turned and comes to rest once, the glint walking across it as it does
+   — the same spring and the same lamp as every other turn, then the loop goes
+   back to sleep. Once per load; never under reduced motion (there is no loop);
+   and not when the engraved set is remembered, because that load is laying its
+   relief in those same frames and a raster must not land in a frame of motion. */
+const ENTER_SETTLE = 0.4;      // seconds — unhurried: it is arriving, not answering a finger
+const ENTER_POSE = { rx: 5, ry: -18 };
+let entering = false, posed = false;
+/** The blank sheet takes the pose as soon as the loop exists, so the card never jumps into it. */
+function enterPose() {
+  if (!loopOn) return;
+  posed = true;
+  att.rx = att.tx = ENTER_POSE.rx; att.ry = att.ty = ENTER_POSE.ry;
+  if (!live) { live = true; card.classList.add('is-live'); }   // no CSS tween on the first write
+  write(card, 'transform', `rotateX(${att.rx.toFixed(2)}deg) rotateY(${att.ry.toFixed(2)}deg)`);
+  wake();
+}
+/** The deck is drawn: let go — unless a pointer or a finger already gave the card somewhere to be. */
+function enter() {
+  if (!posed) return;
+  posed = false;
+  frame(() => frame(() => {
+    if (inspecting || att.tx !== ENTER_POSE.rx || att.ty !== ENTER_POSE.ry) return;
+    entering = true; att.tx = 0; att.ty = 0; wake();
+  }));
+}
 const FLIP_SETTLE = 0.2;       // seconds — a tap's turn: over in half a second, down in under one
 let inspecting = false, flipping = false;
 const grab = { on: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0 };   // w = angular velocity, deg/s
@@ -308,7 +338,7 @@ function grabStart(e) {
   // One finger holds the card. A second touch used to re-seat the grab and
   // then both fed it, so the card thrashed between two hands.
   if (grab.on) return;
-  flipping = false;                            // a hand on a card that was turning itself takes it over
+  flipping = false; entering = false;          // a hand on a card that was turning itself takes it over
   grab.on = true; grab.id = e.pointerId; grab.x = e.clientX; grab.y = e.clientY; grab.t = performance.now();
   grab.wx = 0; grab.wy = 0;
   att.tx = att.rx; att.ty = att.ry;
@@ -447,6 +477,7 @@ function aim(e) {
   // The card leans to face the lamp over it, as a sheet on a desk does.
   att.tx = (0.5 - target.y) * 2 * TILT;
   att.ty = (target.x - 0.5) * 2 * TILT;
+  entering = false;                            // the pointer has it now, at the pointer's own pace
   if (!live) { live = true; card.classList.add('is-live'); }
   wake();
 }
@@ -464,7 +495,7 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // fetches the library. It was a blocking <script> on every phone.
 const qrReady = !fine || typeof qrcode !== 'undefined' ? Promise.resolve() : new Promise((ok) => {
   const s = document.createElement('script');
-  s.src = '/js/vendor/qrcode-generator.js?v=3ab3ada';
+  s.src = '/js/vendor/qrcode-generator.js?v=92997d7';
   s.onload = s.onerror = () => ok();
   document.head.appendChild(s);
 });
@@ -572,6 +603,7 @@ function warmMorph() {
 // is fenced. A preference we cannot read is simply a preference that is off.
 const remember = (v) => { try { localStorage.setItem(KEY, v ? 'engraved' : 'print'); } catch (_) {} };
 const remembered = () => { try { return localStorage.getItem(KEY) === 'engraved'; } catch (_) { return false; } };
+if (!remembered()) enterPose();                 // see "the entrance": not when the engraved set is coming up
 
 /**
  * The page's own background, under the room's fading layer (.room::before).
@@ -1340,12 +1372,13 @@ const said = (cards, b) => JSON.stringify([
   // remembers to change. It read "Bone" on every cold load for three deploys
   // after the module had stopped saying it.
   setSkin(remembered(), { save: false });
+  enter();
   if ('requestIdleCallback' in window) requestIdleCallback(warmMorph, { timeout: 2500 }); else later(warmMorph, 900);
   if (hintEl && touchy && !hinted()) { hintEl.hidden = false; frame(() => frame(() => hintEl.classList.add('is-on'))); }
   // A rig for measuring the page on a real engine, only when the URL asks
   // for it. Never fetched otherwise. See cards/probe.js.
   const probe = new URLSearchParams(location.search).get('probe');
-  if (probe) import('/js/cards/probe.js?v=3ab3ada').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
+  if (probe) import('/js/cards/probe.js?v=92997d7').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
 })();
 
 return function stopCard() {
