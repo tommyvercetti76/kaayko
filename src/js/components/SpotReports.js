@@ -187,8 +187,12 @@
         var list = (b.reports || []).map(row).join('');
         host.insertAdjacentHTML('beforeend',
           '<div class="kbg-block spr-block" id="spr-block"><h3 class="kbg-title" id="spr-h">Reported by paddlers</h3>' +
-          '<p class="spr-warn">What paddlers say they saw here, and the day. Kaayko checks each report before it shows but cannot confirm it. It is not a safety check and not permission to paddle, and no report does not mean there is nothing there. Check the local rules before you go.</p>' +
-          (list || '<p class="spr-empty">No reports from the last year yet.</p>') +
+          // With nothing to qualify, the long notice was sixty words above "no
+          // reports". Empty, it is one line that keeps the clause that matters;
+          // the full notice stays with the reports it is about.
+          (list
+            ? '<p class="spr-warn">What paddlers say they saw here, and the day. Kaayko checks each report before it shows but cannot confirm it. It is not a safety check and not permission to paddle, and no report does not mean there is nothing there. Check the local rules before you go.</p>' + list
+            : '<p class="spr-empty">No reports from the last year. That does not mean there is nothing there.</p>') +
           '<button type="button" class="spr-open" id="spr-open">Report something</button>' +
           form(spot, b.kinds || {}) + '</div>');
         wire(spot, b.kinds || {});

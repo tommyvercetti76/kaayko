@@ -228,12 +228,33 @@
         </div>`;
     }).join('');
 
+    // The forecast is cached for hours and the strip never said so (it was 3.5
+    // hours old on 16 Nov 2026). Under 20 minutes is "now" to anyone planning.
+    const fetchedAt = Date.parse(forecastData?.metadata?.cacheTime || forecastData?.metadata?.timestamp || '');
+    const fetchedMin = Number.isFinite(fetchedAt) ? Math.round((Date.now() - fetchedAt) / 60000) : null;
+    const fetchedText = fetchedMin !== null && fetchedMin >= 20
+      ? ` · fetched ${fetchedMin < 90 ? fetchedMin + ' min' : Math.round(fetchedMin / 60) + ' hr'} ago` : '';
+    // When no daylight hour ahead reaches "Careful", say it in words. The strip
+    // showed three red bars and left the reader to conclude that for themselves;
+    // the "best window" marker (findBestWindow) rightly stays silent then.
+    let aheadMax = null;
+    forecast.forEach((day, di) => {
+      Object.keys(day?.hourly || {}).forEach((k) => {
+        const hd = day.hourly[k], h = Number(k), r = parseFloat(hd?.rating ?? hd?.prediction?.rating);
+        if (!hd || hd.isDay === false || isNaN(r)) return;
+        if (T && T.isAhead && !T.isAhead(day, h, now, di)) return;
+        aheadMax = aheadMax === null ? r : Math.max(aheadMax, r);
+      });
+    });
+    const noWindow = aheadMax !== null && aheadMax < 2.7
+      ? '<p class="khm-none">No daylight hour in the next 3 days scores above Hard pass.</p>' : '';
+
     container.innerHTML = `
       <div class="khm-wrap">
         <div class="khm-head">
           <div>
             <span class="khm-eyebrow">3-day forecast</span>
-            <span class="khm-source">${observed !== null ? 'This hour observed, later hours forecast' : 'Forecast, not observed conditions'}</span>
+            <span class="khm-source">${observed !== null ? 'This hour observed, later hours forecast' : 'Forecast, not observed conditions'}${fetchedText}</span>
           </div>
           <div class="khm-legend">
             <span><i class="khm-dot" style="background:#bd3b2b"></i>Hard pass</span>
@@ -241,6 +262,7 @@
             <span><i class="khm-dot" style="background:#316d43"></i>Worth it</span>
           </div>
         </div>
+        ${noWindow}
         ${daysHTML}
       </div>`;
 

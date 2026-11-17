@@ -364,6 +364,11 @@ function renderHero(currentData, forecastData, spot) {
       // For the one-line reason only (KaaykoPrefs.scoreReason). Not `penaltyDetails`:
       // the hero's breakdown reads that name and would drop the craft row above.
       reasonPenalties: currentData.paddleScore.penaltyDetails || null,
+      // The gauge's own reading, in the conditions block (rivers with a gauge only).
+      flow: (spot?.hydrologyNow?.discharge && window.KaaykoPrefs?.fmtFlow) ? {
+        text: window.KaaykoPrefs.fmtFlow(spot.hydrologyNow.discharge.cms),
+        title: spot.hydrologyNow.gaugeName ? `Measured at ${spot.hydrologyNow.gaugeName}` : ''
+      } : null,
       alertName: currentData.paddleScore.alerts?.[0]?.event || null,
       uncertainty: currentData.paddleScore.uncertainty || null,
       penalties: penaltiesApplied,
@@ -434,6 +439,9 @@ function applyNightGate(currentData, forecastData) {
     : (currentData?.conditions?.isDay === false || currentData?.paddleScore?.night?.isNight === true);
   const mark = document.querySelector('.score-mark');
   if (!isNight || !mark) return;
+  // "Was this score accurate?" under a hero that shows no score asks about nothing.
+  const fb = document.querySelector('.paddle-feedback');
+  if (fb) fb.hidden = true;
 
   // First DAYLIGHT hour in the outlook, with the score already computed for it.
   // isDay must be explicitly true: forecast payloads cached before that field
@@ -555,6 +563,25 @@ function enrichmentRows(spot) {
     const staleNote = hyd.stale ? ' <em>(gauge last reported over a day ago)</em>' : '';
     const gaugeLink = hyd.gaugeUrl
       ? ` <a class="loc-coords-link" href="${esc(hyd.gaugeUrl)}" target="_blank" rel="noopener">USGS gauge →</a>` : '';
+    // Which gauge, how far from here, and when it was read: a flow figure with
+    // none of those is a number to take on trust (it is 13 km downstream here).
+    const title = (t) => String(t).toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase()).replace(/\b(At|Near|Above|Below|Of)\b/g, (w) => w.toLowerCase()).replace(/, ([A-Za-z]{2})$/, (m, st) => ', ' + st.toUpperCase());
+    const readAt = (() => {
+      const ms = hyd.discharge.observedAt ? Date.parse(hyd.discharge.observedAt) : NaN;
+      if (!Number.isFinite(ms)) return '';
+      // The LAKE's clock (the forecast's zone, else the estimate from its
+      // coordinates) — never the reader's: a 6:45 PM reading read "7:45 PM" from
+      // one time zone east, twenty-six minutes into the future.
+      const zone = window.KaaykoSpotTime.nowAt(__lastLocInfo?.location || null, spot).zone;
+      if (!zone) return '';
+      try { return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: zone }); } catch (_) { return ''; }
+    })();
+    const gaugeBits = [
+      hyd.gaugeName ? esc(title(hyd.gaugeName)) : '',
+      Number.isFinite(Number(hyd.distanceKm)) && P.fmtDist ? `${P.fmtDist(hyd.distanceKm)} from here` : '',
+      readAt ? `read ${readAt}` : ''
+    ].filter(Boolean).join(' · ');
+    if (gaugeBits) rows.push(`<div class="loc-row"><span class="loc-label">Gauge</span><span>${gaugeBits}</span></div>`);
     rows.push(`<div class="loc-row"><span class="loc-label">River flow</span><span class="flow-${esc(hyd.pctOfNormalBand || 'unknown')}">${P.fmtFlow(hyd.discharge.cms)}${bandPhrase ? ' — ' + bandPhrase : ''}${staleNote}${gaugeLink}</span></div>`);
     if (hyd.gageHeight && P.fmtHeight) {
       rows.push(`<div class="loc-row"><span class="loc-label">Water level</span><span>${P.fmtHeight(hyd.gageHeight.m)}</span></div>`);

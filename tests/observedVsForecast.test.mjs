@@ -127,10 +127,20 @@ test('the hero names itself an OBSERVATION', () => {
  * earlier. Naming the source was step one; saying how old the reading is is
  * step two, and it is the one a reader can act on.
  */
-test('the hero prints the age of the reading it was given', () => {
-  assert.match(renderHero({ computedAt: minutesAgo(12) }), /OBSERVED · 12 MIN AGO/);
-  assert.match(renderHero({ computedAt: minutesAgo(0) }),  /OBSERVED · JUST NOW/);
-  assert.match(renderHero({ computedAt: minutesAgo(180) }), /OBSERVED · 3 HR AGO/);
+// 16 Nov 2026: computedAt is when the SCORE was recomputed. Printing its age
+// after the word "OBSERVED" claimed it for the reading, which has its own,
+// older clock. Each age now sits under its own word.
+test('with only the score time, the age is the score\'s and says so', () => {
+  assert.match(renderHero({ computedAt: minutesAgo(12) }), /SCORED · 12 MIN AGO/);
+  assert.match(renderHero({ computedAt: minutesAgo(0) }),  /SCORED · JUST NOW/);
+  assert.match(renderHero({ computedAt: minutesAgo(180) }), /SCORED · 3 HR AGO/);
+  assert.ok(!/OBSERVED · \d/.test(renderHero({ computedAt: minutesAgo(12) })), 'the score\'s age is never printed as the observation\'s');
+});
+
+test('given the reading\'s own time, OBSERVED carries that age and the score\'s goes below', () => {
+  const html = renderHero({ computedAt: minutesAgo(7), observedAt: minutesAgo(52) });
+  assert.match(html, /OBSERVED · 52 MIN AGO/);
+  assert.match(html, /scored 7 min ago/);
 });
 
 test('an age it was not given is not invented', () => {
@@ -168,8 +178,8 @@ test('THE POINT — the two surfaces no longer print the same bare word', () => 
   assert.match(heroHtml, /OBSERVED/);
   const chip = (html) => (html.match(/<div class="now-indicator">([^<]*)<\/div>/) || [])[1];
   const dated = chip(renderHero({ computedAt: minutesAgo(12) }));
-  assert.equal(dated, 'OBSERVED · 12 MIN AGO',
-    'with a timestamp in hand the chip prints the age, never the word "NOW"');
+  assert.equal(dated, 'SCORED · 12 MIN AGO',
+    'with only the score time in hand the chip prints the SCORE\'s age (16 Nov 2026), never the word "NOW"');
 });
 
 test('outside the plotted band the strip drops the marker, it does not fall back', () => {

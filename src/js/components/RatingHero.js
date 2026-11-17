@@ -97,9 +97,31 @@ class RatingHero {
       : ageMin < 2 ? ' · JUST NOW'
       : ageMin < 90 ? ` · ${ageMin} MIN AGO`
       : ` · ${Math.round(ageMin / 60)} HR AGO`;
+    // 16 Nov 2026: that age is the SCORE's (when it was recomputed). The reading
+    // under it has its own, older clock, and "OBSERVED · 8 MIN AGO" claimed the
+    // score's age for the observation. When the API says when the provider last
+    // updated the reading (conditions.observedAt), "OBSERVED" carries THAT age and
+    // the score's goes on the line below. When it does not, the label says what
+    // the age really is: when this was scored.
+    const fmtAge = (min) => min < 2 ? 'JUST NOW' : min < 90 ? `${min} MIN AGO` : `${Math.round(min / 60)} HR AGO`;
+    const obsAt = weather?.observedAt ? Date.parse(weather.observedAt) : NaN;
+    const obsMin = Number.isFinite(obsAt) ? Math.max(0, Math.round((Date.now() - obsAt) / 60000)) : null;
+    const nowLabel = obsMin !== null ? `OBSERVED · ${fmtAge(obsMin)}` : ageMin !== null ? `SCORED · ${fmtAge(ageMin)}` : 'OBSERVED';
     const sourceText = ageMin === null
       ? 'Measured at the nearest station'
-      : 'Nearest station · rescored every 15 minutes';
+      : obsMin !== null
+        ? `Nearest station · scored ${fmtAge(ageMin).toLowerCase()}`
+        : 'Nearest station · rescored every 15 minutes';
+    // A river's flow is as much "the conditions" as its wind. It sat at the foot
+    // of the page between the coordinates and a video link.
+    const flowStat = weather?.flow && weather.flow.text ? `
+              <div class="weather-stat"${weather.flow.title ? ` title="${window.KaaykoUtil.escapeHtml(weather.flow.title)}"` : ''}>
+                <div class="weather-icon">${window.KaaykoIcons ? window.KaaykoIcons.get('droplet') : ''}</div>
+                <div class="weather-data">
+                  <span class="weather-value">${window.KaaykoUtil.escapeHtml(weather.flow.text)}</span>
+                  <span class="weather-label">River flow</span>
+                </div>
+              </div>` : '';
 
     const heroHTML = `
       <div class="skill-level-section">
@@ -115,7 +137,7 @@ class RatingHero {
                  35.4 °C in the same hour of the forecast. Both used to say
                  "NOW", so the page read as broken. Each side now names its own
                  source instead of pretending to agree. -->
-            <div class="now-indicator">OBSERVED${ageText}</div>
+            <div class="now-indicator">${nowLabel}</div>
             <div class="reading-source">${sourceText}</div>
           </div>
 
@@ -135,7 +157,7 @@ class RatingHero {
                   <span class="weather-value">${dispWindStr}</span>
                   <span class="weather-label">Wind Speed</span>
                 </div>
-              </div>${gustStat}
+              </div>${gustStat}${flowStat}
               <div class="weather-stat">
                 <div class="weather-icon">${ic('compass')}</div>
                 <div class="weather-data">

@@ -295,3 +295,6 @@
   .khm-bar, .khm-gloss::after, .khm-panel { animation: none; }
   .khm-hit, .khm-cursor { transition: none; }
 }
+
+/* Said in words when nothing ahead is paddleable (16 Nov 2026). */
+.khm-none { margin: 0; font-family: var(--font-serif); font-size: 0.98rem; color: rgba(237,232,223,0.78); }
