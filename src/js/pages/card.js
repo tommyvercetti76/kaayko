@@ -2,15 +2,15 @@
  * pages/card.js — the collectible card (/card): lighting model, flip, inspect, QR.
  * Moved out of card.html on 12 Sep 2026 unchanged.
  */
-import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=8155556';
-import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=8155556';
-import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=8155556';
-import { readFace, warmArt } from '/js/cards/relief.js?v=8155556';
-import { rest, step, clamp } from '/js/cards/attitude.js?v=8155556';
-import { lightFace, v } from '/js/cards/lamp.js?v=8155556';
-import { dustMorph } from '/js/cards/morph.js?v=8155556';
-import { esc, apiBase } from '/js/kit.js?v=8155556';
-import { artUrl } from '/js/cards/art.js?v=8155556';
+import { front, back, frontArt, backArt, SCREEN } from '/js/cards/render.js?v=3ab3ada';
+import { engravedFor, stockOf, embossParams, reliefType, DIRS } from '/js/cards/skins/engraved.js?v=3ab3ada';
+import { embossOf, stillCanvas } from '/js/cards/emboss.js?v=3ab3ada';
+import { readFace, warmArt } from '/js/cards/relief.js?v=3ab3ada';
+import { rest, step, clamp } from '/js/cards/attitude.js?v=3ab3ada';
+import { lightFace, v } from '/js/cards/lamp.js?v=3ab3ada';
+import { dustMorph } from '/js/cards/morph.js?v=3ab3ada';
+import { esc, apiBase } from '/js/kit.js?v=3ab3ada';
+import { artUrl } from '/js/cards/art.js?v=3ab3ada';
 
 /* ── the light ─────────────────────────────────────────────────────────────
    One lamp. Everything the eye reads as light on this card — the glint, its
@@ -215,7 +215,7 @@ function loop(t) {
     // spring under a hand is what makes an object feel like it is on a string.
     att.rx = att.tx; att.ry = att.ty;
   } else {
-    step(att, dt, { smoothTime: inspecting ? INSPECT_SETTLE : 0.12 });
+    step(att, dt, { smoothTime: inspecting ? (flipping ? FLIP_SETTLE : INSPECT_SETTLE) : 0.12 });
     if (inspecting) { settleInspect(); putDownWhenStill(); }
   }
   // Lit from the true attitude, every frame, in both skins, whether it is
@@ -250,7 +250,8 @@ function loop(t) {
 const INSPECT_MAX_RX = 48;     // degrees of pitch before it stops following
 const INSPECT_SETTLE = 0.46;   // seconds — long enough to feel the coast
 const INSPECT_GAIN = 0.42;     // degrees per pixel of drag
-let inspecting = false;
+const FLIP_SETTLE = 0.2;       // seconds — a tap's turn: over in half a second, down in under one
+let inspecting = false, flipping = false;
 const grab = { on: false, id: null, x: 0, y: 0, t: 0, wx: 0, wy: 0 };   // w = angular velocity, deg/s
 
 /** Whatever half-turn the card is on, make it the real state and start at 0. */
@@ -292,6 +293,7 @@ function setInspect(on) {
   if (inspecting) unread();
   else if (engraved && series.length) attachReaders(series[at]);
   if (!inspecting) {
+    flipping = false;
     // Put down mid-coast, the card keeps the face it was heading for rather
     // than swinging 150° back to the one it left.
     grab.on = false; grab.id = null;
@@ -306,6 +308,7 @@ function grabStart(e) {
   // One finger holds the card. A second touch used to re-seat the grab and
   // then both fed it, so the card thrashed between two hands.
   if (grab.on) return;
+  flipping = false;                            // a hand on a card that was turning itself takes it over
   grab.on = true; grab.id = e.pointerId; grab.x = e.clientX; grab.y = e.clientY; grab.t = performance.now();
   grab.wx = 0; grab.wy = 0;
   att.tx = att.rx; att.ty = att.ry;
@@ -326,15 +329,23 @@ function grabMove(e) {
   att.tx = clamp(att.tx - dy * INSPECT_GAIN, INSPECT_MAX_RX);
   // Angular velocity, smoothed: the last few pixels of a drag say more about
   // the throw than the last one.
-  const a = 0.35;
-  grab.wy = grab.wy * (1 - a) + (dx * INSPECT_GAIN / dt) * a;
-  grab.wx = grab.wx * (1 - a) + (-dy * INSPECT_GAIN / dt) * a;
+  // The old estimate fades by how long ago it was made, not by a fixed share
+  // per event: a nudge after a pause is the whole truth, and at a steady 60
+  // events a second this is the 0.3 blend it always was.
+  const keep = Math.exp(-dt / 0.05);
+  grab.wy = grab.wy * keep + (dx * INSPECT_GAIN / dt) * (1 - keep);
+  grab.wx = grab.wx * keep + (-dy * INSPECT_GAIN / dt) * (1 - keep);
 }
 
 function grabEnd(e) {
   if (!grab.on || (e.pointerId != null && e.pointerId !== grab.id)) return;
   grab.on = false; grab.id = null;
   try { card.releasePointerCapture(e.pointerId); } catch (_) {}
+  // A finger that stopped before it let go threw nothing. The smoothed speed
+  // only updates on a move, so a drag, a pause and a release used to hand the
+  // spring the speed from BEFORE the pause — and a card turned a quarter of the
+  // way and held there flipped itself over on release (seen 16 Nov 2026).
+  if (performance.now() - grab.t > 90) { grab.wx = 0; grab.wy = 0; }
   // Hand the throw to the spring, then ask where it would coast to and land
   // on the face nearest THAT — so a flick spins it over and a nudge does not.
   att.vy.v = grab.wy; att.vx.v = grab.wx;
@@ -368,8 +379,9 @@ const HOLD_MS = 240;           // holding still this long lifts the card
 const HOLD_SLOP = 8;           // px of movement that makes a press a turn, not a tap
 let hold = null;
 
-function liftWith(h) {
+function liftWith(h, byTimer = false) {
   if (hold !== h || grab.on) return;
+  h.still = byTimer;                           // lifted by holding still, not by moving
   card.dataset.held = '1';
   setInspect(true);
   grabStart({ pointerId: h.id, clientX: h.x, clientY: h.y });
@@ -380,10 +392,10 @@ function holdCancel() { if (hold) { cancelLater(hold.timer); hold = null; } }
 function holdStart(e) {
   if (still || (e.pointerType === 'mouse' && e.button !== 0)) return;
   holdCancel();
-  const h = { id: e.pointerId, x: e.clientX, y: e.clientY, timer: 0 };
+  const h = { id: e.pointerId, x: e.clientX, y: e.clientY, timer: 0, t: performance.now(), still: false };
   h.timer = later(() => {
     if (hold !== h || grab.on) return;
-    liftWith(h);
+    liftWith(h, true);
     try { navigator.vibrate?.(8); } catch (_) {}
   }, HOLD_MS);
   hold = h;
@@ -398,8 +410,17 @@ function holdMove(e) {
 }
 
 function holdEnd(e) {
-  if (hold && e.pointerId === hold.id) { cancelLater(hold.timer); hold = null; }
+  const h = hold && e.pointerId === hold.id ? hold : null;
+  if (h) { cancelLater(h.timer); hold = null; }
   if (grab.on) grabEnd(e);
+  // A press that never moved is a tap, even a slow one. Past HOLD_MS the card
+  // is "lifted", and letting go used to do nothing at all: anyone who taps
+  // with a deliberate finger got a dead card (a 350ms tap, 16 Nov 2026). Only
+  // a real, long hold (over 0.7s) is left alone.
+  if (h && h.still && e.type === 'pointerup' && gestureMoved < HOLD_SLOP && performance.now() - h.t < 700) {
+    flip();
+    ateClickUntil = performance.now() + 500;   // the click this release also sends is the same tap
+  }
   // The click that follows the release must not also turn the card over.
   if (card.dataset.held) later(() => { delete card.dataset.held; }, 0);
 }
@@ -443,7 +464,7 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // fetches the library. It was a blocking <script> on every phone.
 const qrReady = !fine || typeof qrcode !== 'undefined' ? Promise.resolve() : new Promise((ok) => {
   const s = document.createElement('script');
-  s.src = '/js/vendor/qrcode-generator.js?v=8155556';
+  s.src = '/js/vendor/qrcode-generator.js?v=3ab3ada';
   s.onload = s.onerror = () => ok();
   document.head.appendChild(s);
 });
@@ -467,7 +488,30 @@ if (!still) {
 } catch (err) { console.warn('card: lighting off —', err); }
 
 /* ── turning it over ─────────────────────────────────────────────────────── */
-const flip = () => { flushChores(); card.classList.toggle('is-flipped'); };
+/* A tap used to toggle a class and let CSS swing the two faces round: a canned
+   turn, under a light that did not move — the glint, the shade and the rim all
+   sat exactly where they were while the card went past edge-on — next to a
+   flick that turned the same card as a lit object. Now a tap IS a turn in the
+   hand, made by program: the card's own angle goes to the other face on the
+   spring, the lamp is solved every frame of it, and the face state is folded
+   in when it lands (settleInspect). Tap again mid-turn and it comes back.
+   Without the loop (reduced motion) it is the class and nothing else.        */
+let flipDir = 180, ateClickUntil = 0;
+function flip() {
+  flushChores();
+  if (still || !loopOn) { card.classList.toggle('is-flipped'); return; }
+  if (!flipping) {
+    if (!inspecting) setInspect(true);
+    grab.on = false; grab.id = null;
+    // Out one way and back the other, as the CSS turn went.
+    flipDir = card.classList.contains('is-flipped') ? -180 : 180;
+    att.tx = 0; att.ty = Math.round(att.ry / 180) * 180 + flipDir;
+    flipping = true;
+  } else {
+    att.ty -= flipDir; flipDir = -flipDir;      // changed their mind: back the way it came
+  }
+  wake();
+}
 
 /* ── what a finger can do, said once ────────────────────────────────────────
    A phone showed a card and nothing else: no sign it turns over, and the swipe
@@ -485,7 +529,7 @@ function dropHint() {
 }
 // A swipe that changed the card must not also turn it over, and neither must
 // letting go of a card you were inspecting.
-on(card, 'click', (e) => { if (!inspecting && !card.dataset.held && !card.dataset.swiped && gestureMoved < 8) flip(); });
+on(card, 'click', (e) => { if (performance.now() < ateClickUntil) return; if ((!inspecting || flipping) && !card.dataset.held && !card.dataset.swiped && gestureMoved < 8) flip(); });
 on(card, 'keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
 });
@@ -1301,7 +1345,7 @@ const said = (cards, b) => JSON.stringify([
   // A rig for measuring the page on a real engine, only when the URL asks
   // for it. Never fetched otherwise. See cards/probe.js.
   const probe = new URLSearchParams(location.search).get('probe');
-  if (probe) import('/js/cards/probe.js?v=8155556').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
+  if (probe) import('/js/cards/probe.js?v=3ab3ada').then((m) => m.run({ label: probe, setSkin, setInspect, att, grab, quiet: (on) => { quiet = !!on; }, parts: (p) => { reliefParts = p; } })).catch((err) => console.warn('card: probe —', err));
 })();
 
 return function stopCard() {
