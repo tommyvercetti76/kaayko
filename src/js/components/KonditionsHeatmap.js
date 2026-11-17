@@ -334,7 +334,8 @@
             ${(() => {
               const P = window.KaaykoPrefs;
               const ex = nowCell ? currentData?.paddleScore?.explanations : hd.prediction?.explanations;
-              const why = P && P.scoreReason ? P.scoreReason(ex, score) : null;
+              const pd = nowCell ? currentData?.paddleScore?.penaltyDetails : hd.prediction?.penaltyDetails;
+              const why = P && P.scoreReason ? P.scoreReason(ex, score, pd, currentData?.paddleScore?.alerts?.[0]?.event) : null;
               return why ? `<p class="khm-panel-why">${window.KaaykoUtil.escapeHtml(why)}</p>` : '';
             })()}
             <div class="khm-macros">

@@ -51,3 +51,46 @@ test('the "Was this score accurate?" vote is part of what the hero puts on the p
   assert.match(lastRoot.innerHTML, /paddle-feedback/);           // was dropped: only the first block was returned
   assert.match(lastRoot.innerHTML, /skill-level-section/);
 });
+
+// 16 Nov 2026 — the Colorado River review. The reason was only ever the model's
+// top factor; the penalties that actually sank the score never got a word.
+function prefs() {
+  const store = {};
+  const node = { appendChild() {}, set innerHTML(v) {}, setAttribute() {} };
+  const ctx = { console, document: { createElement: () => node, getElementById: () => null, readyState: 'complete', addEventListener() {},
+      head: { appendChild() {} }, documentElement: { appendChild() {} } },
+    localStorage: { getItem: (k) => store[k] ?? null, setItem() {} } };
+  ctx.window = ctx; ctx.addEventListener = () => {}; ctx.dispatchEvent = () => {}; ctx.CustomEvent = function () {};
+  vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(f('../src/js/prefs.js'), 'utf8'), ctx, { filename: 'prefs.js' });
+  return ctx.KaaykoPrefs;
+}
+const COLD = [{ factor: 'cold', text: 'Cool: feels like 8°C', value: -1 }];
+
+test('an official weather alert that cost points is the reason, by name', () => {
+  const P = prefs();
+  const pens = [{ code: 'GUSTS_MAJOR', amount: 1, message: 'Gusty conditions (gusts 14.6 mph, +10.1 over wind)' },
+                { code: 'WARNINGS', amount: 1, message: 'Weather warnings in effect' }];
+  assert.equal(P.scoreReason(COLD, 1.5, pens, 'Wind Advisory'), 'Wind Advisory in effect');
+  assert.equal(P.scoreReason(COLD, 1.5, pens), 'Weather alert in effect');   // name not known yet
+});
+
+test('otherwise the largest single deduction speaks, penalty or factor', () => {
+  const P = prefs();
+  const gust = [{ code: 'GUSTS_MAJOR', amount: 1, message: 'Gusty conditions (gusts 14.6 mph, +10.1 over wind)' }];
+  assert.match(P.scoreReason([{ text: 'Wind 7 km/h', value: -0.4 }], 2, gust), /^Gusty conditions/);
+  assert.match(P.scoreReason([{ text: 'Cool: feels like 8°C', value: -1.6 }], 2, gust), /^Cool: feels like/);
+});
+
+test('with no penalties passed the reason is exactly what it was', () => {
+  const P = prefs();
+  assert.match(P.scoreReason(COLD, 2), /^Cool: feels like/);
+  assert.equal(P.scoreReason(undefined, 2), null);
+  assert.equal(P.scoreReason([], 4), 'Nothing holding it back');
+  assert.equal(P.scoreReason([], 2, []), 'No single weather factor stands out');
+});
+
+test('the hero shows gusts beside wind, from the provider figure only', () => {
+  assert.match(hero({ gustSpeed: 23.5 }), /15 mph<\/span>\s*<span class="weather-label">Gusts/);
+  assert.doesNotMatch(hero({}), /weather-label">Gusts/);
+});

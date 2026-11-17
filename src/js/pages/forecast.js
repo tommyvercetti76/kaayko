@@ -126,9 +126,28 @@ function renderTripBriefing(currentData, forecastData, spot) {
   const warnings = window.dataTransformer?.prepareWarningsData?.(forecastData) || [];
   const warningItems = Array.isArray(warnings) ? warnings.map(String) : [warnings].filter(Boolean).map(String);
   const penalties = currentData?.paddleScore?.penaltiesApplied || currentData?.paddleScore?.penalties || [];
+  // An official weather alert is named, dated and shown OPEN, as itself. It
+  // used to reach this page only as the penalty line "Weather warnings in
+  // effect", which fell into the catch-all category and was printed, closed,
+  // as "River alerts · Conditions" — for an NWS Wind Advisory (16 Nov 2026).
+  const esc = (t) => window.KaaykoUtil.escapeHtml(String(t));
+  const zone = currentData?.paddleScore?.daylight?.zone;
+  const until = (a) => {
+    const ms = a.expires ? Date.parse(a.expires) : NaN;
+    if (Number.isFinite(ms)) {
+      try { return new Date(ms).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: zone || undefined }); } catch (_) {}
+    }
+    return a.untilText || null;
+  };
+  const warned = (currentData?.paddleScore?.penaltyDetails || []).some(p => p && p.code === 'WARNINGS');
+  let official = (Array.isArray(currentData?.paddleScore?.alerts) ? currentData.paddleScore.alerts : [])
+    .filter(a => a && a.event).map(a => ({ event: String(a.event), until: until(a) }));
+  // A score computed before the API carried the alert's name still says one applied.
+  if (!official.length && warned) official = [{ event: 'Weather alert', until: null }];
   penalties
     .filter(Boolean)
     .map(String)
+    .filter(item => !(official.length && /^weather warnings in effect/i.test(item)))
     .forEach(item => {
       const clean = item.replace(/:\s*[-+]?\d+\.?\d*\s*(pts?)?$/i, '').trim();
       if (clean && !warningItems.some(existing => existing.toLowerCase() === clean.toLowerCase())) {
@@ -147,20 +166,27 @@ function renderTripBriefing(currentData, forecastData, spot) {
   });
   const alerts = [...byCat.values()];
 
-  if (!alerts.length) {
+  if (!alerts.length && !official.length) {
     container.innerHTML = '';
     container.hidden = true;
     return;
   }
 
   // Name the hazards instead of counting them: "Heat & wind", not "5 conditions".
-  const labels = alerts.map(a => a.cat.label);
+  const labels = [...official.map(a => a.event), ...alerts.map(a => a.cat.label)];
   let title;
   if (labels.length === 1)      title = labels[0];
   else if (labels.length === 2) title = `${labels[0]} & ${labels[1].toLowerCase()}`;
   else                          title = `${labels[0]}, ${labels[1].toLowerCase()} & ${labels.length - 2} more`;
 
-  const itemsHTML = alerts.map(a => `
+  const officialHTML = official.map(a => `
+      <div class="alert-item alert-item--official">
+        <span class="alert-item-icon" style="color:#f87171" aria-hidden="true">${window.KaaykoIcons ? window.KaaykoIcons.get('alert') : ''}</span>
+        <span class="alert-item-text"><strong>${esc(a.event)}</strong>${a.until ? ` · until ${esc(a.until)}` : ''}<br><small>Official weather alert for this area. Check the full text with your local weather service before you go.</small></span>
+      </div>`).join('');
+  const open = official.length > 0;
+  const kicker = open ? 'Weather alert' : water.alertsLabel;
+  const itemsHTML = officialHTML + alerts.map(a => `
       <div class="alert-item">
         <span class="alert-item-icon" style="color:${getWarningMeta(a.text).color}" aria-hidden="true">${window.KaaykoIcons ? window.KaaykoIcons.get(a.cat.icon) : ''}</span>
         <span class="alert-item-text">${localizeUnits(a.text)}</span>
@@ -168,16 +194,16 @@ function renderTripBriefing(currentData, forecastData, spot) {
 
   container.hidden = false;
   container.innerHTML = `
-    <section class="forecast-alert-banner is-closed" role="region" aria-label="${water.alertsLabel}">
-      <button class="alert-summary" type="button" aria-expanded="false">
-        <span class="alert-mark">${alerts.length}</span>
+    <section class="forecast-alert-banner ${open ? 'is-open' : 'is-closed'}"${open ? ' data-pinned' : ''} role="region" aria-label="${kicker}">
+      <button class="alert-summary" type="button" aria-expanded="${open}">
+        <span class="alert-mark">${alerts.length + official.length}</span>
         <span class="alert-summary-copy">
-          <span class="briefing-kicker">${water.alertsLabel}</span>
+          <span class="briefing-kicker">${kicker}</span>
           <span class="alert-summary-title">${title}</span>
         </span>
       </button>
       <button class="alert-dismiss" type="button" aria-label="${water.dismissLabel}">×</button>
-      <div class="alert-details" hidden>
+      <div class="alert-details"${open ? '' : ' hidden'}>
         <div class="alert-items">${itemsHTML}</div>
       </div>
     </section>
@@ -335,6 +361,10 @@ function renderHero(currentData, forecastData, spot) {
       computedAt: currentData.paddleScore.computedAt || currentData.metadata?.cachedAt || null,
       // The model's own account of what held the score down, and its error
       explanations: currentData.paddleScore.explanations,
+      // For the one-line reason only (KaaykoPrefs.scoreReason). Not `penaltyDetails`:
+      // the hero's breakdown reads that name and would drop the craft row above.
+      reasonPenalties: currentData.paddleScore.penaltyDetails || null,
+      alertName: currentData.paddleScore.alerts?.[0]?.event || null,
       uncertainty: currentData.paddleScore.uncertainty || null,
       penalties: penaltiesApplied,
       originalRating: currentData.paddleScore.originalMLRating || rating,
@@ -428,7 +458,7 @@ function applyNightGate(currentData, forecastData) {
       const r = parseFloat(hd.rating ?? hd.prediction?.rating);
       if (isNaN(r)) continue;
       next = { dayIndex: d, date: days[d].date || null, hour: h, rating: Math.round(r * 2) / 2,
-        explanations: hd.prediction?.explanations, uncertainty: hd.prediction?.uncertainty || currentData?.paddleScore?.uncertainty || null };
+        explanations: hd.prediction?.explanations, penaltyDetails: hd.prediction?.penaltyDetails, uncertainty: hd.prediction?.uncertainty || currentData?.paddleScore?.uncertainty || null };
       break outer;
     }
   }
@@ -444,7 +474,7 @@ function applyNightGate(currentData, forecastData) {
   const hourWord = next ? formatHourDisplay(next.hour) : '';
 
   const word = label ? label.charAt(0) + label.slice(1).toLowerCase() : '';
-  const reason = next && P.scoreReason ? P.scoreReason(next.explanations, next.rating) : null;
+  const reason = next && P.scoreReason ? P.scoreReason(next.explanations, next.rating, next.penaltyDetails, currentData?.paddleScore?.alerts?.[0]?.event) : null;
   const scale = next && P.scoreScale ? P.scoreScale(next.rating, next.uncertainty) : '';
   const esc = (t) => window.KaaykoUtil.escapeHtml(t);
   mark.classList.add('is-night');
@@ -851,7 +881,8 @@ document.addEventListener('click', function (e) {
   // Close alert drawer expand if open and click is outside
   const alertDrawer = document.getElementById('forecastAlertDrawer');
   if (alertDrawer && !alertDrawer.hidden && !alertDrawer.contains(e.target)) {
-    const banner = alertDrawer.querySelector('.forecast-alert-banner.is-open');
+    // An official alert stays open: it is not a tooltip to be closed by a stray tap.
+    const banner = alertDrawer.querySelector('.forecast-alert-banner.is-open:not([data-pinned])');
     if (banner) {
       banner.classList.remove('is-open');
       banner.classList.add('is-closed');

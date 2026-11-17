@@ -110,9 +110,26 @@
   // typical error of ±0.6 does not have, and with no reason. The band leads;
   // the reason is the model's own account of what held it down
   // (`explanations`, measured server-side); the number is a small aside.
-  function scoreReason(explanations, rating) {
-    if (!Array.isArray(explanations)) return null;           // no account → say nothing
-    if (explanations.length && explanations[0] && explanations[0].text) return localizeUnits(explanations[0].text);
+  //
+  // 16 Nov 2026: the reason was ONLY the model's top factor, so a score the
+  // model put at 3.3 and two penalties took to 1.3 (gusts, and an NWS Wind
+  // Advisory) was explained as "Cool: feels like 46°F". The penalties the
+  // pipeline applied (`penaltyDetails`, in rating points like the factors) now
+  // compete: an official weather alert leads whenever it cost points, and
+  // otherwise whichever single deduction was largest. Callers that pass no
+  // penalties get exactly the old answer.
+  function scoreReason(explanations, rating, penaltyDetails, alertName) {
+    const pens = Array.isArray(penaltyDetails)
+      ? penaltyDetails.filter((p) => p && p.message && _num(p.amount) > 0) : [];
+    if (!Array.isArray(explanations) && !pens.length) return null;   // no account → say nothing
+    const top = Array.isArray(explanations) && explanations[0] && explanations[0].text ? explanations[0] : null;
+    if (pens.some((p) => p.code === 'WARNINGS')) return `${alertName || 'Weather alert'} in effect`;
+    if (pens.length) {
+      const big = pens.slice().sort((a, b) => _num(b.amount) - _num(a.amount))[0];
+      if (_num(big.amount) >= Math.abs(_num(top && top.value) || 0)) return localizeUnits(String(big.message));
+    }
+    if (top) return localizeUnits(top.text);
+    if (!Array.isArray(explanations)) return null;
     const n = _num(rating);
     if (n == null) return null;
     return n >= 3.7 ? 'Nothing holding it back' : 'No single weather factor stands out';

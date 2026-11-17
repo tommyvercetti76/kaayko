@@ -24,6 +24,18 @@ class RatingHero {
     const temp          = weather?.temperature ?? '--';
     const wind          = weather?.windSpeed   ?? '--';
     const windDirection = weather?.windDirection || 'N';
+    // Gusts are what tip a boat, and the page showed only the sustained wind:
+    // "2 mph" under a Wind Advisory with 41 mph gusts forecast (16 Nov 2026).
+    // The row is the provider's own gust figure, or it is not drawn.
+    const gustKph = parseFloat(weather?.gustSpeed);
+    const gustStat = Number.isFinite(gustKph) && window.KaaykoPrefs?.fmtWind ? `
+              <div class="weather-stat">
+                <div class="weather-icon">${window.KaaykoIcons ? window.KaaykoIcons.get('wind') : ''}</div>
+                <div class="weather-data">
+                  <span class="weather-value">${window.KaaykoPrefs.fmtWind(gustKph)}</span>
+                  <span class="weather-label">Gusts</span>
+                </div>
+              </div>` : '';
     const uvIndex       = weather?.uvIndex     !== undefined ? weather.uvIndex   : '--';
     const cloudCover    = weather?.cloudCover  !== undefined ? weather.cloudCover : '--';
 
@@ -123,7 +135,7 @@ class RatingHero {
                   <span class="weather-value">${dispWindStr}</span>
                   <span class="weather-label">Wind Speed</span>
                 </div>
-              </div>
+              </div>${gustStat}
               <div class="weather-stat">
                 <div class="weather-icon">${ic('compass')}</div>
                 <div class="weather-data">
@@ -215,7 +227,7 @@ class RatingHero {
     // typical error. "3.0 / 5" in a 5 rem numeral claimed a precision the
     // model (±0.6) does not have, and said nothing about why (14 Oct 2026).
     const P = window.KaaykoPrefs;
-    const reason = P.scoreReason ? P.scoreReason(weather.explanations, r) : null;
+    const reason = P.scoreReason ? P.scoreReason(weather.explanations, r, weather.reasonPenalties, weather.alertName) : null;
     const scale = P.scoreScale ? P.scoreScale(r, weather.uncertainty) : `${display} of 5`;
     const esc = (t) => window.KaaykoUtil.escapeHtml(t);
     const word = label.charAt(0) + label.slice(1).toLowerCase();
