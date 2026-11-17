@@ -173,6 +173,10 @@
       transition: opacity 0.18s ease;
     }
     .ok-btn:hover { opacity: 0.88; }
+    /* display:inline-flex beat the hidden attribute: "See your order" showed before
+       there was an order to see, and led nowhere (17 Nov 2026). */
+    .ok-btn[hidden] { display: none; }
+    .ok-next a { color: var(--fg); text-underline-offset: 3px; }
 
     .ok-btn.is-quiet {
       background: none;

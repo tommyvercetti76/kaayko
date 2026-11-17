@@ -108,7 +108,13 @@
 
     .os-state { padding: 48px 0; text-align: center; font-family: var(--os-sans); color: var(--muted); }
     .os-state h1, .os-state h2 { margin: 0 0 8px; font-family: var(--os-serif); font-weight: 500; font-size: 28px; color: var(--fg); }
-    .os-state a { color: var(--fg); }
+    .os-state p { margin: 0 auto 10px; max-width: 34ch; line-height: 1.5; }
+    .os-state a {
+      display: inline-flex; align-items: center; min-height: 44px; margin-top: 14px; padding: 0 24px;
+      border: 1px solid var(--line); border-radius: 999px; color: var(--fg); text-decoration: none;
+      font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .os-state a:hover { border-color: var(--gold); color: var(--gold); }
 
     @media (max-width: 520px) {
       .os-steps { grid-template-columns: 1fr; gap: 0; }

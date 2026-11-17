@@ -28,6 +28,10 @@ if (!paymentIntentId || !clientSecret) {
 history.replaceState(null, '', location.pathname);
 addEventListener('popstate', () => location.replace('/store'));
 
+// The bag as it was, so it can be put back if Stripe says nothing was paid.
+let bagBefore = [];
+try { bagBefore = cartManager.getItems().map((i) => ({ ...i })); } catch (_) {}
+
 const set = (id, value) => { document.getElementById(id).textContent = value; };
 
 set('ok-ref', 'Assigning…');
@@ -67,7 +71,18 @@ set('ok-date', new Date().toLocaleDateString('en-US', {
 // lookup succeeding.
 (async () => {
   try {
-    const { paymentIntent } = await Stripe(STRIPE_KEY).retrievePaymentIntent(clientSecret);
+    const { paymentIntent, error } = await Stripe(STRIPE_KEY).retrievePaymentIntent(clientSecret);
+    // Stripe says, in terms, that nothing was paid (the payment failed or was
+    // cancelled, or this address names no payment at all): do not thank anyone.
+    // Put the bag back and return to it. A network failure is NOT this: the order
+    // may well be paid, so the page stays as it is.
+    const unpaid = paymentIntent ? ['requires_payment_method', 'canceled'].includes(paymentIntent.status)
+      : !!(error && error.type === 'invalid_request_error');
+    if (unpaid) {
+      try { for (const item of bagBefore) cartManager.addItem(item); } catch (_) {}
+      location.replace(bagBefore.length ? '/cart' : '/store');
+      return;
+    }
     if (!paymentIntent) throw new Error('no payment intent returned');
     set('ok-total', money(paymentIntent.amount));   // Stripe amounts are integer cents
     set('ok-email', paymentIntent.receipt_email || 'your email');

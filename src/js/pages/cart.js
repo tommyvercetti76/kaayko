@@ -91,6 +91,9 @@ const metaLine = (item) => {
   return parts.join(' · ');
 };
 
+/** What the Pay buttons say. While checkout is shut behind a code they do not promise a payment. */
+const payLabel = (cents) => (codeGate() ? 'Enter your code to pay' : `Pay ${money(cents)}`);
+
 const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 // One nonce per bag: retries and reloads of the same bag reuse one
@@ -319,7 +322,7 @@ function render() {
 
           ${promoFieldMarkup()}
 
-          <button id="co-primary" class="co-btn" type="button" aria-describedby="co-ready-hint">Pay ${money(t.total)}</button>
+          <button id="co-primary" class="co-btn" type="button" aria-describedby="co-ready-hint">${payLabel(t.total)}</button>
           <p class="co-ready-hint" id="co-ready-hint" aria-live="polite"></p>
           <p class="co-legal"><span class="material-icons" aria-hidden="true">lock</span> Paid securely through Stripe; card details never reach Kaayko.
             By paying you agree to our <a href="/legal/terms">Terms of Sale</a>, <a href="/legal/returns">Returns</a> and
@@ -343,7 +346,7 @@ function render() {
 
   const primary = document.getElementById('co-primary');
   const stickyBtn = document.getElementById('co-sticky-btn');
-  stickyBtn.textContent = `Pay ${money(t.total)}`;
+  stickyBtn.textContent = payLabel(t.total);
   stickyNote(t, parts.total);
   primary.addEventListener('click', pay);
   stickyBtn.onclick = pay;
@@ -396,8 +399,8 @@ function itemMarkup(item, index = 0) {
   return `
     <article class="co-item${item.productId === state.unavailableId ? ' is-unavailable' : ''}" style="--co-i:${index}">
       <a class="co-item-link" href="${href}" tabindex="-1" aria-hidden="true">
-        <img class="co-item-image" src="${esc(item.imgSrc)}" alt=""
-             onerror="this.classList.add('is-broken')" />
+        ${item.imgSrc ? `<img class="co-item-image" src="${esc(item.imgSrc)}" alt=""
+             onerror="this.classList.add('is-broken')" />` : '<span class="co-item-image"></span>'}
       </a>
       <div class="co-item-body">
         <h3 class="co-item-title"><a href="${href}">${esc(item.title)}</a></h3>
@@ -836,8 +839,8 @@ function updateMoney() {
   }
   if (t.taxKnown) setTaxRow(t.tax > 0 ? t.tax : 'None for this address');
   if (!state.paying) {
-    set('co-primary', `Pay ${money(t.total)}`);
-    set('co-sticky-btn', `Pay ${money(t.total)}`);
+    set('co-primary', payLabel(t.total));
+    set('co-sticky-btn', payLabel(t.total));
   }
 }
 
@@ -925,7 +928,7 @@ async function submitPayment() {
   };
   const restore = () => {
     state.paying = false;
-    setButtons(`Pay ${money(totals(cartManager.getItems()).total)}`);
+    setButtons(payLabel(totals(cartManager.getItems()).total));
     refreshReady();
   };
 

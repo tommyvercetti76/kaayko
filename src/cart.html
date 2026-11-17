@@ -320,6 +320,12 @@
       transition: color 0.18s ease;
     }
     .co-item-remove:hover { color: var(--fg); }
+    /* A finger needs 44px; the words stay the size they were (17 Nov 2026). */
+    .co-item-remove, .co-gate button, .co-topbar-back { position: relative; }
+    .co-item-remove::after { content: ""; position: absolute; inset: -12px -8px; }
+    .co-gate button::after { content: ""; position: absolute; inset: -9px -6px; }
+    .co-topbar-back::after { content: ""; position: absolute; inset: -4px; }
+    span.co-item-image { display: block; }
 
     .co-bag-note {
       margin: 12px 0 0;
