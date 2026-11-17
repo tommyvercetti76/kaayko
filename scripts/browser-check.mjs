@@ -422,7 +422,7 @@ async function main() {
         if (!r.adds.length || r.adds.some(h => h !== '/paddlingout/search?mode=add')) p.push(`Add buttons go to ${r.adds.join(', ')}`);
         if (!r.star) p.push('the header star is not marked current');
         if (!r.safetyFirst) p.push('the safety line is not above the first section');
-        const order = ['What makes the cut', 'The deal'];
+        const order = ['How it works', 'What makes the cut', 'The deal'];
         if (r.heads.join('|') !== order.join('|')) p.push(`sections are ${r.heads.join(' / ')}`);
         if (!r.rules) p.push('no link to the rules page');
         const words = r.text.split(/\s+/).filter(Boolean).length;
@@ -433,16 +433,50 @@ async function main() {
       }, { settle: 4000 });
 
       await checkPage(b.port, 'scouts rules', `${BASE}/paddlingout/scouts/rules`, view, async (ev) => {
-        const r = await ev(`(async () => { const b = document.getElementById('sc-explain'); if (!b) return { n: document.querySelectorAll('.sc-doc h2').length, btn: false };
-          b.click(); await new Promise(r => setTimeout(r, 400));
-          await new Promise(r => setTimeout(r, 1500)); const im = document.getElementById('rt-img');
-          return { n: document.querySelectorAll('.sc-doc h2').length, btn: true, open: !document.getElementById('rt-walk').hidden, count: (document.getElementById('rt-count') || {}).textContent, say: ((document.getElementById('rt-s') || {}).textContent || '').length, pic: !!(im && im.complete && im.naturalWidth > 0), wide: document.documentElement.scrollWidth - innerWidth }; })()`);
+        // 16 Nov 2026: the book's × could not be pressed, its last page went nowhere and its
+        // "child's words" were the rules again. So this presses every control where a finger
+        // would (elementFromPoint, not el.click()), turns every page, and reads the words.
+        const r = await ev(`(async () => { const b = document.getElementById('sc-explain'); const n = document.querySelectorAll('.sc-doc h2').length;
+          const words = document.querySelector('main').innerText.split(/\\s+/).filter(Boolean).length;
+          if (!b) return { n, words, btn: false };
+          const wait = (ms) => new Promise(r => setTimeout(r, ms));
+          const press = (el) => { const q = el.getBoundingClientRect(); const t = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); const ok = !!t && (t === el || el.contains(t)); if (ok) t.click(); return ok; };
+          const id = (x) => document.getElementById(x), walk = () => id('rt-walk');
+          b.scrollIntoView({ block: 'center' }); await wait(200);
+          const out = { n, words, btn: true, dead: [], pages: [] };
+          if (!press(b)) out.dead.push('the Explain button');
+          await wait(1900); const im = id('rt-img');
+          out.open = !walk().hidden; out.count = (id('rt-count') || {}).textContent; out.pic = !!(im && im.complete && im.naturalWidth > 0);
+          out.wide = document.documentElement.scrollWidth - innerWidth;
+          if (!press(id('rt-close'))) out.dead.push('the close button'); await wait(150);
+          out.closed = walk().hidden; press(b); await wait(300);
+          for (let k = 0; k < 10; k++) { out.pages.push([id('rt-t').textContent, id('rt-s').textContent]); if (!press(id('rt-next'))) { out.dead.push('Next on page ' + (k + 1)); break; } await wait(120); }
+          if (!press(id('rt-back'))) out.dead.push('Back'); await wait(120); out.backTo = (id('rt-count') || {}).textContent; press(id('rt-next')); await wait(120);
+          const add = id('rt-add'); out.end = { shown: !id('rt-end').hidden, add: add && add.getAttribute('href'), addHit: (() => { const q = add.getBoundingClientRect(); const t = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); return t === add; })() };
+          if (!press(id('rt-read'))) out.dead.push('Read the rules'); await wait(150); out.readCloses = walk().hidden;
+          return out; })()`);
         const p = [];
         if (r.n !== 10) p.push(`${r.n} rules, expected 10`);
-        if (!r.btn) p.push('no "Explain me like I am a child" button');
-        else { if (!r.open) p.push('the button did not open the tour'); if (r.count !== '1 / 10') p.push(`the tour counts "${r.count}", expected 1 / 10`); if (r.say < 30) p.push('the first step says nothing'); if (!r.pic) p.push('the first page has no picture'); if (r.wide > 1) p.push(`the tour makes the page ${r.wide}px wider than the screen`); }
+        if (r.words > 480) p.push(`${r.words} words on the rules page; it was cut from 636 to under 480, keep it there`);
+        if (!r.btn) { p.push('no "Explain me like I am a child" button'); return p; }
+        if (!r.open) p.push('the button did not open the book');
+        if (r.count !== '1 / 10') p.push(`the book counts "${r.count}", expected 1 / 10`);
+        if (!r.pic) p.push('the first page has no picture');
+        if (r.wide > 1) p.push(`the book makes the page ${r.wide}px wider than the screen`);
+        if (r.dead.length) p.push(`cannot be pressed: ${r.dead.join(', ')}`);
+        if (!r.closed) p.push('the close button did not close the book');
+        if (r.pages.length !== 10) p.push(`the book turned ${r.pages.length} pages, expected 10`);
+        for (const [t, line] of r.pages) {
+          const longest = Math.max(...line.split(/(?<=[.?!])\s+/).map((x) => x.split(/\s+/).length));
+          if (t.split(/\s+/).length > 4) p.push(`a child's title of more than four words: "${t}"`);
+          if (longest > 8 || line.split(/\s+/).length > 18) p.push(`not a child's words (a sentence of ${longest} words): "${line}"`);
+        }
+        if (r.backTo !== '10 / 10') p.push(`Back from the last page went to "${r.backTo}"`);
+        if (!r.end || !r.end.shown) p.push('the book has no last page');
+        else { if (r.end.add !== '/paddlingout/search?mode=add') p.push(`the last page's Add a spot goes to ${r.end.add}`); if (!r.end.addHit) p.push('the last page\'s Add a spot cannot be pressed'); }
+        if (!r.readCloses) p.push('Read the rules did not close the book');
         return p;
-      });
+      }, { settle: 3000 });
 
       await checkPage(b.port, 'stories', `${BASE}/stories`, view, async (ev) =>
         (await ev('document.querySelectorAll(".cover-wrap").length')) >= 1 ? [] : ['no story covers on the shelf']);

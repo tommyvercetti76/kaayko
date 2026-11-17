@@ -81,6 +81,23 @@ html.dark-theme { background: var(--bg); }
 .sc-looks b { margin-bottom: 0.2rem; font: 600 0.7rem var(--font-sans); letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-bright); }
 .sc-looks span:not(.sc-look-i) { font: 400 1.02rem/1.5 var(--font-serif); color: rgba(237, 232, 223, 0.88); }
 
+/* How it works: three steps, each with its picture from the rules book (16 Nov 2026).
+   A row a step on a phone; three across when there is room. */
+.sc-steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: grid; gap: 0.9rem; }
+.sc-steps li {
+  counter-increment: step; display: grid; grid-template-columns: 64px minmax(0, 1fr); column-gap: 1rem; align-items: center;
+  padding: 0.9rem 1rem; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface);
+}
+.sc-steps img { grid-row: 1 / span 2; width: 64px; height: 64px; object-fit: contain; }
+.sc-steps b { align-self: end; font: 600 0.72rem var(--font-sans); letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-bright); }
+.sc-steps b::before { content: counter(step) ". "; color: var(--gold); }
+.sc-steps span { align-self: start; margin-top: 0.2rem; font: 400 1.02rem/1.45 var(--font-serif); color: rgba(237, 232, 223, 0.9); }
+@media (min-width: 720px) {
+  .sc-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sc-steps li { grid-template-columns: 1fr; justify-items: center; text-align: center; row-gap: 0.5rem; padding: 1.2rem 1rem; }
+  .sc-steps img { grid-row: auto; width: 84px; height: 84px; }
+}
+
 /* ── Dock: one tap to the form, always ──────────────────────────────────── */
 .sc-dock {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 900;
@@ -114,7 +131,9 @@ html.dark-theme { background: var(--bg); }
   background: linear-gradient(150deg, rgba(217,189,123,.6), rgba(181,147,90,.28)); box-shadow: 0 18px 50px rgba(0,0,0,.55); }
 .rt-pop::before { content: ''; position: absolute; inset: 1.5px; clip-path: var(--clip-md); border-radius: var(--r-md); background: linear-gradient(160deg, #0e0d0b, #100f0c); }
 .rt-pop > * { position: relative; }
-.rt-close { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; background: none; cursor: pointer; color: rgba(237,232,223,.6); font: 400 1.6rem/1 var(--font-serif); }
+/* z-index: the picture comes after this button in the book and is positioned, so it sat
+   ON the button and the × could not be pressed (found 16 Nov 2026 by clicking it). */
+.rt-close { position: absolute; z-index: 2; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; background: none; cursor: pointer; color: rgba(237,232,223,.6); font: 400 1.6rem/1 var(--font-serif); }
 .rt-close:hover { color: var(--fg); }
 .rt-pic { display: flex; align-items: center; justify-content: center; height: min(46vh, 300px); padding: 28px 28px 8px; }
 .rt-pic img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 6px 24px rgba(217,189,123,.18)); }
@@ -126,7 +145,11 @@ html.dark-theme { background: var(--bg); }
 .rt-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 24px 18px; }
 .rt-count { font: 400 0.64rem var(--font-sans); letter-spacing: .18em; color: rgba(217,189,123,.75); }
 .rt-dots { display: flex; gap: 5px; }
-.rt-dots i { width: 6px; height: 6px; background: rgba(217,189,123,.3); }
+.rt-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(217,189,123,.3); }
+/* The last page: where to go now. */
+.rt-end { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.2rem; padding: 6px 24px 0; }
+.rt-end[hidden] { display: none; }
+.sc-doc-end { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.4rem; }
 .rt-dots i.on { background: var(--gold-bright); }
 .rt-btns { display: flex; align-items: center; gap: 10px; }
 .rt-back { min-height: 44px; padding: 0 8px; background: none; border: 0; cursor: pointer; color: rgba(237,232,223,.55); font: 600 0.68rem var(--font-sans); letter-spacing: .12em; text-transform: uppercase; }
@@ -139,6 +162,7 @@ body.rt-on { overflow: hidden; }
 @media (max-width: 420px) { .rt-dots { display: none; } }
 @media (prefers-reduced-motion: reduce) { .rt-pic img.in { animation: none; } }
 .sc-doc a { color: var(--gold); }
+.sc-doc a.sc-btn, .sc-doc a.sc-btn:hover { color: var(--gold-ink); }   /* a button, not a text link: ink on gold */
 .sc-doc a:hover { color: var(--gold-bright); }
 
 @media (prefers-reduced-motion: reduce) {
