@@ -1288,3 +1288,9 @@ main.forecast-main {
 
 /* A row that has nothing to report is not drawn (a UV index of 0). */
 #ratingHeroContainer .weather-stat[hidden] { display: none !important; }
+
+/* Forge's condition icons (kaayko-icons-forge.js) are filled shapes, not 2px
+   strokes, and are drawn at 28px: at the line icons' 17px the weather vane,
+   the river and the compass closed up (16 Nov 2026). */
+#ratingHeroContainer .weather-icon svg[viewBox="0 0 256 256"] { width: 28px; height: 28px; }
+#ratingHeroContainer .weather-icon:has(svg[viewBox="0 0 256 256"]) { width: 28px; min-width: 28px; }

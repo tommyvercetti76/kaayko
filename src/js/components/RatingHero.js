@@ -31,7 +31,7 @@ class RatingHero {
     // cloud) decides nothing, so that row is only drawn when there is UV to report.
     const rainPct = parseFloat(weather?.precipChancePercent);
     const rainStat = Number.isFinite(rainPct) ? `<div class="weather-stat">
-                <div class="weather-icon">${window.KaaykoIcons ? window.KaaykoIcons.get('rain') : ''}</div>
+                <div class="weather-icon">${window.KaaykoIcons ? (window.KaaykoIcons.get('fx-rain') || window.KaaykoIcons.get('rain')) : ''}</div>
                 <div class="weather-data">
                   <span class="weather-value">${Math.round(rainPct)}%</span>
                   <span class="weather-label">Rain chance</span>
@@ -41,7 +41,7 @@ class RatingHero {
     const gustKph = parseFloat(weather?.gustSpeed);
     const gustStat = Number.isFinite(gustKph) && window.KaaykoPrefs?.fmtWind ? `
               <div class="weather-stat">
-                <div class="weather-icon">${window.KaaykoIcons ? window.KaaykoIcons.get('wind') : ''}</div>
+                <div class="weather-icon">${window.KaaykoIcons ? (window.KaaykoIcons.get('fx-gusts') || window.KaaykoIcons.get('wind')) : ''}</div>
                 <div class="weather-data">
                   <span class="weather-value">${window.KaaykoPrefs.fmtWind(gustKph)}</span>
                   <span class="weather-label">Gusts</span>
@@ -91,6 +91,10 @@ class RatingHero {
       : ' title="No water-temperature sensor covers this spot. We do not publish a figure we have not measured."';
     // Shared line-icons (single icon language across the app)
     const ic = (n) => (window.KaaykoIcons ? window.KaaykoIcons.get(n) : '');
+    // The conditions block draws Forge's icons (js/kaayko-icons-forge.js, traced from
+    // renders Rohan picked, 16 Nov 2026). Where that file is not loaded, the line
+    // icon of the same meaning stands in, so a row is never without its mark.
+    const fx = (n, fallback) => ic('fx-' + n) || ic(fallback);
 
     // HOW OLD THIS READING ACTUALLY IS.
     //
@@ -127,7 +131,7 @@ class RatingHero {
     // of the page between the coordinates and a video link.
     const flowStat = weather?.flow && weather.flow.text ? `
               <div class="weather-stat"${weather.flow.title ? ` title="${window.KaaykoUtil.escapeHtml(weather.flow.title)}"` : ''}>
-                <div class="weather-icon">${window.KaaykoIcons ? window.KaaykoIcons.get('droplet') : ''}</div>
+                <div class="weather-icon">${window.KaaykoIcons ? (window.KaaykoIcons.get('fx-flow') || window.KaaykoIcons.get('droplet')) : ''}</div>
                 <div class="weather-data">
                   <span class="weather-value">${window.KaaykoUtil.escapeHtml(weather.flow.text)}</span>
                   <span class="weather-label">River flow</span>
@@ -156,28 +160,28 @@ class RatingHero {
           <div class="skill-info">
             <div class="core-weather-inline">
               <div class="weather-stat">
-                <div class="weather-icon">${ic('thermometer')}</div>
+                <div class="weather-icon">${fx('thermometer', 'thermometer')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${dispTempStr}</span>
                   <span class="weather-label">Air Temp</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">${ic('wind')}</div>
+                <div class="weather-icon">${fx('wind', 'wind')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${dispWindStr}</span>
                   <span class="weather-label">Wind Speed</span>
                 </div>
               </div>${gustStat}${flowStat}
               <div class="weather-stat">
-                <div class="weather-icon">${ic('compass')}</div>
+                <div class="weather-icon">${fx('compass', 'compass')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${windDirection}</span>
                   <span class="weather-label">Wind Dir</span>
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">${ic('water-temp')}</div>
+                <div class="weather-icon">${fx('water-temp', 'water-temp')}</div>
                 <div class="weather-data">
                   <span class="weather-value${waterTempClass}"${waterTempTitle}>${dispWaterStr}</span>
                   <span class="weather-label">Water Temp</span>
@@ -191,7 +195,7 @@ class RatingHero {
                 </div>
               </div>
               <div class="weather-stat">
-                <div class="weather-icon">${ic('cloud')}</div>
+                <div class="weather-icon">${fx('cloud', 'cloud')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${cloudCover}%</span>
                   <span class="weather-label">Cloud Cover</span>
