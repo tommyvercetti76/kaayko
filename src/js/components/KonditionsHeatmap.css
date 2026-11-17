@@ -298,3 +298,6 @@
 
 /* Said in words when nothing ahead is paddleable (16 Nov 2026). */
 .khm-none { margin: 0; font-family: var(--font-serif); font-size: 0.98rem; color: rgba(237,232,223,0.78); }
+
+/* How old the forecast is, on its own line under the source. */
+.khm-fetched { display: block; opacity: 0.8; }

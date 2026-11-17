@@ -1004,7 +1004,10 @@ html:not(.dark-theme) .skill-details {
 }
 
 .feedback-prompt {
-  font-size: 12px;
+  font-family: var(--font-sans, 'Josefin Sans', Arial, sans-serif);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--modal-text, #666);
   font-weight: 500;
   white-space: nowrap;

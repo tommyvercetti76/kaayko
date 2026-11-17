@@ -38,9 +38,9 @@
   --display:    'Bebas Neue', 'Josefin Sans', sans-serif;   /* one display face, matches homepage + About */
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
   /* shared corner-chamfer clips (hard edges, symmetric "dent" — no curves) */
-  --clip-lg: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
-  --clip-md: polygon(9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px), 0 9px);
-  --clip-sm: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+  --clip-lg: inset(0 round var(--r-lg));
+  --clip-md: inset(0 round var(--r-md));
+  --clip-sm: inset(0 round var(--r-sm));
 }
 
 /*─────────────────────────────────────────────────────────────────────────────
@@ -127,7 +127,7 @@ body {
 }
 .po-error-msg { margin: 0; font-family: var(--font-serif); font-style: italic; font-size: 1.15rem; color: var(--muted); }
 .po-error-retry {
-  cursor: pointer; border: 1px solid rgba(181,147,90,0.5); border-radius: 0; clip-path: var(--clip-md);
+  cursor: pointer; border: 1px solid rgba(181,147,90,0.5); border-radius: var(--r-md); clip-path: var(--clip-md);
   background: rgba(181,147,90,0.1); color: var(--gold-bright);
   font-family: var(--font-sans); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase;
   padding: 0.7rem 1.4rem; transition: background 0.2s ease, transform 0.15s ease;
@@ -140,7 +140,7 @@ body {
 .card {
   background: linear-gradient(135deg, var(--panel-a), var(--panel-c));
   border: 1px solid var(--line);
-  border-radius: 0;
+  border-radius: var(--r-lg);
   clip-path: var(--clip-lg);       /* chamfered, matches the minimal tiles */
   overflow: hidden;
   cursor: pointer;
@@ -199,7 +199,7 @@ body {
   width: 74px;
   height: 74px;
   border: 1px solid rgba(181,147,90,0.42);
-  border-radius: 0; clip-path: var(--clip-md);   /* chamfered like every card (30 Oct 2026) */
+  border-radius: var(--r-md); clip-path: var(--clip-md);   /* chamfered like every card (30 Oct 2026) */
   display: grid;
   place-items: center;
   color: var(--gold-bright);
@@ -306,7 +306,7 @@ body {
   background: rgba(8, 8, 8, 0.72);
   border: 1px solid var(--line);
   color: var(--fg);
-  border-radius: 0;
+  border-radius: var(--r-sm);
   clip-path: var(--clip-sm);
   font-size: 1.4rem;
   line-height: 1;
@@ -347,7 +347,7 @@ body {
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0;
+  border-radius: var(--r-sm);
   clip-path: var(--clip-sm);
   padding: 0.34rem 0.72rem 0.34rem 0.55rem;
   display: flex;

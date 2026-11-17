@@ -14,7 +14,14 @@
    legacy --color-* palette styles the old header/footer chrome in header.css
    and storestyle.css. Every one of them is defined here and nowhere else.
 
-   Shape:   chamfered, never rounded. --clip-sm/md/lg are the three cuts.
+   Shape:   one soft radius scale — --r-sm 8 (marks, small chips), --r-md 12
+            (controls, inputs, small cards), --r-lg 16 (panels, cards, maps);
+            tags and filter chips are full pills. Until 16 Nov 2026 the shape was
+            a chamfer (cut corners): the cuts sliced through real borders, so
+            boxes read as incomplete hexagons, and three shape families ended up
+            on one page. --clip-sm/md/lg keep their names and are now the same
+            three radii as clip-paths, so every rule written against them moved
+            with one change.
    Colour:  black ground, bone text, bullion gold; three verdict colours.
    Type:    Bebas (titles), Josefin (labels/UI), Cormorant (reading).
    ───────────────────────────────────────────────────────────────────────────── */
@@ -45,9 +52,12 @@
   --font-sans:     'Josefin Sans', Arial, sans-serif;
   --font-serif:    'Cormorant Garamond', Georgia, serif;
 
-  --clip-sm: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
-  --clip-md: polygon(9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px), 0 9px);
-  --clip-lg: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --clip-sm: inset(0 round var(--r-sm));
+  --clip-md: inset(0 round var(--r-md));
+  --clip-lg: inset(0 round var(--r-lg));
 
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
 }

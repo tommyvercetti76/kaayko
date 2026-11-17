@@ -66,6 +66,13 @@ html.dark-theme, .pn { background: var(--bg); }
 /* Phones: 44px for a thumb, and a 16px select, because under 16px iOS Safari
    zooms the page on focus. Wide screens keep the 34px bar the CLS note above
    is measured for (16 Nov 2026). */
+/* Filter chips are pills and the sort control takes the control radius, as on
+   every other Paddling Out page (tokens.css, 16 Nov 2026). */
+.pn-chip { border-radius: 999px; }
+.pn-sort select { border-radius: var(--r-sm, 8px); }
+.pn-h, .pn-skel { border-radius: var(--r-md, 12px); overflow: hidden; }
+.pn-search, .pn-media, .pn-paused-t { border-radius: var(--r-sm, 8px); }
+.pn-media { overflow: hidden; }
 @media (max-width: 759px) {
   .pn-chip, .pn-sort select { height: 44px; }
   .pn-sort select { font: 500 16px var(--font-sans); letter-spacing: 0; text-transform: none; }

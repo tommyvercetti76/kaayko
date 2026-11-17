@@ -27,6 +27,17 @@ class RatingHero {
     // Gusts are what tip a boat, and the page showed only the sustained wind:
     // "2 mph" under a Wind Advisory with 41 mph gusts forecast (16 Nov 2026).
     // The row is the provider's own gust figure, or it is not drawn.
+    // Rain chance decides a trip; a UV index of 0 (every night, and under heavy
+    // cloud) decides nothing, so that row is only drawn when there is UV to report.
+    const rainPct = parseFloat(weather?.precipChancePercent);
+    const rainStat = Number.isFinite(rainPct) ? `<div class="weather-stat">
+                <div class="weather-icon">${window.KaaykoIcons ? window.KaaykoIcons.get('rain') : ''}</div>
+                <div class="weather-data">
+                  <span class="weather-value">${Math.round(rainPct)}%</span>
+                  <span class="weather-label">Rain chance</span>
+                </div>
+              </div>
+              ` : '';
     const gustKph = parseFloat(weather?.gustSpeed);
     const gustStat = Number.isFinite(gustKph) && window.KaaykoPrefs?.fmtWind ? `
               <div class="weather-stat">
@@ -172,7 +183,7 @@ class RatingHero {
                   <span class="weather-label">Water Temp</span>
                 </div>
               </div>
-              <div class="weather-stat">
+              ${rainStat}<div class="weather-stat"${Number(uvIndex) > 0 ? '' : ' hidden'}>
                 <div class="weather-icon">${ic('sun')}</div>
                 <div class="weather-data">
                   <span class="weather-value">${uvIndex}</span>

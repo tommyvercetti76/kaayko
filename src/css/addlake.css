@@ -53,7 +53,7 @@
 .al-field { display: block; margin: 0 0 1.1rem; }
 .al input[type="text"], .al input[type="email"], .al input[type="search"], .al input:not([type]), .al textarea {
   width: 100%; box-sizing: border-box; min-height: 50px; padding: 0.75rem 0.9rem;
-  background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.32); border-radius: 0;
+  background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.32); border-radius: var(--r-sm);
   clip-path: var(--clip-sm); color: var(--fg); font: 16px/1.4 var(--font-serif); outline: none;
 }
 .al textarea { min-height: 104px; resize: vertical; }
@@ -69,7 +69,7 @@
 
 /* ── Buttons ─────────────────────────────────────────────────────────── */
 .al-primary {
-  width: 100%; min-height: 44px; border: 0; cursor: pointer; clip-path: var(--clip-sm);
+  width: 100%; min-height: 44px; border: 0; cursor: pointer; clip-path: var(--clip-sm); border-radius: var(--r-sm);
   background: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: var(--gold-ink, #141210);   /* the one gold button (scouts, kaay.link/m): 44px, 12.5px caps */
   font: 600 0.78rem var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase;
   transition: filter 0.15s ease, opacity 0.15s ease;
@@ -84,7 +84,7 @@
 .al-tog:has(input:focus-visible) { box-shadow: inset 0 0 0 2px var(--gold-bright); }
 .al-drop:focus-within { outline: 2px solid var(--gold-bright); outline-offset: -4px; background: rgba(181, 147, 90, 0.13); }
 .al-secondary {
-  min-height: 40px; padding: 0 0.9rem; cursor: pointer; clip-path: var(--clip-sm);
+  min-height: 40px; padding: 0 0.9rem; cursor: pointer; clip-path: var(--clip-sm); border-radius: var(--r-sm);
   background: rgba(181, 147, 90, 0.12); border: 1px solid rgba(181, 147, 90, 0.42); color: var(--gold-bright);
   font: 600 0.72rem var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase;
 }
@@ -96,7 +96,7 @@
 /* ── Photos ──────────────────────────────────────────────────────────── */
 .al-drop {
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;
-  min-height: 168px; cursor: pointer; clip-path: var(--clip-lg);
+  min-height: 168px; cursor: pointer; clip-path: var(--clip-lg); border-radius: var(--r-lg);
   background: rgba(181, 147, 90, 0.07); border: 1px dashed rgba(181, 147, 90, 0.55);
   color: var(--gold-bright); transition: background 0.15s ease;
 }
@@ -109,7 +109,7 @@
 .al-drop.is-full { display: none; }
 .al-thumbs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.75rem; }
 .al-thumbs:empty { display: none; }
-.al-thumb { position: relative; aspect-ratio: 1; overflow: hidden; clip-path: var(--clip-sm); background: #111; }
+.al-thumb { position: relative; aspect-ratio: 1; overflow: hidden; clip-path: var(--clip-sm); border-radius: var(--r-sm); background: #111; }
 .al-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .al-thumb button {
   position: absolute; top: 2px; right: 2px; width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
@@ -117,12 +117,12 @@
 }
 .al-thumb.is-busy::after { content: ''; position: absolute; inset: 0; background: rgba(8, 8, 8, 0.45); }
 .al-strip { display: flex; gap: 0.4rem; margin: 0 0 1.1rem; overflow-x: auto; }
-.al-strip img { width: 76px; height: 76px; object-fit: cover; clip-path: var(--clip-sm); flex: none; }
+.al-strip img { width: 76px; height: 76px; object-fit: cover; clip-path: var(--clip-sm); border-radius: var(--r-sm); flex: none; }
 .al-strip:empty { display: none; }
 
 /* ── Where do you put in? ────────────────────────────────────────────── */
 /* ends above the sticky button (≈ 80 px) so nothing on the map hides behind it */
-.al-mapwrap { position: relative; height: clamp(300px, calc(100dvh - 400px), 640px); clip-path: var(--clip-lg); background: #0d0d0f; }
+.al-mapwrap { position: relative; height: clamp(300px, calc(100dvh - 400px), 640px); clip-path: var(--clip-lg); border-radius: var(--r-lg); background: #0d0d0f; }
 .al-map { position: absolute; inset: 0; height: 100% !important; z-index: 0; }
 .al-map .leaflet-top.leaflet-left { top: 66px; }
 .al-map .leaflet-control-attribution { font-size: 9px; }
@@ -141,7 +141,7 @@
    fill to read, so it is addressed by id. */
 #al-search, #al-search:focus { background: rgba(10, 10, 9, 0.92) !important; border-bottom-color: rgba(217, 189, 123, 0.6) !important; }
 .al-gps {
-  width: 50px; min-height: 50px; cursor: pointer; clip-path: var(--clip-sm); font-size: 22px;
+  width: 50px; min-height: 50px; cursor: pointer; clip-path: var(--clip-sm); border-radius: var(--r-sm); font-size: 22px;
   display: flex; align-items: center; justify-content: center;
   background: rgba(10, 10, 9, 0.9); border: 1px solid rgba(181, 147, 90, 0.42); color: var(--gold-bright);
 }
@@ -149,7 +149,7 @@
 @keyframes al-pulse { 50% { opacity: 0.45; } }
 /* What "Put in here" answered, right above it (phone audit, 21 Oct 2026). */
 .al-footmsg {
-  margin: 0 0 0.55rem; padding: 0.7rem 0.9rem; clip-path: var(--clip-sm);
+  margin: 0 0 0.55rem; padding: 0.7rem 0.9rem; clip-path: var(--clip-sm); border-radius: var(--r-sm);
   background: rgba(10, 10, 9, 0.96); border-left: 3px solid var(--gold-bright); color: var(--fg); font-style: normal;
 }
 .al-footmsg.is-error { border-left-color: var(--bad); }
@@ -160,7 +160,7 @@
 .al-choices { display: grid; gap: 0.55rem; }
 .al-choice {
   display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.2rem 0.8rem; text-align: left;
-  width: 100%; min-height: 64px; padding: 0.7rem 1rem; cursor: pointer; clip-path: var(--clip-md);
+  width: 100%; min-height: 64px; padding: 0.7rem 1rem; cursor: pointer; clip-path: var(--clip-md); border-radius: var(--r-md);
   background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.3); color: var(--fg);
 }
 .al-choice-name { font: 600 1.2rem/1.2 var(--font-serif); }
@@ -178,7 +178,7 @@
 .al-toggles { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.1rem; }
 .al-tog {
   display: inline-flex; align-items: center; gap: 0.55rem; min-height: 40px; padding: 0 0.85rem; cursor: pointer;
-  clip-path: var(--clip-sm); background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.3);
+  clip-path: var(--clip-sm); border-radius: var(--r-sm); background: rgba(181, 147, 90, 0.07); border: 1px solid rgba(181, 147, 90, 0.3);
   font: 600 0.72rem var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg);
 }
 .al-tog input { width: 20px; height: 20px; margin: 0; accent-color: #d9bd7b; }
@@ -188,7 +188,7 @@
 
 /* ── Sent ────────────────────────────────────────────────────────────── */
 .al-extras {
-  margin: 0.4rem 0 1.4rem; padding: 1.1rem 1rem 1rem; clip-path: var(--clip-lg);
+  margin: 0.4rem 0 1.4rem; padding: 1.1rem 1rem 1rem; clip-path: var(--clip-lg); border-radius: var(--r-lg);
   background: rgba(181, 147, 90, 0.05); border: 1px solid rgba(181, 147, 90, 0.24);
 }
 .al-extras[hidden] { display: none; }

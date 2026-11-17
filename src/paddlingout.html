@@ -398,8 +398,7 @@
 
     .kw-pop {
       --n: 12px;
-      --clip: polygon(var(--n) 0, calc(100% - var(--n)) 0, 100% var(--n), 100% calc(100% - var(--n)),
-        calc(100% - var(--n)) 100%, var(--n) 100%, 0 calc(100% - var(--n)), 0 var(--n));
+      --clip: inset(0 round calc(var(--n) * 1.35));
       /* placed by transform, not top/left: moving top/left counted as layout shift
          (0.083 on a phone, every first visit); a transform is not layout */
       position: fixed; top: 0; left: 0; z-index: 2102; width: min(340px, calc(100vw - 28px));
@@ -420,8 +419,7 @@
     .kw-skip:hover { color:rgba(237,232,223,0.85); }
     .kw-next {
       --n: 8px;
-      --clip: polygon(var(--n) 0, calc(100% - var(--n)) 0, 100% var(--n), 100% calc(100% - var(--n)),
-        calc(100% - var(--n)) 100%, var(--n) 100%, 0 calc(100% - var(--n)), 0 var(--n));
+      --clip: inset(0 round calc(var(--n) * 1.35));
       cursor:pointer; border:0; clip-path:var(--clip);
       background:linear-gradient(135deg,#e9d29a,#b5935a); color:#141210;
       font-family:'Josefin Sans',Arial,sans-serif; font-weight:600; font-size:.68rem; letter-spacing:.16em; text-transform:uppercase;
@@ -431,8 +429,7 @@
 
     .potour-help {
       --n: 9px;
-      --clip: polygon(var(--n) 0, calc(100% - var(--n)) 0, 100% var(--n), 100% calc(100% - var(--n)),
-        calc(100% - var(--n)) 100%, var(--n) 100%, 0 calc(100% - var(--n)), 0 var(--n));
+      --clip: inset(0 round calc(var(--n) * 1.35));
       position:fixed; right:16px; bottom:16px; z-index:1500; width:42px; height:42px; cursor:pointer; clip-path:var(--clip);
       display:flex; align-items:center; justify-content:center; border:0;
       background:rgba(20,18,16,0.9); color:#d9bd7b; font-family:'Josefin Sans',Arial,sans-serif; font-weight:700; font-size:1.1rem;

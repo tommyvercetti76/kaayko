@@ -233,7 +233,7 @@
     const fetchedAt = Date.parse(forecastData?.metadata?.cacheTime || forecastData?.metadata?.timestamp || '');
     const fetchedMin = Number.isFinite(fetchedAt) ? Math.round((Date.now() - fetchedAt) / 60000) : null;
     const fetchedText = fetchedMin !== null && fetchedMin >= 20
-      ? ` · fetched ${fetchedMin < 90 ? fetchedMin + ' min' : Math.round(fetchedMin / 60) + ' hr'} ago` : '';
+      ? `<span class="khm-source khm-fetched">Fetched ${fetchedMin < 90 ? fetchedMin + ' min' : Math.round(fetchedMin / 60) + ' hr'} ago</span>` : '';
     // When no daylight hour ahead reaches "Careful", say it in words. The strip
     // showed three red bars and left the reader to conclude that for themselves;
     // the "best window" marker (findBestWindow) rightly stays silent then.
@@ -254,7 +254,7 @@
         <div class="khm-head">
           <div>
             <span class="khm-eyebrow">3-day forecast</span>
-            <span class="khm-source">${observed !== null ? 'This hour observed, later hours forecast' : 'Forecast, not observed conditions'}${fetchedText}</span>
+            <span class="khm-source">${observed !== null ? 'This hour observed, later hours forecast' : 'Forecast, not observed conditions'}</span>${fetchedText}
           </div>
           <div class="khm-legend">
             <span><i class="khm-dot" style="background:#bd3b2b"></i>Hard pass</span>

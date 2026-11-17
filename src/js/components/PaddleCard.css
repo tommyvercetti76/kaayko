@@ -8,12 +8,7 @@
   --pc-notch: 13px;          /* corner chamfer — the tiny dent */
   --pc-bw: 1.5px;            /* frame thickness (hairline) */
   --pc-edge: rgba(181, 147, 90, 0.22);   /* default frame colour (subtle) */
-  --pc-clip: polygon(
-    var(--pc-notch) 0, calc(100% - var(--pc-notch)) 0,
-    100% var(--pc-notch), 100% calc(100% - var(--pc-notch)),
-    calc(100% - var(--pc-notch)) 100%, var(--pc-notch) 100%,
-    0 calc(100% - var(--pc-notch)), 0 var(--pc-notch)
-  );
+  --pc-clip: inset(0 round calc(var(--pc-notch) * 1.35));
 
   position: relative;
   display: block;
@@ -91,8 +86,7 @@
   justify-content: center;
   cursor: pointer;
   color: #f2e6c4;
-  clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
-    calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
+  clip-path: inset(0 round calc(var(--cn) * 1.35));
   /* A solid chip, no backdrop blur: 24 cards x 3 controls was 72 blurred layers
      scrolling over photos (16 Nov 2026). Slightly more opaque to stand in for it. */
   background: rgba(12, 11, 9, 0.58);
@@ -114,8 +108,7 @@
   position: absolute; top: 8px; right: 8px; z-index: 5;
   width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
   cursor: pointer; color: #f2e6c4;
-  clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
-    calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
+  clip-path: inset(0 round calc(var(--cn) * 1.35));
   background: rgba(12, 11, 9, 0.58);
   opacity: 0; transform: scale(0.9);
   transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, color 0.2s ease;
@@ -144,8 +137,7 @@
   .pcard-caret:hover, .pcard-fav:hover { background: none; }
   .pcard-caret::before, .pcard-fav::before {
     content: ""; position: absolute; z-index: -1; left: 50%; top: 50%;
-    clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
-      calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
+    clip-path: inset(0 round calc(var(--cn) * 1.35));
     background: rgba(12, 11, 9, 0.58);
   }
   .pcard-caret::before { width: 30px; height: 34px; margin: -17px 0 0 -15px; }
@@ -266,8 +258,7 @@
 /* minimal-shaped skeletons — same chamfer + aspect as real tiles (no first-paint flash) */
 .pcard-skeleton {
   aspect-ratio: 4 / 5;
-  clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px),
-    calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+  clip-path: inset(0 round var(--r-lg));
   background: linear-gradient(100deg, rgba(181,147,90,0.05) 30%, rgba(181,147,90,0.13) 50%, rgba(181,147,90,0.05) 70%);
   background-size: 200% 100%;
   animation: pcard-shimmer 1.4s ease-in-out infinite;
@@ -282,12 +273,7 @@
 /* ── minimal "add a lake" tile — same chamfered, sharp language ── */
 .pcard-submit {
   --pc-notch: 13px;
-  --pc-clip: polygon(
-    var(--pc-notch) 0, calc(100% - var(--pc-notch)) 0,
-    100% var(--pc-notch), 100% calc(100% - var(--pc-notch)),
-    calc(100% - var(--pc-notch)) 100%, var(--pc-notch) 100%,
-    0 calc(100% - var(--pc-notch)), 0 var(--pc-notch)
-  );
+  --pc-clip: inset(0 round calc(var(--pc-notch) * 1.35));
   position: relative;
   display: flex;
   flex-direction: column;
@@ -344,8 +330,7 @@
   color: #f2e6c4;
   background: rgba(12, 11, 9, 0.68);
   border: 1px solid rgba(217, 189, 123, 0.35);
-  clip-path: polygon(var(--cn) 0, calc(100% - var(--cn)) 0, 100% var(--cn), 100% calc(100% - var(--cn)),
-    calc(100% - var(--cn)) 100%, var(--cn) 100%, 0 calc(100% - var(--cn)), 0 var(--cn));
+  clip-path: inset(0 round calc(var(--cn) * 1.35));
 }
 .pcard-tag--community { color: #d9bd7b; }
 .card .pcard-tags { top: 0.9rem; left: 0.9rem; }

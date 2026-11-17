@@ -710,11 +710,11 @@ function renderLocationInfo(location, spot) {
 function renderApiStatus(forecastData) {
   // One source of truth for both halves — they used to be computed from
   // two different expressions and contradicted each other on every score.
-  const p = window.dataTransformer?.getPredictionProvenance?.(forecastData)
-    || { icon: '📊', label: 'Estimated forecast' };
-  const responseTime = forecastData.metadata?.responseTime || 'N/A';
-  document.getElementById('apiStatus').innerHTML =
-    `${p.icon} ${p.label} &nbsp;|&nbsp; ${responseTime}`;
+  // "🤖 ML forecast | 82ms" was debug output on a public page. Where the score
+  // comes from is on the methodology page; the response time is nobody's business
+  // but ours. The element stays (other code hides and shows it) and stays empty.
+  const el = document.getElementById('apiStatus');
+  if (el) { el.textContent = ''; el.hidden = true; }
 }
 
 // ── Main load logic ─────────────────────────────────────────────────────
